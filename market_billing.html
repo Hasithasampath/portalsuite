@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 
 <style>
     :root {
@@ -238,11 +239,11 @@
             <button class="btn-upload" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Excel</button>
             <button class="btn-process" id="processBtn"><i class="fa-solid fa-gears"></i> Process Data</button>
             <button class="btn-copy" id="copyBtn"><i class="fa-solid fa-copy"></i> Copy Output</button>
-            <button class="btn-export" id="exportBtn"><i class="fa-solid fa-file-excel"></i> Export (.xls)</button>
+            <button class="btn-export" id="exportBtn"><i class="fa-solid fa-file-excel"></i> Export (.xlsx)</button>
         </div>
     </div>
 
-    <textarea id="rawData" placeholder="Market Order දත්ත මෙතනට Paste කරන්න... හෝ උඩ තියෙන 'Upload Excel' බොත්තමෙන් File එකක් තෝරන්න..."></textarea>
+    <textarea id="rawData" placeholder="Insert Market Order data here, or use the 'Upload Excel' button above to import a file."></textarea>
 
     <div class="stats-container">
         <div class="stat-card">
@@ -250,6 +251,13 @@
             <div class="stat-info">
                 <h3>Unique Outlets Count</h3>
                 <p id="rowsCount">0</p>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left-color: var(--success);">
+            <div class="stat-icon" style="background: #f0fdf4; color: var(--success);"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="stat-info">
+                <h3>Total Order Value</h3>
+                <p id="totalValue" style="font-size: 20px;">0.00</p>
             </div>
         </div>
         <div class="stat-card" style="border-left-color: var(--secondary);">
@@ -260,6 +268,8 @@
             </div>
         </div>
     </div>
+
+    <div id="searchCount" style="font-size: 13px; color: var(--text-sub); margin: 8px 4px; display:none;"></div>
 
     <div class="table-wrap" id="tableWrap">
         <table id="billingTable">
@@ -276,9 +286,19 @@
     document.getElementById('search').addEventListener('keyup', function() {
         const value = this.value.toLowerCase();
         const rows = document.querySelectorAll('#tableBody tr');
+        let visible = 0;
         rows.forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none';
+            const match = row.innerText.toLowerCase().includes(value);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
         });
+        const countEl = document.getElementById('searchCount');
+        if (value.trim()) {
+            countEl.style.display = 'block';
+            countEl.textContent = `Showing ${visible} of ${rows.length} results`;
+        } else {
+            countEl.style.display = 'none';
+        }
     });
 
     document.getElementById('uploadBtn').addEventListener('click', () => document.getElementById('fileUpload').click());
@@ -307,7 +327,8 @@
     });
 
     function processDataArray(rows) {
-        rowCounter = 0; 
+        rowCounter = 0;
+        let totalOrderValue = 0;
         if (rows.length === 0) return;
         
         let headers = ["Order Type", "Order Date", "Party HUL Code", "Party Name", "Beat Name", "Salesperson Name", "Total Order Value", "Bill Age", "Approval Days", "Exceed days"];
@@ -322,6 +343,9 @@
             if (hulCode && !seenHulCodes.has(hulCode)) {
                 seenHulCodes.add(hulCode); 
                 rowCounter++;
+
+                let orderVal = parseFloat(String(rows[i][19] || '0').replace(/,/g, '')) || 0;
+                totalOrderValue += orderVal;
                 
                 let rowData = [
                     rows[i][0] || '', rows[i][1] || '', hulCode, 
@@ -334,11 +358,14 @@
         }
         
         document.getElementById("rowsCount").innerText = rowCounter;
+        document.getElementById("totalValue").innerText = totalOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById("statusMsg").innerText = "Data Processed!";
         document.getElementById("statusMsg").style.color = "var(--success)";
         document.getElementById("tableHead").innerHTML = headHtml;
         document.getElementById("tableBody").innerHTML = bodyHtml;
         document.getElementById("tableWrap").style.display = "block";
+        document.getElementById("searchCount").style.display = "none";
+        document.getElementById("search").value = "";
         clipboardOutput = textOutput; 
         exportHTMLTableContent = "<thead>" + headHtml + "</thead><tbody>" + bodyHtml + "</tbody>";
     }
@@ -350,14 +377,120 @@
         setTimeout(() => this.innerHTML = '<i class="fa-solid fa-copy"></i> Copy Output', 2000);
     });
 
-    document.getElementById('exportBtn').addEventListener('click', function() {
-        if(!exportHTMLTableContent) return;
-        const excelFile = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table { border-collapse: collapse; } th { background-color: #2c3e50; color: white; border: 1px solid #34495e; font-weight: bold; padding: 10px; } td { border: 1px solid #bdc3c7; mso-number-format:"\\@"; padding: 10px; }</style></head><body><table>${exportHTMLTableContent}</table></body></html>`;
-        const blob = new Blob([excelFile], { type: "application/vnd.ms-excel;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "market_billing_report.xls";
-        link.click();
+    document.getElementById('exportBtn').addEventListener('click', async function() {
+        if (!exportHTMLTableContent) return;
+
+        const btn = this;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exporting...';
+        btn.disabled = true;
+
+        try {
+            const wb = new ExcelJS.Workbook();
+            wb.creator = 'Market Billing Tool';
+            const ws = wb.addWorksheet('Market Billing', {
+                views: [{ state: 'frozen', ySplit: 1 }]
+            });
+
+            // Column widths
+            ws.columns = [
+                { key: 'a', width: 14 }, { key: 'b', width: 14 },
+                { key: 'c', width: 18 }, { key: 'd', width: 34 },
+                { key: 'e', width: 22 }, { key: 'f', width: 26 },
+                { key: 'g', width: 20 }, { key: 'h', width: 12 },
+                { key: 'i', width: 16 }, { key: 'j', width: 14 },
+            ];
+
+            const C_HEADER_BG = 'FF4F46E5';  // Indigo
+            const C_HEADER_BD = 'FF3730A3';  // Indigo dark (border)
+            const C_WHITE     = 'FFFFFFFF';
+            const C_ALT       = 'FFEEF2FF';  // Light indigo
+            const C_TOTAL_BG  = 'FFE0E7FF';
+            const C_BORDER    = 'FFE2E8F0';  // Slate-200
+
+            const border = (c) => ({ style: 'thin', color: { argb: c } });
+            const allBorders = (c) => ({ top: border(c), bottom: border(c), left: border(c), right: border(c) });
+
+            // ── Header row ──
+            const headers = ["Order Type", "Order Date", "Party HUL Code", "Party Name",
+                             "Beat Name", "Salesperson Name", "Total Order Value",
+                             "Bill Age", "Approval Days", "Exceed days"];
+            const hRow = ws.addRow(headers);
+            hRow.height = 32;
+            hRow.eachCell(cell => {
+                cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_HEADER_BG } };
+                cell.font      = { bold: true, color: { argb: C_WHITE }, size: 11, name: 'Poppins' };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border    = allBorders(C_HEADER_BD);
+            });
+
+            // Auto-filter on header
+            ws.autoFilter = { from: 'A1', to: 'J1' };
+
+            // ── Data rows ──
+            const tableRows = document.querySelectorAll('#tableBody tr');
+            tableRows.forEach((tr, idx) => {
+                const cells  = tr.querySelectorAll('td');
+                const values = Array.from(cells).map(td => td.innerText.trim());
+
+                // Parse Total Order Value as real number
+                const num = parseFloat(values[6].replace(/,/g, ''));
+                if (!isNaN(num)) values[6] = num;
+
+                const dRow  = ws.addRow(values);
+                dRow.height = 22;
+                const bg    = idx % 2 === 0 ? C_WHITE : C_ALT;
+
+                dRow.eachCell({ includeEmpty: true }, (cell, col) => {
+                    cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+                    cell.font      = { size: 10 };
+                    cell.border    = allBorders(C_BORDER);
+                    cell.alignment = { vertical: 'middle' };
+
+                    if (col === 7) {   // Total Order Value
+                        cell.numFmt    = '#,##0.00';
+                        cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                    }
+                });
+            });
+
+            // ── Total row ──
+            const lastDataRow = tableRows.length + 1;
+            const totalRow = ws.addRow([
+                '', '', '', '', '', 'TOTAL',
+                { formula: `SUM(G2:G${lastDataRow})` },
+                '', '', ''
+            ]);
+            totalRow.height = 26;
+            totalRow.eachCell({ includeEmpty: true }, (cell, col) => {
+                cell.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_TOTAL_BG } };
+                cell.font   = { bold: true, size: 11 };
+                cell.border = allBorders(C_HEADER_BG);
+                cell.alignment = { vertical: 'middle' };
+                if (col === 6) cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                if (col === 7) {
+                    cell.numFmt    = '#,##0.00';
+                    cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                }
+            });
+
+            // ── Download ──
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob   = new Blob([buffer], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+            const link   = document.createElement('a');
+            link.href    = URL.createObjectURL(blob);
+            link.download = 'market_billing_report.xlsx';
+            link.click();
+            URL.revokeObjectURL(link.href);
+
+        } catch (err) {
+            alert('Export error: ' + err.message);
+            console.error(err);
+        }
+
+        btn.innerHTML = '<i class="fa-solid fa-file-excel"></i> Export (.xlsx)';
+        btn.disabled  = false;
     });
 
     document.getElementById('clearBtn').addEventListener('click', () => {
@@ -365,9 +498,14 @@
         document.getElementById("tableBody").innerHTML = "";
         document.getElementById("tableWrap").style.display = "none";
         document.getElementById("rowsCount").innerText = "0";
+        document.getElementById("totalValue").innerText = "0.00";
         document.getElementById("statusMsg").innerText = "Cleared!";
         document.getElementById("statusMsg").style.color = "var(--text-sub)";
+        document.getElementById("searchCount").style.display = "none";
+        document.getElementById("search").value = "";
         clipboardOutput = "";
+        exportHTMLTableContent = "";
+        rowCounter = 0;
     });
 
     function escapeHtml(text){
