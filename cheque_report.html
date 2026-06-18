@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Cheque Status Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #1d4ed8;
+        --secondary: #ec4899;
+        --success: #10b981;
+        --excel: #059669;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text-main: #1e293b;
+        --text-sub: #64748b;
+        --glass: rgba(255, 255, 255, 0.95);
+    }
+
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    
+    body { 
+        margin: 0; 
+        padding: 20px; 
+        background: radial-gradient(circle at top left, #dbeafe 0%, #f8fafc 40%);
+        color: var(--text-main);
+        min-height: 100vh;
+    }
+
+    .container { 
+        max-width: 1400px; 
+        margin: auto; 
+        background: var(--glass); 
+        padding: 30px; 
+        border-radius: 24px; 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 20px;
+    }
+
+    .title-area h2 { 
+        margin: 0; 
+        background: linear-gradient(to right, #2563eb, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .top-grid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        position: relative;
+        flex-grow: 1;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-sub);
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 14px 14px 14px 45px;
+        border-radius: 15px;
+        border: 1.5px solid #e2e8f0;
+        background: #fdfdfd;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button { 
+        padding: 12px 20px; 
+        border-radius: 14px; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: 600; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: white;
+        font-size: 14px;
+    }
+
+    button:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+    button:active { transform: translateY(0); }
+
+    .btn-upload { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+    .btn-process { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .btn-copy { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-export { background: linear-gradient(135deg, #059669, #064e3b); }
+    .btn-clear { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+
+    textarea { 
+        width: 100%; 
+        height: 160px; 
+        padding: 20px; 
+        border-radius: 20px; 
+        border: 1.5px solid #e2e8f0; 
+        background: #f8fafc;
+        resize: vertical; 
+        font-family: 'Consolas', monospace; 
+        margin-bottom: 25px;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
+
+    /* Stats Container */
+    .stats-container {
+        display: none;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        border-left: 6px solid var(--primary);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: #eef2ff;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .stat-info h3 { margin: 0; font-size: 12px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-info p { margin: 5px 0 0; font-size: 22px; font-weight: 700; color: var(--text-main); }
+
+    /* Table Wrap auto-adjust and overflow settings */
+    .table-wrap { 
+        margin-top: 20px; 
+        overflow-x: auto; /* තිරස් අතට Scroll වීමට ඉඩ දීම */
+        overflow-y: auto;
+        border-radius: 20px; 
+        border: 1px solid #e2e8f0; 
+        display: none; 
+        max-height: 600px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    /* Table එකේ width එක auto කරලා columns වලට නිදහසේ හැඩගැසීමට ඉඩ දුන්නා */
+    table { 
+        width: max-content; 
+        min-width: 100%; 
+        border-collapse: collapse; 
+        font-size: 13.5px; 
+    }
+
+    th { 
+        background: #2c3e50; 
+        color: white; 
+        position: sticky; 
+        top: 0; 
+        z-index: 10; 
+        font-weight: 500; 
+        padding: 16px 20px;
+        text-align: left;
+        white-space: nowrap; /* Header එකත් wrap වීම වැළැක්වීම */
+    }
+
+    /* Wrap text සම්පූර්ණයෙන්ම ඉවත් කර තනි පේළියක auto size වීමට සැලැස්වීම */
+    td { 
+        padding: 14px 20px; 
+        border-bottom: 1px solid #f1f5f9; 
+        color: var(--text-main); 
+        white-space: nowrap; /* අකුරු කැඩී පහළට යාම වළක්වයි (No Wrap) */
+    }
+    
+    /* Total Row Style */
+    .total-row { background-color: #f8fafc !important; font-weight: 700; border-top: 2px solid #cbd5e1; }
+    .total-row td { color: #1e293b; padding: 18px 20px; white-space: nowrap; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 10px; } /* horizontal scrollbar එක පැහැදිලිව පෙනෙන්න උස 10px කලා */
+    ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    @media (max-width: 768px) {
+        .top-grid { grid-template-columns: 1fr; }
+        .button-group { justify-content: center; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="title-area">
+            <h2><i class="fa-solid fa-university"></i> Cheque Status Dashboard</h2>
+        </div>
+        <div class="button-group">
+            <button class="btn-clear" id="clearBtn"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+        </div>
+    </header>
+
+    <div class="top-grid">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search" placeholder="Search cheques, parties or banks...">
+        </div>
+        <div class="button-group">
+            <input type="file" id="fileUpload" accept=".xlsx, .xls, .csv" style="display:none;">
+            <button class="btn-upload" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Excel</button>
+            <button class="btn-process" id="processBtn"><i class="fa-solid fa-gears"></i> Process Data</button>
+            <button class="btn-copy" id="copyBtn"><i class="fa-solid fa-copy"></i> Copy Output</button>
+            <button class="btn-export" id="exportBtn"><i class="fa-solid fa-file-excel"></i> Export (.xls)</button>
+        </div>
+    </div>
+
+    <textarea id="rawData" placeholder="Cheque Report දත්ත මෙතනට Paste කරන්න... හෝ උඩ තියෙන 'Upload Excel' බොත්තමෙන් File එකක් තෝරන්න..."></textarea>
+
+    <div class="stats-container" id="statsContainer">
+        <div class="stat-card" style="border-left-color: #3b82f6;">
+            <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;"><i class="fa-solid fa-money-check"></i></div>
+            <div class="stat-info">
+                <h3>Total Unique Cheques</h3>
+                <p id="rowsCount">0</p>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left-color: #ef4444;">
+            <div class="stat-icon" style="background: #fef2f2; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+                <h3>Bounced Count</h3>
+                <p id="highlightCount">0</p>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left-color: #10b981;">
+            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-info">
+                <h3>Total Value</h3>
+                <p id="totalAmountText">Rs. 0.00</p>
+            </div>
+        </div>
+        <div class="stat-card" style="border-left-color: #b91c1c;">
+            <div class="stat-icon" style="background: #fdf2f8; color: #b91c1c;"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div class="stat-info">
+                <h3>Bounced Total</h3>
+                <p id="bounceAmountText">Rs. 0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+        <table id="chequeTable">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let clipboardOutput = "", exportHTMLTableContent = "", rowCounter = 0, highlightCounter = 0;
+
+    // Search functionality
+    document.getElementById('search').addEventListener('keyup', function() {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(row => {
+            if (row.classList.contains('total-row')) return;
+            row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none';
+        });
+    });
+
+    document.getElementById('uploadBtn').addEventListener('click', () => document.getElementById('fileUpload').click());
+
+    document.getElementById('fileUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const workbook = XLSX.read(evt.target.result, { type: 'binary' });
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+            processChequeArray(jsonRows);
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = ''; 
+    });
+
+    document.getElementById('processBtn').addEventListener('click', function() {
+        const text = document.getElementById('rawData').value;
+        if (!text || !text.trim()) { alert("කරුණාකර ප්‍රථමයෙන් දත්ත Paste කරන්න හෝ File එකක් Upload කරන්න!"); return; }
+        const rows = text.split(/\r?\n/).map(row => row.split('\t'));
+        processChequeArray(rows);
+    });
+
+    // ඕනෑම ආකාරයකට එන Date එකක් ස්ථිරවම YYYY-MM-DD කිරීමට සකසන ලද Standardizer එක
+    function strictFormatDate(dateVal) {
+        if (!dateVal) return "";
+        let dVal = String(dateVal).trim();
+        if (dVal === "") return "";
+
+        if (!isNaN(dVal) && dVal.length >= 5 && parseInt(dVal) > 30000) {
+            let dateObj = new Date((parseInt(dVal) - 25569) * 86400 * 1000);
+            return formatDateObject(dateObj);
+        }
+
+        let cleanText = dVal.replace(/\//g, '-');
+        let parts = cleanText.split('-');
+
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+            }
+            if (parts[2].length === 4) {
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+        }
+
+        let parsedDate = new Date(dVal);
+        if (!isNaN(parsedDate.getTime())) {
+            return formatDateObject(parsedDate);
+        }
+
+        return dVal;
+    }
+
+    function formatDateObject(dateObj) {
+        let year = dateObj.getFullYear();
+        let month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        let day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function formatToCurrency(amountVal) {
+        if (!amountVal) return "0.00";
+        let cleanAmt = parseFloat(String(amountVal).replace(/[^0-9.-]+/g,""));
+        if (isNaN(cleanAmt)) return String(amountVal);
+        return cleanAmt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function processChequeArray(rows) {
+        rowCounter = 0; highlightCounter = 0;
+        if(rows.length === 0) return;
+
+        let headers = ["Bill Date", "Bill No", "Bill Amount", "Party Name", "Cheque No", "Cheque Date", "Bank", "Amount", "Status", "Collection Date", "Deposit Date", "Bounce Date"];
+        let headHtml = "<tr>" + headers.map(h => `<th>${escapeHtml(h)}</th>`).join("") + "</tr>";
+        let bodyHtml = "", textOutput = headers.join("\t") + "\n";
+        let chequeMap = new Map(), overallTotalAmount = 0, overallBouncedAmount = 0;
+
+        rows.forEach(row => {
+            if(row.length < 10) return;
+            let srNo = row[0] ? String(row[0]).trim() : ""; if(isNaN(srNo) || srNo === "") return;
+            let chequeNo = row[5] ? String(row[5]).trim() : ""; if(!chequeNo) return;
+            
+            let obj = { 
+                billDate: row[1]||"", billNo: row[2]||"", billAmt: row[3]||"", 
+                party: row[4]||"", chequeNo: chequeNo, chequeDt: row[6]||"", 
+                bank: row[7]||"", amount: row[8]||"", status: row[9]||"", 
+                coll: row[10]||"", dep: row[11]||"", bounce: row[12]||"" 
+            };
+            
+            if (chequeMap.has(chequeNo)) {
+                let existing = chequeMap.get(chequeNo);
+                if (obj.coll) existing.coll = obj.coll; 
+                if (obj.dep) existing.dep = obj.dep; 
+                if (obj.bounce) existing.bounce = obj.bounce;
+                if (obj.status === "Bounced" || (obj.status === "Deposited" && existing.status !== "Bounced")) existing.status = obj.status;
+            } else { 
+                chequeMap.set(chequeNo, obj); 
+            }
+        });
+
+        chequeMap.forEach(c => {
+            rowCounter++; 
+            let isBounced = (c.status === "Bounced"); 
+            if(isBounced) highlightCounter++;
+            
+            let cleanAmt = parseFloat(String(c.amount).replace(/[^0-9.-]+/g,"")) || 0;
+            overallTotalAmount += cleanAmt; 
+            if(isBounced) overallBouncedAmount += cleanAmt;
+
+            let fBillDate = strictFormatDate(c.billDate);
+            let fChequeDate = strictFormatDate(c.chequeDt);
+            let fCollDate = strictFormatDate(c.coll);
+            let fDepDate = strictFormatDate(c.dep);
+            let fBounceDate = strictFormatDate(c.bounce);
+            
+            let displayBillAmt = formatToCurrency(c.billAmt);
+            let displayChequeAmt = formatToCurrency(c.amount);
+            
+            let data = [fBillDate, c.billNo, displayBillAmt, c.party, c.chequeNo, fChequeDate, c.bank, displayChequeAmt, c.status, fCollDate, fDepDate, fBounceDate];
+            let inlineStyle = isBounced ? "background-color:#fee2e2; color:#b91c1c; font-weight:600;" : "";
+            
+            bodyHtml += "<tr>" + data.map(d => `<td style="${inlineStyle}">${escapeHtml(String(d))}</td>`).join("") + "</tr>";
+            textOutput += data.join("\t") + "\n";
+        });
+
+        bodyHtml += `<tr class="total-row"><td colspan="7" style="text-align:right;">TOTAL AMOUNT:</td><td>Rs. ${overallTotalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td>Bounced Total:</td><td>Rs. ${overallBouncedAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td><td></td><td></td></tr>`;
+        
+        document.getElementById("rowsCount").innerText = rowCounter;
+        document.getElementById("highlightCount").innerText = highlightCounter;
+        document.getElementById("totalAmountText").innerText = "Rs. " + overallTotalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        document.getElementById("bounceAmountText").innerText = "Rs. " + overallBouncedAmount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        
+        document.getElementById("tableHead").innerHTML = headHtml;
+        document.getElementById("tableBody").innerHTML = bodyHtml;
+        
+        document.getElementById("statsContainer").style.display = "grid";
+        document.getElementById("tableWrap").style.display = "block";
+        
+        clipboardOutput = textOutput; 
+        exportHTMLTableContent = "<thead>" + headHtml + "</thead><tbody>" + bodyHtml + "</tbody>";
+    }
+    
+    document.getElementById('copyBtn').addEventListener('click', function() { 
+        if(!clipboardOutput){ alert("ප්‍රථමයෙන් දත්ත කරන්න!"); return; } 
+        navigator.clipboard.writeText(clipboardOutput); 
+        this.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        setTimeout(() => this.innerHTML = '<i class="fa-solid fa-copy"></i> Copy Output', 2000);
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', function() { 
+        if(!exportHTMLTableContent){ alert("ප්‍රථමයෙන් දත්ත කරන්න!"); return; } 
+        const excelFile = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table { border-collapse: collapse; } th { background-color: #2c3e50; color: white; border: 1px solid #34495e; font-weight: bold; padding: 10px; } td { border: 1px solid #bdc3c7; mso-number-format:"\\@"; padding: 10px; }</style></head><body><table>${exportHTMLTableContent}</table></body></html>`; 
+        const blob = new Blob([excelFile], { type: "application/vnd.ms-excel;charset=utf-8" }); 
+        const link = document.createElement("a"); 
+        link.href = URL.createObjectURL(blob); 
+        link.download = "cheque_report.xls"; 
+        link.click(); 
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() { 
+        document.getElementById("rawData").value = ""; 
+        document.getElementById("tableHead").innerHTML = ""; 
+        document.getElementById("tableBody").innerHTML = ""; 
+        
+        document.getElementById("statsContainer").style.display = "none";
+        document.getElementById("tableWrap").style.display = "none"; 
+        
+        document.getElementById("rowsCount").innerText = "0"; 
+        document.getElementById("highlightCount").innerText = "0"; 
+        document.getElementById("totalAmountText").innerText="Rs. 0.00"; 
+        document.getElementById("bounceAmountText").innerText="Rs. 0.00"; 
+        clipboardOutput = ""; 
+        exportHTMLTableContent = ""; 
+    });
+
+    function escapeHtml(text){ if (!text) return ''; const div = document.createElement("div"); div.innerText = text; return div.innerHTML; }
+</script>
+</body>
+</html>

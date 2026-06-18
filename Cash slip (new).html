@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarathchandra Agencies - Cash Slip Summary</title>
+
+<!-- Preconnect to speed up font + CDN DNS lookup -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+<!-- Non-blocking font load -->
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap"></noscript>
+
+<!-- Scripts deferred — parse කරන්නේ HTML render වෙලා ඉවරවෙලා -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+
+<style>
+  :root {
+    --primary-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    --accent-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --btn-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --btn-danger: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    --btn-neutral: linear-gradient(135deg, #617ca5 0%, #475569 100%);
+    --border: #b8c7d9;
+    --text: #0f172a;
+    --muted: #475569;
+    --highlight-bg: #f1f5f9; 
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #dbeafe 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 50px;
+  }
+
+  .top-container {
+    max-width: 1140px;
+    margin: 30px auto 20px auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    position: relative;
+  }
+  .top-container h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0px;
+  }
+  .top-container p { color: var(--muted); margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+  
+  .upload-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .upload-row input[type="file"] {
+    padding: 10px 16px;
+    background: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.2s ease;
+  }
+  .upload-row input[type="file"]:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+
+  .plus-setup-btn {
+    padding: 11px 20px;
+    background: var(--btn-neutral);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(71, 85, 105, 0.2);
+    transition: all 0.2s ease;
+  }
+  .plus-setup-btn.lorry-btn {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  .plus-setup-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(71, 85, 105, 0.3);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 9999;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  body.modal-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+  .modal-box {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border: 2px solid #e2e8f0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    flex-shrink: 0;
+  }
+  .modal-box h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: #1e293b;
+    margin-bottom: 4px;
+    font-size: 20px;
+    text-transform: uppercase;
+  }
+  
+  .add-form-row {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+  }
+  .add-form-row input, .add-form-row select {
+    padding: 6px 10px;
+    font-size: 13px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .add-form-row input:focus, .add-form-row select:focus { border-color: #2563eb; outline: none; }
+  
+  .search-bar-row {
+    margin-bottom: 8px;
+    display: flex;
+    gap: 8px;
+  }
+  .search-bar-row input {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+  }
+
+  .table-scroll-container {
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    height: 320px;
+  }
+  .policy-mgmt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .policy-mgmt-table th {
+    background: #f1f5f9;
+    padding: 8px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid #cbd5e1;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .policy-mgmt-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .policy-mgmt-table tr:hover td {
+    background-color: #f8fafc;
+  }
+  
+  .delete-icon-btn {
+    background: none;
+    border: none;
+    color: #ff416c;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; }
+  .modal-btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
+  .modal-btn.save { background: var(--accent-gradient); color: white; }
+  .modal-btn.close { background: #e2e8f0; color: #334155; }
+  .modal-btn.secondary { background: #ff416c; color: white; }
+
+  .control-panel {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    max-width: 1140px;
+    margin: 0 auto 25px auto;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    border-left: 5px solid #1e3c72;
+  }
+  .panel-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .selector-group { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .filter-box { display: flex; flex-direction: column; gap: 4px; }
+  .filter-box label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1e3c72;
+    letter-spacing: 0.5px;
+  }
+  .rep-dropdown {
+    padding: 8px 14px; font-size: 14px; font-weight: 700; border: 2px solid #cbd5e1;
+    border-radius: 6px; color: var(--text); background-color: #fff; min-width: 250px; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .rep-dropdown:focus { border-color: #1e3c72; outline: none; }
+  .rep-dropdown.error-highlight {
+    border-color: #ff416c !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 8px rgba(255, 65, 108, 0.4);
+  }
+
+  .print-btn {
+    padding: 9px 16px;
+    background: #fff;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+  }
+  .print-btn:hover { background: #f8fafc; border-color: #0f172a; }
+  .excel-btn { background: #fff; border-color: #107c41; color: #107c41; margin-right: 5px;}
+  .excel-btn:hover { background: #f0fdf4; border-color: #0b592e; }
+
+  .btn-group { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+  .beat-checkbox-container {
+    background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 100%;
+  }
+  .beat-checkbox-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: #1e3c72;
+    text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .beat-btn { padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; color: #475569; }
+  .beat-btn:hover { background: #cbd5e1; color: #0f172a; }
+  .beat-checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .checkbox-item {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; transition: all 0.2s;
+  }
+  .checkbox-item:hover { border-color: #cbd5e1; background: #f1f5f9; }
+
+  .sheet { display: none; padding: 0; max-width: 1140px; margin: 0 auto; }
+  .sheet.active { display: block; }
+  .slip { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
+  
+  .slip-header {
+    background: #fff; color: var(--text); padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--text);
+  }
+  .slip-header .company { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; text-transform: uppercase; color: #0f172a; }
+  .slip-header .company small { display: block; font-size: 9px; font-weight: 600; color: var(--muted); margin-top: 1px; }
+  .slip-header .slip-title .value { font-size: 18px; font-weight: 700; border: 2px solid var(--text); padding: 5px 15px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; min-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; text-transform: uppercase; }
+
+  .slip-meta {
+    background: #fff; border-bottom: 1px solid var(--border); padding: 12px 20px;
+    display: grid; grid-template-columns: 1.5fr 1.3fr 1fr 1fr 1fr 0.7fr; gap: 12px; align-items: center;
+  }
+  .meta-item { font-size: 10px; }
+  .meta-item .mlabel { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; }
+  .meta-item .mvalue { font-weight: 700; color: var(--text); }
+  .meta-item .meta-box-write { display: flex; align-items: center; justify-content: center; border: 1px solid #000; background: #fff; height: 26px; width: 100%; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase;}
+
+  .slip-table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
+  .slip-table thead tr { background: #fff; color: var(--text); border-bottom: 2px solid #000; }
+  .slip-table thead th {
+    padding: 8px 4px; text-align: center; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; font-weight: 700; border: 1px solid var(--border); color: #000;
+  }
+  .slip-table thead th.num { text-align: right; }
+  .slip-table thead th.center-align { text-align: center; }
+
+  .col-no { width: 3%; text-align: center; } 
+  .col-inv { width: 7.5%; } 
+  .col-tcode { width: 16%; } 
+  .col-party { width: 16%; } 
+  .col-val { width: 10%; }
+  .col-cash { width: 7.5%; }     
+  .col-chq-val { width: 7.5%; }  
+  .col-credit { width: 7.5%; }   
+  .col-chq-box { width: 12.5%; } 
+  .col-chq-date { width: 9%; } 
+  .col-bank { width: 6.5%; }
+
+  .slip-table td { padding: 5px 4px; border: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; color: #000; }
+  .slip-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .slip-table td.no { text-align: center; color: var(--muted); font-weight: 500; }
+  .slip-table .amt { font-weight: 600; }
+
+  .tcode-cell-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 20px;
+    gap: 4px;
+  }
+
+  .geotag-img-wrapper {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+  }
+
+  .slip-table tr.highlight-row td {
+    background-color: var(--highlight-bg) !important;
+    font-weight: 700 !important;
+  }
+
+  .chq-box-container { display: flex; justify-content: center; align-items: center; width: 100%; }
+  .chq-digit { width: 22px; height: 18px; border: 1px solid #000000; border-right: none; background: #fff; }
+  .chq-digit:last-child { border-right: 1px solid #000000; }
+  
+  .date-matrix-container { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; }
+  .date-box-segment { display: flex; align-items: center; }
+  .date-digit { width: 17px; height: 18px; border: 1px solid #000000; border-right: none; background: #fff; }
+  .date-digit:last-child { border-right: 1px solid #000000; }
+  .date-slash { font-size: 11px; font-weight: 700; color: #000; padding: 0 2px; }
+
+  .slip-table tbody tr.table-total-row td {
+    padding: 8px 4px; color: #000000; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+    border-top: 2px solid #000000 !important; border-bottom: 4px double #000000 !important; 
+  }
+
+  .policy-notice {
+    padding: 6px 20px; background: #fff; font-size: 9.5px; font-weight: 600; color: #334155; border-top: 1px solid var(--border); line-height: 1.5;
+  }
+  .policy-notice div { font-style: italic; display: flex; align-items: center; gap: 5px; }
+
+  .cashier-calculation-space {
+    padding: 10px 20px;
+    background: #fff;
+    border-top: 1px dashed #cbd5e1;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Barlow', sans-serif;
+    color: #000;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .calc-table td {
+    border: 1px solid #000 !important;
+    padding: 4px 6px;
+    font-size: 11px;
+    height: 22px;
+    vertical-align: middle;
+  }
+  .calc-table .label-col { width: 20%; font-weight: 600; }
+  .calc-table .rs-col { width: 5%; text-align: center; font-weight: 600; }
+  .calc-table .val-col { width: 22%; }
+  .calc-table .split-col { width: 3%; border-top: none !important; border-bottom: none !important; }
+
+  .collection-row { padding: 8px 20px; background: #fff; border-top: 1px solid var(--border); display: flex; gap: 20px; page-break-inside: avoid; break-inside: avoid; }
+  .coll-box { flex: 1; border: 1px solid #000000; border-radius: 4px; padding: 4px 10px; }
+  .coll-box .clabel { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #000; margin-bottom: 2px; }
+  .coll-box .cvalue { border-bottom: 1px dashed #cbd5e1; min-height: 16px; }
+
+  .slip-footer { border-top: 1px solid var(--border); padding: 15px 20px 8px 20px; display: flex; justify-content: space-between; page-break-inside: avoid; break-inside: avoid; }
+  .sig-block { flex: 1; text-align: center; padding: 0 25px; }
+  .sig-block .sig-line { border-bottom: 1px dashed #000; height: 16px; margin-bottom: 4px; }
+  .sig-block .sig-label { font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+
+  .page-block-blank {
+    background: #fff; border: 1px solid #000; padding: 6px 10px; margin-top: 35px; border-radius: 6px;
+    page-break-before: always; break-before: page; box-sizing: border-box;
+    min-height: 190mm; overflow: hidden;
+  }
+  .van-no-right { text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .blank-header-grid { display: grid; grid-template-columns: 1.2fr 1.5fr 1.5fr; gap: 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+  
+  .p2-col-no { width: 3.5%; text-align: center; } .p2-col-date { width: 8%; } .p2-col-inv { width: 10.5%; } .p2-col-party { width: 17%; }
+  .p2-col-prev { width: 8.5%; } .p2-col-cash { width: 7.5%; } .p2-col-chq-amt { width: 7.5%; } .p2-col-chq-no { width: 14.5%; } .p2-col-bank { width: 5.5%; }
+  .p2-col-rdate { width: 11%; } .p2-col-sig { width: 7%; }
+  
+  .blank-row { height: 20px !important; } 
+  .blank-row td { padding: 3px 4px !important; height: 25px !important; font-size: 11px !important; }
+  
+  .section-divider-row td {
+    background: #f8fafc !important; text-align: center; font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px !important; font-weight: 700 !important; letter-spacing: 0.3px; padding: 5px 0 !important;
+    border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; color: #000;
+  }
+
+  /* Mirrors the @media print rules below, applied to an off-screen clone so
+     PDF export (html2canvas) visually matches the printed page exactly. */
+  .pdf-export.slip, .pdf-export .slip { border: 1px solid #000; box-shadow: none; border-radius: 0; }
+  .pdf-export .slip-table thead th { border: 1px solid #000; background: #fff !important; padding: 6px 3px; font-size: 11px !important; text-align: center !important; font-weight: 700 !important; }
+  .pdf-export .slip-table td { border: 1px solid #000 !important; padding: 1.5px 6px; }
+  .pdf-export .slip-table tr.highlight-row td { background-color: #f3f5f8 !important; font-weight: 700 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pdf-export .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; padding: 5px 4px; }
+  .pdf-export .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+  .pdf-export .calc-table td { border: 1px solid #000 !important; padding: 4px 6px; }
+  .pdf-export.page-block-blank, .pdf-export .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 6px 10px !important; margin-top: 0 !important; min-height: 195mm !important; box-sizing: border-box !important; }
+  .pdf-export .blank-row td { height: 25px !important; padding: 3px 4px !important; }
+  .pdf-export .section-divider-row td { background: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 5px 0 !important; }
+  /* Ensure page-2 header rows with rowspan render at correct height without foreignObjectRendering */
+  .pdf-export .page-block-blank table thead tr th { height: auto !important; min-height: 20px !important; vertical-align: middle !important; font-size: 13px !important; font-weight: 700 !important; text-align: center !important; }
+  .pdf-export .page-block-blank table thead tr:last-child th { font-size: 11px !important; font-weight: 700 !important; text-align: center !important; vertical-align: middle !important; }
+  .pdf-export * { background-color: transparent; }
+  .pdf-export.slip, .pdf-export .slip, .pdf-export .page-block-blank { background-color: #ffffff !important; }
+
+  @media print {
+    @page { size: A4 landscape; margin: 4mm 5mm; }
+    body { background: #fff; padding-bottom: 0; }
+    .top-container, .control-panel, .modal-overlay { display: none !important; }
+    .sheet { display: none !important; }
+    .sheet.active { display: block !important; max-width: 100% !important; margin: 0; padding: 0; }
+    
+    .slip { border: 1px solid #000; box-shadow: none; border-radius: 0; page-break-after: always; break-after: page; }
+    .slip-table thead th { border: 1px solid #000; background: #fff !important; padding: 6px 4px; font-size: 11px !important; text-align: center !important; font-weight: 700 !important; }
+    .slip-table td { border: 1px solid #000 !important; padding: 1.5px 6px; }
+    
+    .slip-table tr.highlight-row td { 
+      background-color: #f3f5f8 !important;
+      font-weight: 700 !important;
+      -webkit-print-color-adjust: exact; 
+      print-color-adjust: exact; 
+    }
+    .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; padding: 5px 4px; }
+    .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+    .calc-table td { border: 1px solid #000 !important; padding: 4px 6px; }
+    .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 6px 10px !important; margin-top: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; min-height: 195mm !important; box-sizing: border-box !important; }
+    .blank-row td { height: 25px !important; padding: 3px 4px !important; }
+    .page-block-blank table thead tr th { font-size: 13px !important; font-weight: 700 !important; text-align: center !important; vertical-align: middle !important; }
+    .page-block-blank table thead tr:last-child th { font-size: 11px !important; font-weight: 700 !important; text-align: center !important; vertical-align: middle !important; }
+</style>
+</head>
+<body>
+
+<!-- Direct navigation mode: Back to Home button -->
+<div id="back-home-bar" style="display:none; position:sticky; top:0; z-index:9998; background:#1e293b; padding:8px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+  <button onclick="window.location.href='index.html'" style="background:#ef4444; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;">✕ Close &amp; Back to Home</button>
+</div>
+<script>
+  // iframe ඇතුළෙ නෙවෙයි නම් (direct navigate) back bar show කරන්න
+  if (window.self === window.top) {
+    document.getElementById('back-home-bar').style.display = 'block';
+  }
+</script>
+
+<div class="top-container">
+  <h2>Sarathchandra Agencies - Balangoda</h2>
+  <h2 style="text-align: center; white-space: normal; word-wrap: break-word;">Collection Sheet Summary</h2>
+  <p>Please upload the Your Excel <b>(.xlsx)</b> file downloaded from LeverEDGE.</p>
+  
+  <div class="upload-row">
+    <input type="file" id="excelFileInput" accept=".xlsx, .xls">
+    <button class="plus-setup-btn" onclick="openHighlightModal()">⭐ Credit Policy</button>
+    <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);" onclick="openGeotagModal()">🎯 Non-Geotag Setup</button>
+    <button class="plus-setup-btn lorry-btn" onclick="openLorryModal()">🚚 Lorry Numbers</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="highlightModal">
+  <div class="modal-box">
+    <h3>⭐ Credit Policy Configuration</h3>
+    <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Manage active accounts with allowed terms. You can also export/import via Excel sheet.</p>
+
+    <div style="margin-bottom:10px;">
+      <button id="gsheetIconBtn" title="Google Sheets Auto-Sync" onclick="openGSheetModal()" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; color:#0369a1; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; cursor:pointer;">
+        🔗 Sheet Sync
+        <span id="gsheetSyncDot" style="display:none; width:7px; height:7px; border-radius:50%; background:#10b981;"></span>
+      </button>
+    </div>
+
+    <div class="add-form-row">
+      <input type="text" id="addTCode" placeholder="T-Code (e.g., TI017...)" style="width:130px;">
+      <input type="text" id="addName" placeholder="Customer / Party Name" style="flex:1; min-width:150px;">
+      <select id="addType" style="width:110px;">
+        <option value="CR">Credit (CR)</option>
+        <option value="CHQ">Cheque (CHQ)</option>
+        <option value="CR/CHQ">Both (CR/CHQ)</option>
+      </select>
+      <input type="number" id="addDays" placeholder="Days" style="width:65px;" min="0" value="7">
+      <button class="plus-setup-btn" style="padding: 6px 12px; font-size:12px;" onclick="addPolicyItem()">➕ Add Item</button>
+    </div>
+
+    <div class="search-bar-row">
+      <input type="text" id="modalSearchInput" placeholder="🔍 Quick filter list by T-Code or Name..." oninput="renderModalTable()">
+      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadHighlightTemplate()">📥 Export Settings</button>
+      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('policyFileInput').click()">📤 Import Settings</button>
+      <input type="file" id="policyFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importHighlightExcel(event)">
+    </div>
+    
+    <div class="table-scroll-container">
+      <table class="policy-mgmt-table">
+        <thead>
+          <tr>
+            <th>T-Code</th>
+            <th>Customer Name</th>
+            <th>Type</th>
+            <th>Days</th>
+            <th style="text-align:center; width:50px;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="policyTableBody"></tbody>
+      </table>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeHighlightModal()">Close Window</button>
+      <button class="modal-btn secondary" style="background: #ff416c;" onclick="clearAllPolicyItems()">Clear All</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="gsheetModal">
+  <div class="modal-box" style="max-width:480px;">
+    <h3>🔗 Google Sheets Auto-Sync</h3>
+    <p style="font-size:11px; margin-bottom:10px; color:var(--muted)">Sheet publicly shared "Anyone with link can view" — Col B: T-Code · Col C: Outlet Name · Col P: Type · Col Q: Days. Rows with "Cash" type or Days=0 are skipped.</p>
+
+    <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+      <input type="url" id="gsheetUrl" placeholder="Paste Google Sheet link..." oninput="saveGSheetUrl()" style="flex:1; min-width:200px; padding:6px 10px; font-size:12px; border:2px solid #bae6fd; border-radius:6px; background:#fff; font-family:monospace;">
+      <button class="plus-setup-btn" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%); padding:7px 14px; font-size:12px;" onclick="syncFromGoogleSheets()">🔄 Sync Now</button>
+    </div>
+    <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer; color:#475569;">
+      <input type="checkbox" id="autoSyncToggle" onchange="toggleAutoSync()" style="width:14px; height:14px; cursor:pointer; accent-color:#0284c7;">
+      Auto-sync every 1 hour while the page is open
+    </label>
+    <div id="syncStatus" style="font-size:11px; margin-top:6px; min-height:16px; font-weight:600; color:#64748b;"></div>
+
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeGSheetModal()">Close Window</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="geotagModal">
+  <div class="modal-box">
+    <h3>🎯 Non-Geotag Outlets Setup</h3>
+    <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Manage outlets without Geotags. They will show a crosshair target icon marker. Export/Import via Excel template.</p>
+    
+    <div class="add-form-row">
+      <input type="text" id="addGeoTCode" placeholder="T-Code (e.g., TI017...)" style="width:150px;">
+      <input type="text" id="addGeoName" placeholder="Customer / Party Name" style="flex:1; min-width:200px;">
+      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 6px 12px; font-size:12px;" onclick="addGeotagItem()">➕ Add Item</button>
+    </div>
+
+    <div class="search-bar-row">
+      <input type="text" id="geoModalSearchInput" placeholder="🔍 Quick filter list by T-Code or Name..." oninput="renderGeotagTable()">
+      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadGeotagTemplate()">📥 Export Settings</button>
+      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('geotagFileInput').click()">📤 Import Settings</button>
+      <input type="file" id="geotagFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importGeotagExcel(event)">
+    </div>
+    
+    <div class="table-scroll-container">
+      <table class="policy-mgmt-table">
+        <thead>
+          <tr>
+            <th>T-Code</th>
+            <th>Customer Name</th>
+            <th style="text-align:center; width:50px;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="geotagTableBody"></tbody>
+      </table>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeGeotagModal()">Close Window</button>
+      <button class="modal-btn secondary" style="background: #ff416c;" onclick="clearAllGeotagItems()">Clear All</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="lorryModal">
+  <div class="modal-box">
+    <h3>🚚 Vehicle Numbers Setup</h3>
+    <p><strong><em>Enter your vehicle registration numbers here. Separate each vehicle number by a new line or comma:</em></strong></p>
+    <textarea id="lorryNumbersInput" placeholder="Example:&#10;WP DG-1234&#10;CP RE-5678&#10;LY-5432" style="height: 180px; margin-top: 10px; width:100%; font-family:monospace; padding:10px; border:2px solid #e2e8f0; border-radius:8px; resize:none;"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeLorryModal()">Cancel</button>
+      <button class="modal-btn save" onclick="saveLorryNumbers()">💾 Save Vehicles</button>
+    </div>
+  </div>
+</div>
+
+<div class="control-panel" id="controlPanel">
+  <div class="panel-top-row">
+    <div class="selector-group">
+      <div class="filter-box">
+        <label for="srSelect">Select Delivery Person:</label>
+        <select id="srSelect" class="rep-dropdown"></select>
+      </div>
+      <div class="filter-box">
+        <label for="vehicleSelect" style="color: #ff416c; font-weight: bold;">Select Vehicle Number (Required):</label>
+        <select id="vehicleSelect" class="rep-dropdown" onchange="handleVehicleChange()">
+          <option value="">-- Choose Vehicle --</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="print-btn excel-btn" onclick="validateAndDownloadExcel()">📥 Download Excel Workbook</button>
+      <button class="print-btn" onclick="validateAndPrint()">🖨 Print Current Summary</button>
+      <button class="print-btn" style="border-color:#dc2626; color:#dc2626;" onclick="downloadSlipPDF()">📄 Download PDF</button>
+      <button class="print-btn" style="border-color:#25D366; color:#25D366;" onclick="shareSlipPDF()">📤 Share</button>
+    </div>
+
+    <div id="bulkDownloadPanel" style="display:none; margin-top:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <div style="font-size:12px; font-weight:700; color:#047857;">
+        ✅ All delivery persons have a lorry assigned — you can now download PDFs for everyone.
+        <div id="bulkDownloadStatus" style="font-weight:500; color:#059669; margin-top:2px;"></div>
+      </div>
+      <button class="print-btn" style="border-color:#059669; color:#059669;" onclick="downloadAllPDFs()">📦 Download All PDFs (ZIP)</button>
+    </div>
+  </div>
+
+  <div class="beat-checkbox-container">
+    <div class="beat-checkbox-title">
+      <span>Select Routes / Beats (Check multiple to combine):</span>
+      <button class="beat-btn" onclick="toggleAllBeats(true)">Select All</button>
+      <button class="beat-btn" onclick="toggleAllBeats(false)">Unselect All</button>
+    </div>
+    <div class="beat-checkbox-grid" id="beatCheckboxGrid"></div>
+  </div>
+</div>
+
+<div id="sheets"></div>
+
+<script>
+// ─── Debounce utility — prevent rapid repeated calls to heavy functions ────
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// 🛠️ Professional Complete Mapping Added As Requested Without Disrupting Existing Logic
+const VAN_MAPPING = {
+  "CC MANOJ":        { van: "DM000001", dmCode: "I.A.Manoj Madusanka" },
+  "CC GAYAN":        { van: "DM000002", dmCode: "T.D.Gayan Rasika" },
+  "CC THARUSHA":     { van: "DM000003", dmCode: "K.G.Tharusha Shashimal" },
+  "CC NALEEN":       { van: "DM000004", dmCode: "Naleen Indrajith" },
+  "CC HESHAN":       { van: "DM000005", dmCode: "K.A.Heshan Madushan" },
+  "CC UDESH":        { van: "DM000006", dmCode: "N.Udesh Umayanga" },
+  "CC PUSHPANANDA":  { van: "DM000007", dmCode: "W.P.Maithripala Wimaladasa" },
+  "CC DINUKA":       { van: "DM000008", dmCode: "N.G.Dinuka Nuwan" },
+  "CC THARAKA":      { van: "DM000009", dmCode: "H.M.G.G.Tharaka Sandaruwan" },
+  "CC DILEEP":       { van: "DM000010", dmCode: "A.Dileepkumar" },
+  "CC DUMINDA":      { van: "DM000011", dmCode: "K.D.Duminda" },
+  "CC HIRUNA":       { van: "DM000012", dmCode: "H.A.Hiruna Wimukthi" }
+};
+
+function getVanNumber(name) {
+  if (!name) return "";
+  const key = name.toString().trim().toUpperCase();
+  return VAN_MAPPING[key] ? VAN_MAPPING[key].van : "";
+}
+
+function getDMCode(name) {
+  if (!name) return "................";
+  const key = name.toString().trim().toUpperCase();
+  return VAN_MAPPING[key] ? VAN_MAPPING[key].dmCode : "................";
+}
+
+const fmt = n => 'Rs. ' + (Number(n) || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+function parseExcelDate(excelDate) {
+  if (!excelDate) return '-';
+  if (!isNaN(excelDate)) {
+    const dateObj = XLSX.SSF.parse_date_code(excelDate);
+    return `${dateObj.y}-${String(dateObj.m).padStart(2, '0')}-${String(dateObj.d).padStart(2, '0')}`;
+  }
+  let strDate = excelDate.toString().trim();
+  if(strDate.includes(" ")) strDate = strDate.split(" ")[0];
+  return strDate;
+}
+
+let GLOBAL_MAP_DATA = {};
+let DELIVERY_PERSON_LIST = [];
+let SAVED_LORRY_NUMBERS = [];
+// ─── IndexedDB Storage Layer ──────────────────────────────────────────────────
+// Replaces localStorage for all persistent app data. Falls back gracefully.
+const DB_NAME    = 'SarathandraAgenciesDB';
+const DB_VERSION = 1;
+const DB_STORE   = 'appData';
+let   _idb       = null;
+
+function openIDB() {
+  if (_idb) return Promise.resolve(_idb);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE);
+    req.onsuccess = e => { _idb = e.target.result; resolve(_idb); };
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function idbSet(key, value) {
+  try {
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).put(value, key);
+      tx.oncomplete = () => res();
+      tx.onerror    = () => rej(tx.error);
+    });
+  } catch(e) {
+    // Fallback to localStorage
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch(_) {}
+  }
+}
+
+async function idbGet(key) {
+  try {
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx  = db.transaction(DB_STORE, 'readonly');
+      const req = tx.objectStore(DB_STORE).get(key);
+      req.onsuccess = () => res(req.result ?? null);
+      req.onerror   = () => rej(req.error);
+    });
+  } catch(e) {
+    // Fallback to localStorage
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : null;
+    } catch(_) { return null; }
+  }
+}
+
+async function idbRemove(key) {
+  try {
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).delete(key);
+      tx.oncomplete = () => res();
+      tx.onerror    = () => rej(tx.error);
+    });
+  } catch(e) {
+    try { localStorage.removeItem(key); } catch(_) {}
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+let POLICY_DATABASE = {};
+let GEOTAG_DATABASE = {};
+let LORRY_ASSIGNMENTS = {}; // { dpName: lorryNumber } — one lorry per DP
+
+async function initializePolicyDatabase() {
+  const saved = await idbGet('sarathchandra_policy_db_matrix');
+  POLICY_DATABASE = saved || {};
+
+  const savedGeo = await idbGet('sarathchandra_geotag_db_matrix');
+  GEOTAG_DATABASE = savedGeo || {};
+
+  // Lorry assignments are SESSION-ONLY — reset every time browser/tab is closed
+  const _sessionAssign = sessionStorage.getItem('sarathchandra_lorry_assignments');
+  LORRY_ASSIGNMENTS = _sessionAssign ? JSON.parse(_sessionAssign) : {};
+}
+
+let _modalScrollY = 0;
+
+function _lockBodyScroll() {
+  _modalScrollY = window.scrollY;
+  document.body.style.top = `-${_modalScrollY}px`;
+  document.body.classList.add('modal-open');
+  // Parent (index.html) overlay scroll ද freeze කරන්න
+  try { window.parent.postMessage({ type: 'MODAL_OPEN' }, '*'); } catch(e) {}
+}
+
+function _unlockBodyScroll() {
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, _modalScrollY);
+  // Parent (index.html) overlay scroll restore කරන්න
+  try { window.parent.postMessage({ type: 'MODAL_CLOSE' }, '*'); } catch(e) {}
+}
+
+// Track how many modals are open so unlock only fires when all are closed
+let _openModalCount = 0;
+
+function openHighlightModal() {
+  if (_openModalCount === 0) _lockBodyScroll();
+  _openModalCount++;
+  document.getElementById('highlightModal').style.display = 'flex';
+  document.getElementById('modalSearchInput').value = '';
+  restoreGSheetUI();
+  renderModalTable();
+}
+
+function closeHighlightModal() {
+  document.getElementById('highlightModal').style.display = 'none';
+  _openModalCount = Math.max(0, _openModalCount - 1);
+  if (_openModalCount === 0) _unlockBodyScroll();
+}
+
+function openGSheetModal() {
+  if (_openModalCount === 0) _lockBodyScroll();
+  _openModalCount++;
+  restoreGSheetUI();
+  document.getElementById('gsheetModal').style.display = 'flex';
+}
+
+function closeGSheetModal() {
+  document.getElementById('gsheetModal').style.display = 'none';
+  _openModalCount = Math.max(0, _openModalCount - 1);
+  if (_openModalCount === 0) _unlockBodyScroll();
+  // Reflect any changes made (e.g. fresh sync) back into the policy table
+  renderModalTable();
+}
+
+function renderModalTable() {
+  const tbody = document.getElementById('policyTableBody');
+  tbody.innerHTML = '';
+  const searchFilter = document.getElementById('modalSearchInput').value.trim().toUpperCase();
+
+  Object.keys(POLICY_DATABASE).sort().forEach(tcode => {
+    const item = POLICY_DATABASE[tcode];
+    const matchCode = tcode.toUpperCase().includes(searchFilter);
+    const matchName = item.name.toUpperCase().includes(searchFilter);
+    
+    if (searchFilter && !matchCode && !matchName) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700;">${tcode}</td>
+      <td>${item.name}</td>
+      <td><span style="font-weight:600; font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${item.type}</span></td>
+      <td style="font-weight:700; color:#1e3c72;">${item.days}D</td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deletePolicyItem('${tcode}')">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function addPolicyItem() {
+  const tcode = document.getElementById('addTCode').value.trim().toUpperCase();
+  const name = document.getElementById('addName').value.trim();
+  const type = document.getElementById('addType').value;
+  const days = parseInt(document.getElementById('addDays').value) || 0;
+
+  if(!tcode) { alert("Please enter a valid T-Code"); return; }
+  if(!name) { alert("Please enter Customer / Party Name"); return; }
+
+  POLICY_DATABASE[tcode] = { name: name, type: type, days: days };
+  idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
+  
+  document.getElementById('addTCode').value = '';
+  document.getElementById('addName').value = '';
+  
+  renderModalTable();
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+}
+
+function deletePolicyItem(tcode) {
+  if (confirm(`Are you sure you want to remove T-Code ${tcode}?`)) {
+    delete POLICY_DATABASE[tcode];
+    idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
+    renderModalTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+  }
+}
+
+function clearAllPolicyItems() {
+  if (confirm("Are you sure you want to delete ALL highlight items from settings?")) {
+    POLICY_DATABASE = {};
+    idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
+    renderModalTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+  }
+}
+
+// ─── Google Sheets Auto-Sync ──────────────────────────────────────────────────
+
+let autoSyncInterval = null;
+
+function saveGSheetUrl() {
+  const url = document.getElementById('gsheetUrl').value.trim();
+  idbSet('sarathchandra_gsheet_url', url);
+}
+
+function extractSheetId(url) {
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : null;
+}
+
+function extractGid(url) {
+  const m = url.match(/[#&?]gid=(\d+)/);
+  return m ? m[1] : '0';
+}
+
+function parseSimpleCSV(text) {
+  return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim()).map(line => {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') {
+        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (line[i] === ',' && !inQ) {
+        result.push(cur.trim());
+        cur = '';
+      } else {
+        cur += line[i];
+      }
+    }
+    result.push(cur.trim());
+    return result;
+  });
+}
+
+// ─── Column mapping for the Credit Policy Google Sheet ────────────────────────
+// Change these letters if the sheet layout changes — no other code edits needed.
+const GSHEET_COL_TCODE = 'B';   // T-Code
+const GSHEET_COL_NAME  = 'C';   // Outlet Name
+const GSHEET_COL_TYPE  = 'P';   // CR / CHQ / CR-CHQ
+const GSHEET_COL_DAYS  = 'Q';   // Credit Days
+
+// Converts a column letter ("A", "B", ... "Z", "AA", ...) to a 0-based array index
+function colLetterToIndex(letter) {
+  let idx = 0;
+  letter = letter.toUpperCase();
+  for (let i = 0; i < letter.length; i++) {
+    idx = idx * 26 + (letter.charCodeAt(i) - 64);
+  }
+  return idx - 1; // 0-based
+}
+
+const COL_TCODE_IDX = colLetterToIndex(GSHEET_COL_TCODE);
+const COL_NAME_IDX  = colLetterToIndex(GSHEET_COL_NAME);
+const COL_TYPE_IDX  = colLetterToIndex(GSHEET_COL_TYPE);
+const COL_DAYS_IDX  = colLetterToIndex(GSHEET_COL_DAYS);
+
+// Tries a list of URLs in order, returning the first one that responds OK.
+// Used because file:// pages can't always fetch Google directly (CORS) —
+// public CORS proxies wrap the response with Access-Control-Allow-Origin: *
+function fetchWithFallback(urls, idx = 0) {
+  if (idx >= urls.length) return Promise.reject(new Error('All sources failed'));
+  return fetch(urls[idx])
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.text();
+    })
+    .then(text => {
+      // allorigins sometimes returns an HTML error page instead of CSV on failure
+      if (text.trim().startsWith('<')) throw new Error('Non-CSV response');
+      return text;
+    })
+    .catch(() => fetchWithFallback(urls, idx + 1));
+}
+
+async function syncFromGoogleSheets() {
+  const savedUrl = (await idbGet('sarathchandra_gsheet_url')) || '';
+  const inputEl  = document.getElementById('gsheetUrl');
+  const url = (inputEl ? inputEl.value.trim() : '') || savedUrl;
+
+  const statusEl = document.getElementById('syncStatus');
+
+  if (!url) {
+    if (statusEl) { statusEl.textContent = '⚠️ Sheet URL not set.'; statusEl.style.color = '#f59e0b'; }
+    return;
+  }
+
+  const sheetId = extractSheetId(url);
+  if (!sheetId) {
+    if (statusEl) { statusEl.textContent = '❌ Invalid Google Sheets URL.'; statusEl.style.color = '#ef4444'; }
+    return;
+  }
+
+  const gid    = extractGid(url);
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+
+  // Source order: direct → allorigins proxy → corsproxy.io proxy
+  // (Direct often fails when this file is opened as file://, due to CORS.
+  //  The proxies wrap Google's response with Access-Control-Allow-Origin: *)
+  const sources = [
+    csvUrl,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
+    'https://corsproxy.io/?url=' + encodeURIComponent(csvUrl)
+  ];
+
+  if (statusEl) { statusEl.textContent = '⏳ Syncing…'; statusEl.style.color = '#64748b'; }
+
+  fetchWithFallback(sources)
+    .then(csv => {
+      const rows = parseSimpleCSV(csv);
+      if (rows.length <= 1) throw new Error('No data in sheet (check the rows below the header, and verify the gid/tab).');
+
+      // Full replace — sheet is the authoritative source
+      POLICY_DATABASE = {};
+      let count = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[COL_TCODE_IDX]) continue;
+
+        const typeRaw = row[COL_TYPE_IDX] ? row[COL_TYPE_IDX].toString().trim() : '';
+        const daysRaw = row[COL_DAYS_IDX] ? row[COL_DAYS_IDX].toString().trim() : '';
+
+        // Skip Cash customers — only CR / CHQ / CR-CHQ outlets belong in the credit policy
+        if (typeRaw.toUpperCase() === 'CASH') continue;
+
+        // Skip rows where Days is 0 or blank — not a credit-term outlet
+        const days = parseInt(daysRaw) || 0;
+        if (days === 0) continue;
+
+        const tcode = row[COL_TCODE_IDX].toString().trim().toUpperCase();
+        const name  = row[COL_NAME_IDX] ? row[COL_NAME_IDX].toString().trim() : 'Unknown';
+        let   type  = typeRaw.toUpperCase() || 'CR';
+        if (type === 'CB/CH') type = 'CR/CHQ';
+
+        if (tcode) { POLICY_DATABASE[tcode] = { name, type, days }; count++; }
+      }
+
+      idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
+      idbSet('sarathchandra_gsheet_url', url);
+      idbSet('sarathchandra_gsheet_last_sync', new Date().toISOString());
+
+      const now = new Date().toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
+      if (statusEl) {
+        statusEl.textContent = `✅ Last synced: ${now} — ${count} records`;
+        statusEl.style.color = '#10b981';
+      }
+      const dotEl = document.getElementById('gsheetSyncDot');
+      if (dotEl) dotEl.style.display = 'inline-block';
+
+      renderModalTable();
+      if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+    })
+    .catch(err => {
+      let msg = err.message;
+      if (msg === 'All sources failed') {
+        msg = 'Unable to connect — check your internet connection, verify the sheet is shared as "Anyone with the link → Viewer", and check that the URL is correct.';
+      }
+      if (statusEl) { statusEl.textContent = `❌ ${msg}`; statusEl.style.color = '#ef4444'; }
+      console.error('GSheet sync error:', err);
+    });
+}
+
+function toggleAutoSync() {
+  const on = document.getElementById('autoSyncToggle').checked;
+  if (on) {
+    idbSet('sarathchandra_autosync', '1');
+    syncFromGoogleSheets();                                      // sync immediately
+    autoSyncInterval = setInterval(syncFromGoogleSheets, 60 * 60 * 1000); // every 1 hour
+  } else {
+    idbRemove('sarathchandra_autosync');
+    clearInterval(autoSyncInterval);
+    autoSyncInterval = null;
+    const statusEl = document.getElementById('syncStatus');
+    if (statusEl) { statusEl.textContent = 'Auto-sync disabled.'; statusEl.style.color = '#94a3b8'; }
+  }
+}
+
+async function restoreGSheetUI() {
+  const savedUrl = (await idbGet('sarathchandra_gsheet_url')) || '';
+  const inputEl  = document.getElementById('gsheetUrl');
+  if (inputEl && savedUrl) inputEl.value = savedUrl;
+
+  const toggleEl = document.getElementById('autoSyncToggle');
+  if (toggleEl) toggleEl.checked = !!(await idbGet('sarathchandra_autosync'));
+
+  const lastSync = await idbGet('sarathchandra_gsheet_last_sync');
+  const dotEl = document.getElementById('gsheetSyncDot');
+  if (dotEl) dotEl.style.display = lastSync ? 'inline-block' : 'none';
+
+  const statusEl = document.getElementById('syncStatus');
+  if (statusEl && lastSync && !statusEl.textContent) {
+    const t = new Date(lastSync).toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
+    statusEl.textContent = `✅ Last synced: ${t}`;
+    statusEl.style.color = '#10b981';
+  }
+}
+
+function openGeotagModal() {
+  if (_openModalCount === 0) _lockBodyScroll();
+  _openModalCount++;
+  document.getElementById('geotagModal').style.display = 'flex';
+  document.getElementById('geoModalSearchInput').value = '';
+  renderGeotagTable();
+}
+
+function closeGeotagModal() {
+  document.getElementById('geotagModal').style.display = 'none';
+  _openModalCount = Math.max(0, _openModalCount - 1);
+  if (_openModalCount === 0) _unlockBodyScroll();
+}
+
+function renderGeotagTable() {
+  const tbody = document.getElementById('geotagTableBody');
+  tbody.innerHTML = '';
+  const searchFilter = document.getElementById('geoModalSearchInput').value.trim().toUpperCase();
+
+  Object.keys(GEOTAG_DATABASE).sort().forEach(tcode => {
+    const item = GEOTAG_DATABASE[tcode];
+    const matchCode = tcode.toUpperCase().includes(searchFilter);
+    const matchName = item.name.toUpperCase().includes(searchFilter);
+    
+    if (searchFilter && !matchCode && !matchName) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700;">${tcode}</td>
+      <td>${item.name}</td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteGeotagItem('${tcode}')">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function addGeotagItem() {
+  const tcode = document.getElementById('addGeoTCode').value.trim().toUpperCase();
+  const name = document.getElementById('addGeoName').value.trim();
+
+  if(!tcode) { alert("Please enter a valid T-Code"); return; }
+  if(!name) { alert("Please enter Customer / Party Name"); return; }
+
+  GEOTAG_DATABASE[tcode] = { name: name };
+  idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
+  
+  document.getElementById('addGeoTCode').value = '';
+  document.getElementById('addGeoName').value = '';
+  
+  renderGeotagTable();
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+}
+
+function deleteGeotagItem(tcode) {
+  if (confirm(`Are you sure you want to remove T-Code ${tcode} from Non-Geotag list?`)) {
+    delete GEOTAG_DATABASE[tcode];
+    idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
+    renderGeotagTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+  }
+}
+
+function clearAllGeotagItems() {
+  if (confirm("Are you sure you want to delete ALL Non-Geotag items?")) {
+    GEOTAG_DATABASE = {};
+    idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
+    renderGeotagTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+  }
+}
+
+function downloadHighlightTemplate() {
+  const wb = XLSX.utils.book_new();
+  const wsRows = [["T-Code", "Customer Name", "Policy Type", "Days"]];
+  
+  Object.keys(POLICY_DATABASE).sort().forEach(tcode => {
+    const item = POLICY_DATABASE[tcode];
+    wsRows.push([tcode, item.name, item.type, item.days]);
+  });
+  
+  if (Object.keys(POLICY_DATABASE).length === 0) {
+    wsRows.push(["T101700700510135", "SAMPLE LAXMAN STORES", "CR", 7]);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsRows);
+  ws['!cols'] = [{ wch: 22 }, { wch: 30 }, { wch: 15 }, { wch: 10 }];
+  XLSX.utils.book_append_sheet(wb, ws, "Highlight Settings");
+  XLSX.writeFile(wb, "Highlight_Settings_Template.xlsx");
+}
+
+function downloadGeotagTemplate() {
+  const wb = XLSX.utils.book_new();
+  const wsRows = [["T-Code", "Customer Name"]];
+  
+  Object.keys(GEOTAG_DATABASE).sort().forEach(tcode => {
+    const item = GEOTAG_DATABASE[tcode];
+    wsRows.push([tcode, item.name]);
+  });
+  
+  if (Object.keys(GEOTAG_DATABASE).length === 0) {
+    wsRows.push(["TI01700700510999", "SAMPLE NON-GEOTAG SHOP"]);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsRows);
+  ws['!cols'] = [{ wch: 22 }, { wch: 35 }];
+  XLSX.utils.book_append_sheet(wb, ws, "Non Geotag Outlets");
+  XLSX.writeFile(wb, "Non_Geotag_Settings_Template.xlsx");
+}
+
+function importHighlightExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
+    if (rawRows.length <= 1) { alert("The uploaded file has no data rows."); return; }
+
+    for(let i = 1; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if(!row || row.length < 3 || !row[0]) continue;
+      
+      const tcode = row[0].toString().trim().toUpperCase();
+      const name = row[1] ? row[1].toString().trim() : "Unknown Outlet";
+      let type = row[2] ? row[2].toString().trim().toUpperCase() : "CR";
+      if(type === "CB/CH") type = "CR/CHQ";
+      const days = parseInt(row[3]) || 0;
+
+      POLICY_DATABASE[tcode] = { name: name, type: type, days: days };
+    }
+
+    idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
+    alert("✅ Credit Policy updated successfully from Excel file!");
+    renderModalTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+    document.getElementById('policyFileInput').value = "";
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function importGeotagExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
+    if (rawRows.length <= 1) { alert("The uploaded file has no data rows."); return; }
+
+    for(let i = 1; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if(!row || !row[0]) continue;
+      
+      const tcode = row[0].toString().trim().toUpperCase();
+      const name = row[1] ? row[1].toString().trim() : "Non-Geotag Outlet";
+
+      GEOTAG_DATABASE[tcode] = { name: name };
+    }
+
+    idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
+    alert("✅ Non-Geotag database updated successfully from Excel sheet!");
+    renderGeotagTable();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+    document.getElementById('geotagFileInput').value = "";
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function openLorryModal() {
+  if (_openModalCount === 0) _lockBodyScroll();
+  _openModalCount++;
+  document.getElementById('lorryModal').style.display = 'flex';
+  const savedLorryData = await idbGet('sarathchandra_lorry_numbers');
+  if(savedLorryData) {
+    document.getElementById('lorryNumbersInput').value = savedLorryData;
+  }
+}
+
+function closeLorryModal() {
+  document.getElementById('lorryModal').style.display = 'none';
+  _openModalCount = Math.max(0, _openModalCount - 1);
+  if (_openModalCount === 0) _unlockBodyScroll();
+}
+
+async function loadLorryNumbersDropdown() {
+  const savedLorryData = await idbGet('sarathchandra_lorry_numbers');
+  SAVED_LORRY_NUMBERS = savedLorryData
+    ? savedLorryData.split(/[\n,]+/).map(l => l.trim().toUpperCase()).filter(l => l !== "")
+    : [];
+
+  // Rebuild the dropdown for whoever is currently selected (or blank if no DP yet)
+  const currentDP = document.getElementById('srSelect').value || '';
+  updateVehicleDropdownForDP(currentDP);
+}
+
+function updateBulkDownloadStatus() {
+  const panel = document.getElementById('bulkDownloadPanel');
+  if (!panel) return;
+
+  if (DELIVERY_PERSON_LIST.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  const unassigned = DELIVERY_PERSON_LIST.filter(dp => !LORRY_ASSIGNMENTS[dp]);
+  panel.style.display = (unassigned.length === 0) ? 'flex' : 'none';
+}
+
+function updateVehicleDropdownForDP(dpName) {
+  const vSelect = document.getElementById('vehicleSelect');
+  vSelect.innerHTML = '<option value="">-- Choose Vehicle --</option>';
+
+  // Collect lorries already assigned to OTHER delivery persons
+  const assignedToOthers = new Set(
+    Object.entries(LORRY_ASSIGNMENTS)
+      .filter(([dp]) => dp !== dpName)
+      .map(([, lorry]) => lorry)
+  );
+
+  SAVED_LORRY_NUMBERS.forEach(lorry => {
+    const opt = document.createElement('option');
+    opt.value = lorry;
+    if (assignedToOthers.has(lorry)) {
+      opt.textContent = `${lorry}  (Assigned)`;
+      opt.disabled = true;
+    } else {
+      opt.textContent = lorry;
+    }
+    vSelect.appendChild(opt);
+  });
+
+  // Restore this DP's previously saved assignment (if still valid)
+  const savedLorry = LORRY_ASSIGNMENTS[dpName];
+  if (savedLorry && SAVED_LORRY_NUMBERS.includes(savedLorry)) {
+    vSelect.value = savedLorry;
+  } else if (savedLorry) {
+    // Lorry was removed from master list — clean up stale assignment
+    delete LORRY_ASSIGNMENTS[dpName];
+    sessionStorage.setItem('sarathchandra_lorry_assignments', JSON.stringify(LORRY_ASSIGNMENTS));
+  }
+
+  vSelect.classList.remove('error-highlight');
+}
+
+async function saveLorryNumbers() {
+  const rawText = document.getElementById('lorryNumbersInput').value;
+  await idbSet('sarathchandra_lorry_numbers', rawText);
+  closeLorryModal();
+  loadLorryNumbersDropdown();
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+}
+
+function handleVehicleChange() {
+  const vSelect = document.getElementById('vehicleSelect');
+  const currentDP = document.getElementById('srSelect').value;
+  const selectedLorry = vSelect.value;
+
+  if (selectedLorry !== "") {
+    vSelect.classList.remove('error-highlight');
+
+    // If another DP already had this same lorry assigned, release it from them
+    Object.keys(LORRY_ASSIGNMENTS).forEach(dp => {
+      if (dp !== currentDP && LORRY_ASSIGNMENTS[dp] === selectedLorry) {
+        delete LORRY_ASSIGNMENTS[dp];
+      }
+    });
+
+    // Assign lorry to current DP
+    LORRY_ASSIGNMENTS[currentDP] = selectedLorry;
+  } else {
+    // User chose "-- Choose Vehicle --" → release this DP's assignment
+    delete LORRY_ASSIGNMENTS[currentDP];
+  }
+
+  sessionStorage.setItem('sarathchandra_lorry_assignments', JSON.stringify(LORRY_ASSIGNMENTS));
+  updateBulkDownloadStatus();
+
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
+}
+
+function checkVehicleSelected() {
+  const vehicleNo = document.getElementById('vehicleSelect').value.trim();
+  if (!vehicleNo) {
+    alert("⚠️ You cannot print or download the Excel file without selecting a Lorry Number. Please select a Lorry Number and try again..");
+    const vSelect = document.getElementById('vehicleSelect');
+    vSelect.classList.add('error-highlight');
+    vSelect.focus();
+    return false;
+  }
+  return true;
+}
+
+function validateAndPrint() {
+  if (checkVehicleSelected()) {
+    window.print();
+  }
+}
+
+function validateAndDownloadExcel() {
+  if (checkVehicleSelected()) {
+    downloadStyled12VanExcel();
+  }
+}
+
+// ─── Share / PDF Export ────────────────────────────────────────────────────
+
+// A4 landscape (297mm) minus the 5mm left/right @page margins = printable content width
+const PDF_CONTENT_WIDTH_MM = 287;
+
+// Renders a clone of `el` off-screen at the print page's content width
+// (with print-equivalent styling via .pdf-export), then captures it.
+// This makes the PDF match the printed page regardless of the device's
+// actual screen/viewport width (important on mobile).
+async function elementToCanvas(el) {
+  // Create an isolated off-screen container so html2canvas never
+  // captures the body's dark gradient — we pass the wrapper itself
+  // (not the clone) to html2canvas so its backgroundColor: '#ffffff'
+  // option is the outermost thing rendered.
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'fixed';
+  wrapper.style.top = '0';
+  wrapper.style.left = '-99999px';
+  wrapper.style.width = PDF_CONTENT_WIDTH_MM + 'mm';
+  wrapper.style.background = '#ffffff';
+  wrapper.style.overflow = 'hidden';
+  wrapper.style.zIndex = '-1';
+
+  const clone = el.cloneNode(true);
+  clone.classList.add('pdf-export');
+  clone.style.maxWidth = '100%';
+  clone.style.margin = '0';
+  clone.style.background = '#ffffff';
+
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  try {
+    const renderWidthPx = wrapper.getBoundingClientRect().width;
+    const opts = {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      width: renderWidthPx,
+      windowWidth: renderWidthPx,
+      logging: false,
+      imageTimeout: 0,
+      scrollX: 0,
+      scrollY: 0
+    };
+    // Capture the wrapper (white container) not the clone directly,
+    // so html2canvas never looks at the body background.
+    return await html2canvas(wrapper, opts);
+  } finally {
+    wrapper.remove();
+  }
+}
+
+// Builds an A4-landscape PDF from the current slip (page 1 + the
+// "Blank Field Collection Sheet" as page 2), matching the printed page's
+// size exactly. If a section is taller than one A4 page, it is sliced
+// across multiple pages (same as how it would overflow when printed).
+async function buildSlipPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  // Matches @page { size: A4 landscape; margin: 4mm 5mm; }
+  const marginX = 5; // left/right
+  const marginY = 4; // top/bottom
+  const availH  = doc.internal.pageSize.getHeight() - marginY * 2; // ~202mm
+
+  const sections = [
+    document.querySelector('.sheet.active .slip'),
+    document.querySelector('.sheet.active .page-block-blank')
+  ].filter(Boolean);
+
+  let firstPage = true;
+  for (let i = 0; i < sections.length; i++) {
+    const canvas = await elementToCanvas(sections[i]);
+
+    // Canvas was rendered at PDF_CONTENT_WIDTH_MM (287mm) wide, so placing
+    // it at that width gives a 1:1 mm match with the printed page.
+    const imgW   = PDF_CONTENT_WIDTH_MM;
+    const fullH  = canvas.height / canvas.width * imgW; // total height in mm
+
+    if (fullH <= availH + 0.5) {
+      if (!firstPage) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', marginX, marginY, imgW, fullH);
+      firstPage = false;
+    } else {
+      // Content is taller than one page — slice it into page-sized chunks
+      const pxPerMm = canvas.width / imgW;
+      const sliceHeightPx = Math.floor(availH * pxPerMm);
+      let yOffset = 0;
+      while (yOffset < canvas.height) {
+        const sliceH = Math.min(sliceHeightPx, canvas.height - yOffset);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        const ctx = sliceCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+        ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+
+        if (!firstPage) doc.addPage();
+        doc.addImage(sliceCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', marginX, marginY, imgW, sliceH / pxPerMm);
+        firstPage = false;
+        yOffset += sliceH;
+      }
+    }
+  }
+
+  return doc;
+}
+
+function buildSlipFilename() {
+  const vehicleNo = (document.getElementById('vehicleSelect').value || 'slip').replace(/\s+/g, '_');
+  const today = new Date().toISOString().slice(0, 10);
+  return `Cash_Slip_${vehicleNo}_${today}.pdf`;
+}
+
+async function downloadSlipPDF() {
+  if (!checkVehicleSelected()) return;
+  if (Object.keys(GLOBAL_MAP_DATA).length === 0) {
+    alert('⚠️ Please load the Excel data first.');
+    return;
+  }
+  try {
+    const doc = await buildSlipPDF();
+    doc.save(buildSlipFilename());
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    alert('❌ PDF generation failed. Please try again.');
+  }
+}
+
+async function shareSlipPDF() {
+  if (!checkVehicleSelected()) return;
+  if (Object.keys(GLOBAL_MAP_DATA).length === 0) {
+    alert('⚠️ Please load the Excel data first.');
+    return;
+  }
+  try {
+    const doc = await buildSlipPDF();
+    const blob = doc.output('blob');
+    const filename = buildSlipFilename();
+    const file = new File([blob], filename, { type: 'application/pdf' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Cash Collection Slip',
+        text: filename
+      });
+    } else {
+      // Sharing files isn't supported on this device/browser — fall back to download
+      doc.save(filename);
+      alert('Sharing isn\'t supported on this browser, so the PDF was downloaded instead. You can share it from your Files / Downloads app.');
+    }
+  } catch (err) {
+    // AbortError = user cancelled the share sheet — not a real error
+    if (err && err.name === 'AbortError') return;
+    console.error('Share error:', err);
+    alert('❌ Sharing failed. Please try the Download PDF button instead.');
+  }
+}
+
+// Generates one PDF per Delivery Person (using their assigned lorry + all
+// their beats) and bundles everything into a single ZIP download.
+async function downloadAllPDFs() {
+  const unassigned = DELIVERY_PERSON_LIST.filter(dp => !LORRY_ASSIGNMENTS[dp]);
+  if (unassigned.length > 0) {
+    alert('⚠️ Not all delivery persons have a lorry assigned yet:\n' + unassigned.join(', '));
+    return;
+  }
+  if (!confirm(`Download PDFs for all ${DELIVERY_PERSON_LIST.length} delivery persons as one ZIP file?`)) return;
+
+  const srSelect  = document.getElementById('srSelect');
+  const vSelect   = document.getElementById('vehicleSelect');
+  const statusEl  = document.getElementById('bulkDownloadStatus');
+  const originalDP = srSelect.value;
+
+  const zip   = new JSZip();
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    for (let i = 0; i < DELIVERY_PERSON_LIST.length; i++) {
+      const dp = DELIVERY_PERSON_LIST[i];
+      if (statusEl) statusEl.textContent = `Generating ${i + 1}/${DELIVERY_PERSON_LIST.length}: ${dp}...`;
+
+      // Switch to this DP — rebuilds beat checkboxes (all checked), restores
+      // their assigned lorry into vehicleSelect, and regenerates the slip
+      srSelect.value = dp;
+      handleSRChange();
+
+      // Let the DOM finish rendering before we capture it
+      await new Promise(r => setTimeout(r, 60));
+
+      const doc = await buildSlipPDF();
+      const blob = doc.output('blob');
+      const vehicleNo = vSelect.value || LORRY_ASSIGNMENTS[dp] || 'NoVehicle';
+      const safeDP = dp.replace(/[^a-zA-Z0-9]+/g, '_');
+      zip.file(`Cash_Slip_${safeDP}_${vehicleNo}_${today}.pdf`, blob);
+    }
+
+    if (statusEl) statusEl.textContent = 'Packaging ZIP file…';
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob);
+    a.download = `All_Cash_Slips_${today}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+
+    if (statusEl) statusEl.textContent = `✅ Downloaded ${DELIVERY_PERSON_LIST.length} PDFs as ZIP.`;
+  } catch (err) {
+    console.error('Bulk PDF error:', err);
+    if (statusEl) statusEl.textContent = '❌ Failed to generate ZIP. Please try again.';
+    alert('❌ Failed to generate PDFs. Please try again.');
+  } finally {
+    // Restore the original delivery person view
+    srSelect.value = originalDP;
+    handleSRChange();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await initializePolicyDatabase();
+  loadLorryNumbersDropdown();
+
+  // If auto-sync was previously enabled, start syncing immediately on page load
+  if (await idbGet('sarathchandra_autosync')) {
+    syncFromGoogleSheets();
+    autoSyncInterval = setInterval(syncFromGoogleSheets, 60 * 60 * 1000);
+  }
+});
+
+// ─── Block ALL print attempts unless a lorry number is selected ───────────────
+
+// 1) Intercept Ctrl+P / Cmd+P keyboard shortcut
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) {
+      validateAndPrint(); // runs the vehicle check + window.print()
+    }
+  }
+}, true); // capture phase — fires before browser handles the shortcut
+
+// 2) Safety net: cancel the print dialog itself if it somehow opens without a vehicle
+window.addEventListener('beforeprint', function() {
+  const vehicleNo = document.getElementById('vehicleSelect').value.trim();
+  const hasData   = Object.keys(GLOBAL_MAP_DATA).length > 0;
+  if (hasData && !vehicleNo) {
+    // Inject a temporary override style that hides everything so nothing prints
+    let blocker = document.getElementById('__printBlocker__');
+    if (!blocker) {
+      blocker = document.createElement('style');
+      blocker.id = '__printBlocker__';
+      blocker.textContent = '@media print { body * { display: none !important; } }';
+      document.head.appendChild(blocker);
+    }
+    // Remove it after the print dialog closes so the page looks normal again
+    window.addEventListener('afterprint', function cleanup() {
+      const el = document.getElementById('__printBlocker__');
+      if (el) el.remove();
+      window.removeEventListener('afterprint', cleanup);
+      // Re-show the warning after the dialog closes
+      checkVehicleSelected();
+    }, { once: true });
+  }
+});
+
+document.getElementById('excelFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    GLOBAL_MAP_DATA = {};
+
+    workbook.SheetNames.forEach(sheetName => {
+      const worksheet = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      if (rawRows.length === 0) return;
+
+      let headerRowIndex = -1;
+      for (let i = 0; i < rawRows.length; i++) {
+        if (rawRows[i].includes("Delivery Person Name")) {
+          headerRowIndex = i;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) return; 
+      const headers = rawRows[headerRowIndex].map(h => h ? h.toString().trim() : '');
+
+      for (let j = headerRowIndex + 1; j < rawRows.length; j++) {
+        const rowData = rawRows[j];
+        if (!rowData || rowData.length === 0 || !rowData[0]) continue; 
+
+        let row = {};
+        headers.forEach((h, idx) => { if (h) row[h] = rowData[idx]; });
+
+        const deliveryPerson = (row["Delivery Person Name"] || "").toString().trim();
+        if (!deliveryPerson || deliveryPerson === "Total" || deliveryPerson.startsWith("Grand") || deliveryPerson.toLowerCase().includes("total") || deliveryPerson === "N/A") continue;
+
+        let beat = (row["Beat"] || "").toString().trim();
+        if (!beat || beat === "" || beat.toUpperCase() === "TOTAL" || beat.toUpperCase() === "NO BEAT") continue;
+
+        const key = deliveryPerson + "||" + beat;
+        const billNo = row["Bill Number"] || row["Bill No"] || '-';
+        const tCode = row["Outlet_HUL CODE"] || row["Outlet Code"] || row["Outlet code"] || '-';
+        const partyName = row["Party Name"] || '-';
+        const billDate = parseExcelDate(row["Bill Date"]);
+        const delivDate = parseExcelDate(row["Delivery Date"]);
+        const targetValue = parseFloat(row["Final Bill Amount(To be collected)"] || row["Bill Value"] || 0);
+
+        if (!GLOBAL_MAP_DATA[key]) {
+          GLOBAL_MAP_DATA[key] = { name: deliveryPerson, beat: beat, bills: {}, uniqueBillList: [] };
+        }
+
+        if (GLOBAL_MAP_DATA[key].bills[billNo]) {
+          GLOBAL_MAP_DATA[key].bills[billNo].pre_value += targetValue;
+        } else {
+          GLOBAL_MAP_DATA[key].bills[billNo] = {
+            bill_no: billNo, outlet_code: tCode, party_name: partyName,
+            pre_value: targetValue, bill_date: billDate, delivery_date: delivDate
+          };
+          GLOBAL_MAP_DATA[key].uniqueBillList.push(billNo);
+        }
+      }
+    });
+
+    initFiltersAndInterface();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function initFiltersAndInterface() {
+  const srSelect = document.getElementById('srSelect');
+  const controlPanel = document.getElementById('controlPanel');
+  srSelect.innerHTML = '';
+  const uniqueDPs = {};
+  Object.values(GLOBAL_MAP_DATA).forEach(item => { uniqueDPs[item.name] = true; });
+  DELIVERY_PERSON_LIST = Object.keys(uniqueDPs).sort();
+
+  if (DELIVERY_PERSON_LIST.length === 0) { alert("Could not recognize Delivery Person Name in the file."); return; }
+  controlPanel.style.display = 'flex';
+
+  DELIVERY_PERSON_LIST.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    srSelect.appendChild(opt);
+  });
+  srSelect.addEventListener('change', handleSRChange);
+  handleSRChange();
+  updateBulkDownloadStatus();
+}
+
+function handleSRChange() {
+  const selectedDP = document.getElementById('srSelect').value;
+  const checkboxGrid = document.getElementById('beatCheckboxGrid');
+  checkboxGrid.innerHTML = '';
+
+  // Refresh vehicle dropdown for the newly selected delivery person
+  // (restores their saved assignment, disables lorries locked to others)
+  updateVehicleDropdownForDP(selectedDP);
+
+  const relatedBeats = Object.values(GLOBAL_MAP_DATA).filter(item => item.name === selectedDP);
+  relatedBeats.forEach(item => {
+    const label = document.createElement('label');
+    label.className = 'checkbox-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = item.name + "||" + item.beat; cb.checked = true; cb.className = 'beat-cb';
+    cb.addEventListener('change', debouncedGenerateSheets);
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(item.beat));
+    checkboxGrid.appendChild(label);
+  });
+  generateCombinedSheets();
+  updateBulkDownloadStatus();
+}
+
+function toggleAllBeats(checkedState) {
+  document.querySelectorAll('.beat-cb').forEach(cb => cb.checked = checkedState);
+  generateCombinedSheets();
+}
+
+// Debounced version — 180ms delay prevents hammering DOM on rapid checkbox toggles
+const debouncedGenerateSheets = debounce(generateCombinedSheets, 180);
+
+function generateCombinedSheets() {
+  const sheetsContainer = document.getElementById('sheets');
+  sheetsContainer.innerHTML = '';
+
+  const checkedBoxes = document.querySelectorAll('.beat-cb:checked');
+  if (checkedBoxes.length === 0) {
+    sheetsContainer.innerHTML = '<div style="max-width:1140px; margin:20px auto; padding:15px; background:#fff; border-radius:12px; text-align:center; font-weight:600; color:red; box-shadow:0 4px 12px rgba(0,0,0,0.05);">Please select at least one Route / Beat.</div>';
+    return;
+  }
+
+  let combinedBillsMap = {};
+  let combinedUniqueBillList = [];
+  let beatNamesArray = [];
+  let dpName = "", date = "-", delivDate = "-";
+
+  checkedBoxes.forEach(cb => {
+    const targetKey = cb.value;
+    if (!GLOBAL_MAP_DATA[targetKey]) return;
+    const sp = GLOBAL_MAP_DATA[targetKey];
+    dpName = sp.name; 
+    if (!beatNamesArray.includes(sp.beat)) beatNamesArray.push(sp.beat);
+
+    sp.uniqueBillList.forEach(bNo => {
+      const bData = sp.bills[bNo];
+      if (date === "-") date = bData.bill_date;
+      if (delivDate === "-") delivDate = bData.delivery_date;
+      if (combinedBillsMap[bNo]) {
+        combinedBillsMap[bNo].pre_value += bData.pre_value;
+      } else {
+        combinedBillsMap[bNo] = { ...bData };
+        combinedUniqueBillList.push(bNo);
+      }
+    });
+  });
+
+  const billsArray = combinedUniqueBillList
+    .map(bNo => combinedBillsMap[bNo])
+    .sort((a, b) => a.bill_no.toString().localeCompare(b.bill_no.toString(), undefined, { numeric: true, sensitivity: 'base' }));
+  const total_pre_value = billsArray.reduce((a, b) => a + b.pre_value, 0);
+  const combinedBeatString = beatNamesArray.join(', ');
+  const vanNo = getVanNumber(dpName);
+  const dmCode = getDMCode(dpName); 
+  
+  const activeVehicleNo = document.getElementById('vehicleSelect').value.trim() || '............................';
+
+  const boxMatrixHtml = `<div class="chq-box-container"><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div></div>`;
+
+  const dateMatrixPage1Html = `
+    <div class="date-matrix-container">
+      <div class="date-box-segment"><div class="date-digit"></div><div class="date-digit"></div></div>
+      <div class="date-slash">/</div>
+      <div class="date-box-segment"><div class="date-digit"></div><div class="date-digit"></div></div>
+    </div>`;
+
+  const geoIconSvg = `
+    <span class="geotag-img-wrapper">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.19739 3.60027C10.0555 3.2142 11.0034 3 12 3C15.866 3 19 6.22355 19 10.2C19 11.1279 18.8094 12.0148 18.4727 12.875M16.3439 16.3431C15.0983 17.887 13.5491 19.4066 12 21C8.5 17.4 5 14.1764 5 10.2C5 8.71437 5.43745 7.33384 6.18709 6.18723M3 3L21 21" stroke="#FF416C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    </span>`;
+
+  let rowsHtml = billsArray.map((b, i) => {
+    const cleanTCode = b.outlet_code.toString().trim().toUpperCase();
+    const policyInfo = POLICY_DATABASE[cleanTCode];
+    const isGeotagMatch = !!GEOTAG_DATABASE[cleanTCode]; 
+    
+    const shouldHighlight = !!policyInfo; 
+    const rowClass = shouldHighlight ? 'class="highlight-row"' : '';
+    
+    let appendLabel = "";
+    if (shouldHighlight) {
+      appendLabel = ` <span style="font-size:9px; font-weight:bold; color:#1e3c72;">(${policyInfo.type}-${policyInfo.days}D)</span>`;
+    }
+    
+    if (isGeotagMatch) {
+      appendLabel += geoIconSvg;
+    }
+
+    return `
+    <tr ${rowClass}>
+      <td class="no">${i + 1}</td>
+      <td>${b.bill_no}</td>
+      <td>
+        <div class="tcode-cell-container">
+          <span>${b.outlet_code}</span>${appendLabel}
+        </div>
+      </td>
+      <td>${b.party_name}</td>
+      <td class="num amt">${fmt(b.pre_value)}</td>
+      <td></td><td></td><td></td>
+      <td>${boxMatrixHtml}</td>
+      <td>${dateMatrixPage1Html}</td>
+      <td></td>
+    </tr>`;
+  }).join('');
+
+  rowsHtml += `
+  <tr class="table-total-row">
+    <td colspan="4" style="text-align: right; font-weight: 700;">TOTAL VALUE:</td>
+    <td class="num" style="font-weight: 700;">${fmt(total_pre_value)}</td>
+    <td></td><td></td><td></td><td></td><td></td><td></td>
+  </tr>`;
+
+  let p2RowsHtml = '';
+  
+  for (let i = 1; i <= 18; i++) {
+    p2RowsHtml += `
+      <tr class="blank-row">
+        <td style="font-weight:600; text-align:center;">${i}</td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>${boxMatrixHtml}</td>
+        <td></td><td></td><td></td>
+      </tr>`;
+  }
+  
+  p2RowsHtml += `
+    <tr class="section-divider-row">
+      <td colspan="11">Return Cheque Collections</td>
+    </tr>`;
+    
+  for (let i = 1; i <= 5; i++) {
+    p2RowsHtml += `
+      <tr class="blank-row">
+        <td style="font-weight:600; text-align:center;">${i}</td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>${boxMatrixHtml}</td>
+        <td></td><td></td><td></td>
+      </tr>`;
+  }
+
+  p2RowsHtml += `<tr class="table-total-row" style="height:22px;"><td colspan="4" style="text-align: center; font-weight: 700;">Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
+
+  sheetsContainer.innerHTML = `
+  <div class="sheet active">
+    <div class="slip">
+      <div class="slip-header">
+        <div class="company">Sarathchandra Agencies Pvt Ltd<small>Company: Unilever · Balangoda · Cash Collection Slip</small></div>
+        <div class="slip-title"><div class="value">${vanNo || 'VAN SUMMARY'}</div></div>
+      </div>
+      <div class="slip-meta">
+        <div class="meta-item"><span class="mlabel">Delivery Person</span><span class="mvalue">${dmCode}</span></div>
+        <div class="meta-item"><span class="mlabel">Route / Beat</span><span class="mvalue">${combinedBeatString}</span></div>
+        <div class="meta-item"><span class="mlabel">Vehicle No</span><span class="meta-box-write">${activeVehicleNo}</span></div>
+        <div class="meta-item"><span class="mlabel">Bill Date</span><span class="mvalue">${date}</span></div>
+        <div class="meta-item"><span class="mlabel">Delivery Date</span><span class="mvalue">${delivDate}</span></div>
+        <div class="meta-item"><span class="mlabel">Unique Bills</span><span class="mvalue">${billsArray.length}</span></div>
+      </div>
+      <table class="slip-table">
+        <thead>
+          <tr>
+            <th class="col-no">#</th><th class="col-inv">Invoice No</th><th class="col-tcode">T Code</th><th class="col-party">Customer Name</th><th class="col-val num">PRE Value</th><th class="col-cash">Cash</th><th class="col-chq-val">Cheque</th><th class="col-credit">Credit</th><th class="col-chq-box center-align">Cheque No</th>
+            <th class="col-chq-date center-align">Chq Date</th>
+            <th class="col-bank">Bank</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      
+      <div class="policy-notice">
+        <div>* Highlighted rows indicate outlets approved under the Credit Policy. Outlets with a location icon marker indicates unregistered geo targets.</div>
+      </div>
+
+      <div class="cashier-calculation-space">
+        <table class="calc-table">
+          <tr>
+            <td class="label-col">Day Sale Cash</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Day Sale Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Credit Bills Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Credit Bills Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Re/Cheque Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Re/Cheque Paid Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Under Charge Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Under Charge Paid Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col"></td>
+            <td class="rs-col"></td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col"></td>
+            <td class="rs-col"></td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Total Cash</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Total Cheques</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="collection-row">
+        <div class="coll-box"><div class="clabel">Received Cash</div><div class="cvalue">&nbsp;</div></div>
+        <div class="coll-box"><div class="clabel">Cash Excess / Short</div><div class="cvalue">&nbsp;</div></div>
+      </div>
+      <div class="slip-footer">
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cash Collector</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cashier</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Operation Manager</div></div>
+      </div>
+    </div>
+
+    <div class="page-block-blank">
+      <div class="van-no-right">VEHICLE NO : <span style="font-size:15px; text-decoration: underline; font-weight:700;">&nbsp;${activeVehicleNo}&nbsp;</span></div>
+      <div class="blank-header-grid"><div>DATE : ${delivDate}</div><div>ROUTE : ${combinedBeatString}</div><div>NAME : ${dmCode}</div></div>
+      <table class="slip-table" style="border: 1px solid #000;">
+        <thead>
+          <tr>
+            <th rowspan="2" class="p2-col-no"      style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">NO</th>
+            <th rowspan="2" class="p2-col-date"    style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">INVOICE<br>DATE</th>
+            <th rowspan="2" class="p2-col-inv"     style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">INVOICE<br>NUMBER</th>
+            <th rowspan="2" class="p2-col-party"   style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CUSTOMER NAME</th>
+            <th rowspan="2" class="p2-col-prev"    style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">PREVIOUS<br>BILL<br>AMOUNT</th>
+            <th rowspan="2" class="p2-col-cash"    style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CASH<br>AMOUNT</th>
+            <th rowspan="2" class="p2-col-chq-amt" style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CHEQUE<br>AMOUNT</th>
+            <th colspan="3"                        style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CHEQUE</th>
+            <th rowspan="2" class="p2-col-sig"     style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">SIGNATURE</th>
+          </tr>
+          <tr>
+            <th class="p2-col-chq-no" style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">CHEQUE NO.</th>
+            <th class="p2-col-bank"   style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">BANK</th>
+            <th class="p2-col-rdate"  style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">R. DATE</th>
+          </tr>
+        <tbody>${p2RowsHtml}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function downloadStyled12VanExcel() {
+  const wb = XLSX.utils.book_new();
+  const dps = {};
+  Object.values(GLOBAL_MAP_DATA).forEach(item => { dps[item.name] = true; });
+  const sortedDPNames = Object.keys(dps).sort();
+
+  if (sortedDPNames.length === 0) { alert("Please upload a file first!"); return; }
+  let finalDeliveryDate = "";
+
+  const activeVehicleNo = document.getElementById('vehicleSelect').value.trim();
+
+  const borderThin = { top: { style: "thin", color: { rgb: "94A3B8" } }, bottom: { style: "thin", color: { rgb: "94A3B8" } }, left: { style: "thin", color: { rgb: "94A3B8" } }, right: { style: "thin", color: { rgb: "94A3B8" } } };
+  const borderBlackThin = { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } };
+  
+  const headerStyle = { font: { name: "Arial", bold: true, size: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1A3A5C" } }, alignment: { vertical: "center", horizontal: "left" }, border: borderThin };
+  const headerStyleRight = { ...headerStyle, alignment: { vertical: "center", horizontal: "right" } };
+  const headerStyleCenter = { ...headerStyle, alignment: { vertical: "center", horizontal: "center" } };
+
+  const excelHighlightFill = { fgColor: { rgb: "F1F5F9" } };
+  const totalStyle = { font: { name: "Arial", bold: true, size: 11, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "F1F5F9" } }, alignment: { vertical: "center", horizontal: "right" }, border: borderThin };
+  const noticeStyle = { font: { name: "Arial", italic: true, size: 9, color: { rgb: "475569" } }, fill: { fgColor: { rgb: "F8FAFC" } }, alignment: { vertical: "center", horizontal: "left" }, border: borderThin };
+
+  sortedDPNames.forEach(dpName => {
+    const vanNo = getVanNumber(dpName);
+    const dmCode = getDMCode(dpName); 
+    const sheetTabName = vanNo || dpName.substring(0, 30);
+    const wsRows = [];
+
+    let repInvoices = {}; let routesList = []; let bDate = "-"; let dDate = "-";
+    Object.values(GLOBAL_MAP_DATA).filter(item => item.name === dpName).forEach(sp => {
+      if (!routesList.includes(sp.beat)) routesList.push(sp.beat);
+      sp.uniqueBillList.forEach(bNo => {
+        const bData = sp.bills[bNo];
+        if (bDate === "-") bDate = bData.bill_date;
+        if (dDate === "-") dDate = bData.delivery_date;
+        if (bData.delivery_date && bData.delivery_date !== "-") finalDeliveryDate = bData.delivery_date;
+        if (repInvoices[bNo]) { repInvoices[bNo].pre_value += bData.pre_value; } else { repInvoices[bNo] = { ...bData }; }
+      });
+    });
+
+    wsRows.push([{ v: "SARATHCHANDRA AGENCIES (PVT) LTD - UNILEVER BALANGODA", s: { font: { name: "Arial", bold: true, size: 14, color: { rgb: "1A3A5C" } } } }]);
+    wsRows.push([
+      { v: `DELIVERY PERSON: ${dmCode}`, s: { font: { name: "Arial", bold: true, size: 11 } } }, "", "", "", 
+      { v: `VEHICLE NO: ${activeVehicleNo}`, s: { font: { name: "Arial", bold: true, size: 11, color: { rgb: "FF416C" } } } }
+    ]);
+    wsRows.push([""]);
+
+    wsRows.push([
+      { v: "#", s: headerStyleCenter }, { v: "INVOICE NO", s: headerStyle }, { v: "T CODE", s: headerStyle },
+      { v: "CUSTOMER NAME", s: headerStyle }, { v: "PRE VALUE", s: headerStyleRight }, { v: "CASH", s: headerStyle },
+      { v: "CHEQUE", s: headerStyle }, { v: "CREDIT", s: headerStyle }, { v: "CHEQUE NO", s: headerStyleCenter }, 
+      { v: "CHQ DATE", s: headerStyleCenter }, { v: "BANK", s: headerStyle }
+    ]);
+
+    let idx = 1; let totalPreVal = 0;
+    Object.values(repInvoices)
+      .sort((a, b) => a.bill_no.toString().localeCompare(b.bill_no.toString(), undefined, { numeric: true, sensitivity: 'base' }))
+      .forEach(inv => {
+      const cleanTCode = inv.outlet_code.toString().trim().toUpperCase();
+      const policyInfo = POLICY_DATABASE[cleanTCode];
+      const isGeotagMatch = !!GEOTAG_DATABASE[cleanTCode];
+      const isMatch = !!policyInfo;
+
+      const cellLeft = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+      const cellRight = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center", horizontal: "right" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+      const cellCenter = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center", horizontal: "center" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+
+      let excelTCodeVal = inv.outlet_code;
+      if (isMatch) {
+        excelTCodeVal += ` (${policyInfo.type}-${policyInfo.days}D)`;
+      }
+      if (isGeotagMatch) {
+        excelTCodeVal += ` [NON-GEOTAG]`; 
+      }
+
+      wsRows.push([
+        { v: idx++, s: cellCenter }, { v: inv.bill_no, s: cellLeft }, { v: excelTCodeVal, s: cellLeft },
+        { v: inv.party_name, s: cellLeft }, { v: inv.pre_value, s: cellRight, t: 'n', z: '"Rs. "#,##0.00' },
+        { v: "", s: cellLeft }, { v: "", s: cellLeft }, { v: "", s: cellLeft }, { v: "", s: cellCenter }, 
+        { v: "", s: cellCenter }, { v: "", s: cellLeft }
+      ]);
+      totalPreVal += inv.pre_value;
+    });
+
+    wsRows.push([
+      { v: "TOTAL VALUE:", s: totalStyle }, "", "", "", { v: totalPreVal, s: totalStyle, t: 'n', z: '"Rs. "#,##0.00' },
+      { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }
+    ]);
+
+    wsRows.push([
+      { v: "* Highlighted rows indicate outlets approved under the Credit Policy. Outlets with a location icon marker indicates unregistered geo targets.", s: noticeStyle },
+      { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle },
+      { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }
+    ]);
+
+    wsRows.push([""], [""]);
+    const p2HeaderStyle = { font: { name: "Arial", bold: true, size: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "334155" } }, alignment: { vertical: "center", horizontal: "center" }, border: borderBlackThin };
+    const p2TitleStyle = { font: { name: "Arial", bold: true, size: 12, color: { rgb: "334155" } }, fill: { fgColor: { rgb: "E2E8F0" } }, alignment: { vertical: "center", horizontal: "left" }, border: borderBlackThin };
+    wsRows.push([{ v: `BLANK FIELD COLLECTION SHEET - ROUTES: ${routesList.join(', ')} (DATE: ${dDate}) - VEHICLE: ${activeVehicleNo}`, s: p2TitleStyle }, "", "", "", "", "", "", "", "", "", ""]);
+
+    wsRows.push([
+      { v: "NO", s: p2HeaderStyle }, { v: "INVOICE DATE", s: p2HeaderStyle }, { v: "INVOICE NUMBER", s: p2HeaderStyle },
+      { v: "CUSTOMER NAME", s: p2HeaderStyle }, { v: "PREVIOUS BILL AMOUNT", s: p2HeaderStyle }, { v: "CASH AMOUNT", s: p2HeaderStyle },
+      { v: "CHEQUE AMOUNT", s: p2HeaderStyle }, { v: "CHEQUE NO", s: p2HeaderStyle }, { v: "BANK", s: p2HeaderStyle },
+      { v: "R. DATE", s: p2HeaderStyle }, { v: "SIGNATURE", s: p2HeaderStyle }
+    ]);
+
+    const p2CellLeft = { font: { name: "Arial", size: 10 }, border: borderBlackThin };
+    const p2CellRight = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "right" }, border: borderBlackThin };
+    const p2CellCenter = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "center" }, border: borderBlackThin };
+
+    const BLANK_COLLECTION_ROWS = 18; // must match the HTML print preview row count
+    for (let k = 1; k <= BLANK_COLLECTION_ROWS; k++) {
+      wsRows.push([
+        { v: k, s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft },
+        { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellCenter },
+        { v: "", s: p2CellLeft }, { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }
+      ]);
+    }
+    
+    const sectionDividerStyle = { font: { name: "Arial", bold: true, size: 11, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "F1F5F9" } }, alignment: { vertical: "center", horizontal: "center" }, border: borderBlackThin };
+    wsRows.push([{ v: "Return Cheque Collections", s: sectionDividerStyle }, "", "", "", "", "", "", "", "", "", ""]);
+    
+    for (let k = 1; k <= 5; k++) {
+      wsRows.push([
+        { v: k, s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft },
+        { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellCenter },
+        { v: "", s: p2CellLeft }, { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }
+      ]);
+    }
+    
+    wsRows.push([{ v: "Total", s: totalStyle }, "", "", "", { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsRows);
+    
+    if(!ws['!merges']) ws['!merges'] = [];
+
+    // Row 0 — main title spans all columns
+    ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } });
+
+    // Row 1 — "DELIVERY PERSON" (A-D) and "VEHICLE NO" (E-K) each span their half
+    ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 3 } });
+    ws['!merges'].push({ s: { r: 1, c: 4 }, e: { r: 1, c: 10 } });
+
+    const noticeRowIndex = repInvoices ? Object.keys(repInvoices).length + 5 : 5; 
+    ws['!merges'].push({ s: { r: noticeRowIndex, c: 0 }, e: { r: noticeRowIndex, c: 10 } });
+
+    // "BLANK FIELD COLLECTION SHEET..." section title spans all columns
+    const p2TitleRowIdx = noticeRowIndex + 3;
+    ws['!merges'].push({ s: { r: p2TitleRowIdx, c: 0 }, e: { r: p2TitleRowIdx, c: 10 } });
+
+    // Row layout (0-based): noticeRowIndex, then [blank][blank][section title][p2 header]
+    // = noticeRowIndex+1..+4, then BLANK_COLLECTION_ROWS data rows, then this divider row
+    const dividerRowIdx = noticeRowIndex + 5 + BLANK_COLLECTION_ROWS;
+    ws['!merges'].push({ s: { r: dividerRowIdx, c: 0 }, e: { r: dividerRowIdx, c: 10 } });
+
+    // Page setup — A4 landscape, fit to one page wide (matches the print preview layout)
+    ws['!margins'] = { left: 0.2, right: 0.2, top: 0.2, bottom: 0.2, header: 0, footer: 0 };
+    ws['!pageSetup'] = { orientation: 'landscape', paperSize: 9, fitToWidth: 1, fitToHeight: 0, scale: 100 };
+
+    ws['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 18 }, { wch: 26 }, { wch: 15 }, { wch: 13 }, { wch: 13 }, { wch: 13 }, { wch: 14 }, { wch: 10 }, { wch: 11 }];
+    XLSX.utils.book_append_sheet(wb, ws, sheetTabName);
+  });
+
+  const formattedDate = finalDeliveryDate && finalDeliveryDate !== "-" ? finalDeliveryDate.trim() : "No-Date";
+  XLSX.writeFile(wb, `${formattedDate} delivery cash slip.xlsx`);
+}
+</script>
+</body>
+</html>

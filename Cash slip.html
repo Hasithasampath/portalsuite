@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarathchandra Agencies - Cash Slip Summary</title>
+
+<!-- 📚 XLSX Style Library -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap');
+
+  :root {
+    --primary-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    --accent-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --btn-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --btn-danger: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    --btn-neutral: linear-gradient(135deg, #617ca5 0%, #475569 100%);
+    --border: #b8c7d9;
+    --text: #0f172a;
+    --muted: #475569;
+    --highlight-bg: #f1f5f9; 
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #dbeafe 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 50px;
+  }
+
+  /* ── 🌟 PREMIUM GLOSSY UPLOAD AREA ── */
+  .top-container {
+    max-width: 1140px;
+    margin: 30px auto 20px auto;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    position: relative;
+  }
+  .top-container h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .top-container p { color: var(--muted); margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+  
+  .upload-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .upload-row input[type="file"] {
+    padding: 10px 16px;
+    background: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.2s ease;
+  }
+  .upload-row input[type="file"]:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+
+  .plus-setup-btn {
+    padding: 11px 20px;
+    background: var(--btn-neutral);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(71, 85, 105, 0.2);
+    transition: all 0.2s ease;
+  }
+  .plus-setup-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(71, 85, 105, 0.3);
+  }
+
+  /* ── 🌟 MODAL / POPUP LOOK ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .modal-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+  }
+  .modal-box h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: #1e293b;
+    margin-bottom: 4px;
+    font-size: 20px;
+    text-transform: uppercase;
+  }
+  
+  .modal-search-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .modal-search-group input {
+    flex: 1;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .modal-search-group input:focus { border-color: #2563eb; outline: none; }
+  
+  .search-action-btn {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: white;
+  }
+  .search-action-btn.add { background: var(--btn-success); }
+  .search-action-btn.remove { background: var(--btn-danger); }
+  .modal-search-group + .search-status { font-size:12px; font-weight:600; min-height:16px; margin-bottom:10px; }
+
+  .modal-box textarea {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    font-size: 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    resize: none;
+    font-family: monospace;
+    margin-bottom: 20px;
+  }
+  .modal-box textarea:focus { border-color: #2563eb; outline: none; }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+  .modal-btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
+  .modal-btn.save { background: var(--accent-gradient); color: white; }
+  .modal-btn.close { background: #e2e8f0; color: #334155; }
+
+  /* ── 🌟 GLOSSY CONTROL PANEL ── */
+  .control-panel {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    max-width: 1140px;
+    margin: 0 auto 25px auto;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    border-left: 5px solid #1e3c72;
+  }
+  .panel-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .selector-group { display: flex; align-items: center; gap: 15px; }
+  .filter-box label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1e3c72;
+    letter-spacing: 0.5px;
+  }
+  .rep-dropdown {
+    padding: 8px 14px; font-size: 14px; font-weight: 700; border: 2px solid #cbd5e1;
+    border-radius: 6px; color: var(--text); background-color: #fff; min-width: 280px; cursor: pointer;
+  }
+  .rep-dropdown:focus { border-color: #1e3c72; outline: none; }
+
+  .print-btn {
+    padding: 9px 16px;
+    background: #fff;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+  }
+  .print-btn:hover { background: #f8fafc; border-color: #0f172a; }
+  .excel-btn { background: #fff; border-color: #107c41; color: #107c41; margin-right: 5px;}
+  .excel-btn:hover { background: #f0fdf4; border-color: #0b592e; }
+
+  .beat-checkbox-container {
+    background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 100%;
+  }
+  .beat-checkbox-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: #1e3c72;
+    text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; letter-spacing: 0.5px;
+  }
+  .beat-btn { padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; color: #475569; }
+  .beat-btn:hover { background: #cbd5e1; color: #0f172a; }
+  .beat-checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .checkbox-item {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; transition: all 0.2s;
+  }
+  .checkbox-item:hover { border-color: #cbd5e1; background: #f1f5f9; }
+
+  /* ── 🌟 SLIP SHEET PREVIEW ── */
+  .sheet { display: none; padding: 0; max-width: 1140px; margin: 0 auto; }
+  .sheet.active { display: block; }
+  .slip { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
+  
+  .slip-header {
+    background: #fff; color: var(--text); padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--text);
+  }
+  .slip-header .company { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; text-transform: uppercase; color: #0f172a; }
+  .slip-header .company small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+  .slip-header .slip-title .value { font-size: 26px; font-weight: 700; border: 2px solid var(--text); padding: 2px 12px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; }
+
+  .slip-meta {
+    background: #fff; border-bottom: 1px solid var(--border); padding: 12px 20px;
+    display: grid; grid-template-columns: 1.5fr 1.3fr 0.8fr 0.8fr 1fr 1fr 0.7fr; gap: 12px; align-items: center;
+  }
+  .meta-item { font-size: 13.5px; }
+  .meta-item .mlabel { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; }
+  .meta-item .mvalue { font-weight: 700; color: var(--text); }
+  .meta-box-write { display: flex; align-items: center; justify-content: center; border: 1px solid #000; background: #fff; height: 26px; width: 100%; border-radius: 4px; font-weight: 700; font-size: 13px; }
+
+  /* ── ⚡ SLIP TABLE STYLING ── */
+  .slip-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  .slip-table thead tr { background: #fff; color: var(--text); border-bottom: 2px solid #000; }
+  .slip-table thead th {
+    padding: 6px 4px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; text-transform: uppercase; font-weight: 700; border: 1px solid var(--border); color: #000;
+  }
+  .slip-table thead th.num { text-align: right; }
+  .slip-table thead th.center-align { text-align: center; }
+
+  /* 📐 PERFECT COLS MATRIX */
+  .col-no { width: 3.5%; text-align: center; } 
+  .col-inv { width: 9.5%; } 
+  .col-tcode { width: 12.5%; } 
+  .col-party { width: 16%; } 
+  .col-val { width: 9.5%; }
+  .col-cash { width: 7.5%; }     
+  .col-chq-val { width: 7.5%; }  
+  .col-credit { width: 7.5%; }   
+  .col-chq-box { width: 12.5%; } 
+  .col-chq-date { width: 9.5%; } 
+  .col-bank { width: 4.5%; }
+
+  .slip-table td { padding: 3px 4px; border: 1px solid var(--border); vertical-align: middle; word-wrap: break-word; color: #000; }
+  .slip-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .slip-table td.no { text-align: center; color: var(--muted); font-weight: 500; }
+  .slip-table .amt { font-weight: 600; }
+
+  /* ⚡ HIGHLIGHT ROW STYLE */
+  .slip-table tr.highlight-row td {
+    background-color: var(--highlight-bg) !important;
+    font-weight: 700 !important;
+  }
+
+  /* 📦 CHEQUE NUMBER 6-DIGIT BOXES */
+  .chq-box-container { display: flex; justify-content: center; align-items: center; width: 100%; }
+  .chq-digit { width: 22px; height: 18px; border: 1px solid #000000; border-right: none; background: #fff; }
+  .chq-digit:last-child { border-right: 1px solid #000000; }
+  
+  /* 🗓️ CHEQUE DATE DD / MM BOXES */
+  .date-matrix-container { display: flex; justify-content: center; align-items: center; gap: 4px; width: 100%; }
+  .date-box-segment { display: flex; align-items: center; }
+  .date-digit { width: 17px; height: 18px; border: 1px solid #000000; border-right: none; background: #fff; }
+  .date-digit:last-child { border-right: 1px solid #000000; }
+  .date-slash { font-size: 12px; font-weight: 700; color: #000; padding: 0 2px; }
+
+  .slip-table tbody tr.table-total-row td {
+    padding: 6px 4px; color: #000000; font-family: 'Barlow Condensed', sans-serif; font-size: 14px;
+    border-top: 2px solid #000000 !important; border-bottom: 4px double #000000 !important; 
+  }
+
+  .policy-notice {
+    padding: 6px 20px; background: #fff; font-size: 9.5px; font-weight: 600; color: #475569; font-style: italic; border-top: 1px solid var(--muted);
+  }
+
+  /* 🖨️ CASHIER WRITING CALCULATION SPACE */
+  .cashier-calculation-space {
+    padding: 12px 20px;
+    background: #fff;
+    border-top: 1px dashed #cbd5e1;
+  }
+  
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Barlow', sans-serif;
+    color: #000;
+  }
+  .calc-table td {
+    border: 1px solid #000 !important;
+    padding: 4px 8px;
+    font-size: 12px;
+    height: 24px;
+    vertical-align: middle;
+  }
+  .calc-table .label-col {
+    width: 20%;
+    font-weight: 600;
+  }
+  .calc-table .rs-col {
+    width: 5%;
+    text-align: center;
+    font-weight: 600;
+  }
+  .calc-table .val-col {
+    width: 22%;
+  }
+  .calc-table .split-col {
+    width: 3%;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+
+  .collection-row { padding: 12px 20px; background: #fff; border-top: 1px solid var(--border); display: flex; gap: 20px; }
+  .coll-box { flex: 1; border: 1px solid #000000; border-radius: 4px; padding: 6px 12px; }
+  .coll-box .clabel { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #000; margin-bottom: 2px; }
+  .coll-box .cvalue { border-bottom: 1px dashed #cbd5e1; min-height: 20px; }
+
+  .slip-footer { border-top: 1px solid var(--border); padding: 25px 20px 10px 20px; display: flex; justify-content: space-between; }
+  .sig-block { flex: 1; text-align: center; padding: 0 25px; }
+  .sig-block .sig-line { border-bottom: 1px dashed #000; height: 18px; margin-bottom: 4px; }
+  .sig-block .sig-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+
+  /* ── 🔒 PAGE 2 BLANK SHEET ── */
+  .page-block-blank {
+    background: #fff; border: 1px solid #000; padding: 10px 15px; margin-top: 35px; border-radius: 6px;
+    page-break-before: always; break-before: page; box-sizing: border-box; max-height: 210mm; overflow: hidden;
+  }
+  .van-no-right { text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .blank-header-grid { display: grid; grid-template-columns: 1.2fr 1.5fr 1.5fr; gap: 15px; font-family: 'Barlow Condensed', sans-serif; font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
+  
+  .p2-col-no { width: 3.5%; text-align: center; } .p2-col-date { width: 8%; } .p2-col-inv { width: 10.5%; } .p2-col-party { width: 17%; }
+  .p2-col-prev { width: 8.5%; } .p2-col-cash { width: 7.5%; } .p2-col-chq-amt { width: 7.5%; } .p2-col-chq-no { width: 14.5%; } .p2-col-bank { width: 5.5%; }
+  .p2-col-rdate { width: 11%; } .p2-col-sig { width: 6.5%; }
+  .blank-row { height: 20px !important; } .blank-row td { padding: 1px 4px !important; height: 20px !important; font-size: 11px !important; }
+
+  /* 🔄 RETURN CHEQUE DESIGN MATRIX */
+  .return-section-title-row td {
+    background: #fff !important;
+    color: #000 !important;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 16px !important;
+    text-align: center;
+    border: none !important;
+    padding: 8px 0 6px 0 !important; 
+  }
+
+  /* ── 🖨️ LANDSCAPE PRINT LOGIC ── */
+  @media print {
+    @page { size: A4 landscape; margin: 4mm 5mm; }
+    body { background: #fff; padding-bottom: 0; }
+    .top-container, .control-panel, .modal-overlay { display: none !important; }
+    .sheet { display: none !important; }
+    .sheet.active { display: block !important; max-width: 100% !important; margin: 0; padding: 0; }
+    
+    .slip { border: 1px solid #000; box-shadow: none; border-radius: 0; page-break-after: always; break-after: page; }
+    .slip-table thead th { border: 1px solid #000; background: #fff !important; }
+    .slip-table td { border: 1px solid #000; }
+    
+    .slip-table tr.highlight-row td { 
+      background-color: #f1f5f9 !important;
+      font-weight: 700 !important;
+      -webkit-print-color-adjust: exact; 
+      print-color-adjust: exact; 
+    }
+    .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; }
+    .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+    .calc-table td { border: 1px solid #000 !important; }
+    .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 8px 12px !important; margin-top: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+    .return-section-title-row td { background: #fff !important; color: #000 !important; padding: 8px 0 6px 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-container">
+  <h2>Sarathchandra Agencies - Balangoda</h2>
+  <h2 style="text-align: center; white-space: normal; word-wrap: break-word;">Collection Sheet Summary</h2>
+  <p>Please upload the Your Excel <b>(.xlsx)</b> file downloaded from LeverEDGE.</p>
+  
+  <div class="upload-row">
+    <input type="file" id="excelFileInput" accept=".xlsx, .xls">
+   <!--<button class="plus-setup-btn" onclick="openHighlightModal()">➕ Credit outlets</button>-->
+  </div>
+</div>
+
+<!-- HIGHLIGHT CONFIG MODAL -->
+<div class="modal-overlay" id="highlightModal">
+  <div class="modal-box">
+    <h3>⭐ Highlight T-Codes Configuration</h3>
+    <p> <strong><em>Manage HUL/T-Codes to highlight. Separate them with commas, spaces or lines:</em></strong> </p>
+    
+    <div class="modal-search-group">
+      <input type="text" id="modalSearchInput" placeholder="🔍 Type last 5-6 digits to search..." oninput="handleModalSearch()">
+      <button class="search-action-btn add" onclick="quickAddTCode()">➕ Add</button>
+      <button class="search-action-btn remove" onclick="quickRemoveTCode()">❌ Remove</button>
+    </div>
+    
+    <div class="search-status" id="searchStatusText"></div>
+
+    <textarea id="highlightCodesInput" placeholder="Example: HUL001, HUL002, 45678" oninput="handleTextareaManualChange()"></textarea>
+    
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeHighlightModal()">Cancel</button>
+      <button class="modal-btn save" onclick="saveHighlightCodes()">💾 Save & Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROL PANEL -->
+<div class="control-panel" id="controlPanel">
+  <div class="panel-top-row">
+    <div class="selector-group">
+      <div class="filter-box">
+        <label for="srSelect">Select Sales Rep (SR):</label>
+        <select id="srSelect" class="rep-dropdown"></select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="print-btn excel-btn" onclick="downloadStyled12VanExcel()">📥 Download Excel Workbook</button>
+      <button class="print-btn" onclick="window.print()">🖨 Print Current Summary</button>
+    </div>
+  </div>
+
+  <div class="beat-checkbox-container">
+    <div class="beat-checkbox-title">
+      <span>Select Routes / Beats (Check multiple to combine):</span>
+      <button class="beat-btn" onclick="toggleAllBeats(true)">Select All</button>
+      <button class="beat-btn" onclick="toggleAllBeats(false)">Unselect All</button>
+    </div>
+    <div class="beat-checkbox-grid" id="beatCheckboxGrid"></div>
+  </div>
+</div>
+
+<div id="sheets"></div>
+
+<script>
+const VAN_MAPPING = {
+  "SMN00001": "VAN 09", "SMN00002": "VAN 08", "SMN00003": "VAN 07",
+  "SMN00004": "VAN 06", "SMN00005": "VAN 05", "SMN00006": "VAN 04",
+  "SMN00007": "VAN 03", "SMN00008": "VAN 02", "SMN00009": "VAN 01",
+  "SMN00011": "VAN 10", "SMN00012": "VAN 11", "SMN00013": "VAN 12"
+};
+
+function getVanNumber(smnCode) {
+  if (!smnCode) return "";
+  return VAN_MAPPING[smnCode.toString().trim().toUpperCase()] || "";
+}
+
+const fmt = n => 'Rs. ' + (Number(n) || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+function parseExcelDate(excelDate) {
+  if (!excelDate) return '-';
+  if (!isNaN(excelDate)) {
+    const dateObj = XLSX.SSF.parse_date_code(excelDate);
+    return `${dateObj.y}-${String(dateObj.m).padStart(2, '0')}-${String(dateObj.d).padStart(2, '0')}`;
+  }
+  let strDate = excelDate.toString().trim();
+  if(strDate.includes(" ")) strDate = strDate.split(" ")[0];
+  return strDate;
+}
+
+let GLOBAL_MAP_DATA = {};
+let SR_LIST_SORTED = [];
+let SAVED_HIGHLIGHT_CODES = [];
+
+function openHighlightModal() {
+  document.getElementById('highlightModal').style.display = 'flex';
+  document.getElementById('modalSearchInput').value = '';
+  document.getElementById('searchStatusText').textContent = '';
+  loadHighlightCodes();
+}
+
+function closeHighlightModal() {
+  document.getElementById('highlightModal').style.display = 'none';
+}
+
+function loadHighlightCodes() {
+  const savedData = localStorage.getItem('sarathchandra_highlight_codes');
+  if (savedData) {
+    document.getElementById('highlightCodesInput').value = savedData;
+    parseHighlightCodes(savedData);
+  }
+}
+
+function parseHighlightCodes(text) {
+  if (!text) { SAVED_HIGHLIGHT_CODES = []; return; }
+  SAVED_HIGHLIGHT_CODES = text.split(/[\s,]+/).map(c => c.trim().toUpperCase()).filter(c => c !== "");
+}
+
+function handleModalSearch() {
+  const query = document.getElementById('modalSearchInput').value.trim().toUpperCase();
+  const statusText = document.getElementById('searchStatusText');
+  if (!query) { statusText.textContent = ''; return; }
+  const matchedCodes = SAVED_HIGHLIGHT_CODES.filter(code => code.includes(query));
+  if (matchedCodes.length > 0) {
+    statusText.innerHTML = `✅ Matches Found: <b>${matchedCodes.join(', ')}</b>`;
+    statusText.style.color = "#107c41";
+  } else {
+    statusText.innerHTML = `🔍 <b>"${query}"</b> not in list. Click "+ Add" to save this new code.`;
+    statusText.style.color = "#475569";
+  }
+}
+
+function quickAddTCode() {
+  const inputField = document.getElementById('modalSearchInput');
+  const codeToAdd = inputField.value.trim().toUpperCase();
+  const txtArea = document.getElementById('highlightCodesInput');
+  if (!codeToAdd) return;
+  if (SAVED_HIGHLIGHT_CODES.includes(codeToAdd)) { alert(`"${codeToAdd}" is already added!`); return; }
+  let currentText = txtArea.value.trim();
+  txtArea.value = currentText ? currentText + ", " + codeToAdd : codeToAdd;
+  parseHighlightCodes(txtArea.value);
+  handleModalSearch();
+}
+
+function quickRemoveTCode() {
+  const inputField = document.getElementById('modalSearchInput');
+  const query = inputField.value.trim().toUpperCase();
+  const txtArea = document.getElementById('highlightCodesInput');
+  if (!query) return;
+  const targetsToRemove = SAVED_HIGHLIGHT_CODES.filter(code => code.includes(query));
+  if (targetsToRemove.length === 0) { alert(`No matching code found for "${query}" to remove.`); return; }
+  const updatedList = SAVED_HIGHLIGHT_CODES.filter(code => !code.includes(query));
+  txtArea.value = updatedList.join(', ');
+  parseHighlightCodes(txtArea.value);
+  inputField.value = ''; 
+  document.getElementById('searchStatusText').innerHTML = `❌ Removed: ${targetsToRemove.join(', ')}`;
+}
+
+function handleTextareaManualChange() {
+  parseHighlightCodes(document.getElementById('highlightCodesInput').value);
+  document.getElementById('modalSearchInput').value = '';
+  document.getElementById('searchStatusText').textContent = '';
+}
+
+function saveHighlightCodes() {
+  const text = document.getElementById('highlightCodesInput').value;
+  localStorage.setItem('sarathchandra_highlight_codes', text);
+  parseHighlightCodes(text);
+  closeHighlightModal();
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) { generateCombinedSheets(); }
+}
+
+window.addEventListener('DOMContentLoaded', loadHighlightCodes);
+
+document.getElementById('excelFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    GLOBAL_MAP_DATA = {};
+
+    workbook.SheetNames.forEach(sheetName => {
+      const worksheet = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      if (rawRows.length === 0) return;
+
+      let headerRowIndex = -1;
+      for (let i = 0; i < rawRows.length; i++) {
+        if (rawRows[i].includes("Salesperson code") || rawRows[i].includes("Salesperson Code")) {
+          headerRowIndex = i;
+          break;
+        }
+      }
+
+      if (headerRowIndex === -1) return; 
+      const headers = rawRows[headerRowIndex].map(h => h ? h.toString().trim() : '');
+      
+      for (let j = headerRowIndex + 1; j < rawRows.length; j++) {
+        const rowData = rawRows[j];
+        if (!rowData || rowData.length === 0 || !rowData[0]) continue; 
+
+        let row = {};
+        headers.forEach((h, idx) => { if (h) row[h] = rowData[idx]; });
+
+        const repCode = (row["Salesperson code"] || row["Salesperson Code"] || "").toString().trim();
+        const repName = row["Salesperson Name"] || "REP - " + repCode;
+        if (!repCode || repCode === "Total" || repCode.startsWith("Grand") || repCode.toLowerCase().includes("total")) continue;
+
+        let beat = (row["Beat"] || "").toString().trim();
+        if (!beat || beat === "" || beat.toUpperCase() === "TOTAL" || beat.toUpperCase() === "NO BEAT") continue;
+
+        const key = repCode + "||" + beat;
+        const billNo = row["Bill Number"] || row["Bill No"] || '-';
+        const tCode = row["Outlet_HUL CODE"] || row["Outlet Code"] || row["Outlet code"] || '-';
+        const partyName = row["Party Name"] || '-';
+        const billDate = parseExcelDate(row["Bill Date"]);
+        const delivDate = parseExcelDate(row["Delivery Date"]);
+        const targetValue = parseFloat(row["Final Bill Amount(To be collected)"] || row["Bill Value"] || 0);
+
+        if (!GLOBAL_MAP_DATA[key]) {
+          GLOBAL_MAP_DATA[key] = { code: repCode, name: repName, beat: beat, bills: {}, uniqueBillList: [] };
+        }
+
+        if (GLOBAL_MAP_DATA[key].bills[billNo]) {
+          GLOBAL_MAP_DATA[key].bills[billNo].pre_value += targetValue;
+        } else {
+          GLOBAL_MAP_DATA[key].bills[billNo] = {
+            bill_no: billNo, outlet_code: tCode, party_name: partyName,
+            pre_value: targetValue, bill_date: billDate, delivery_date: delivDate
+          };
+          GLOBAL_MAP_DATA[key].uniqueBillList.push(billNo);
+        }
+      }
+    });
+
+    initFiltersAndInterface();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function initFiltersAndInterface() {
+  const srSelect = document.getElementById('srSelect');
+  const controlPanel = document.getElementById('controlPanel');
+  srSelect.innerHTML = '';
+  const uniqueSRs = {};
+  Object.values(GLOBAL_MAP_DATA).forEach(item => { uniqueSRs[item.code] = item.name; });
+  SR_LIST_SORTED = Object.keys(uniqueSRs).sort();
+
+  if (SR_LIST_SORTED.length === 0) { alert("Could not recognize data."); return; }
+  controlPanel.style.display = 'flex';
+
+  SR_LIST_SORTED.forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${code} - ${uniqueSRs[code]}`;
+    srSelect.appendChild(opt);
+  });
+  srSelect.addEventListener('change', handleSRChange);
+  handleSRChange();
+}
+
+function handleSRChange() {
+  const selectedSR = document.getElementById('srSelect').value;
+  const checkboxGrid = document.getElementById('beatCheckboxGrid');
+  checkboxGrid.innerHTML = '';
+
+  const relatedBeats = Object.values(GLOBAL_MAP_DATA).filter(item => item.code === selectedSR);
+  relatedBeats.forEach(item => {
+    const label = document.createElement('label');
+    label.className = 'checkbox-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = item.code + "||" + item.beat; cb.checked = true; cb.className = 'beat-cb';
+    cb.addEventListener('change', generateCombinedSheets);
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(item.beat));
+    checkboxGrid.appendChild(label);
+  });
+  generateCombinedSheets();
+}
+
+function toggleAllBeats(checkedState) {
+  document.querySelectorAll('.beat-cb').forEach(cb => cb.checked = checkedState);
+  generateCombinedSheets();
+}
+
+function generateCombinedSheets() {
+  const sheetsContainer = document.getElementById('sheets');
+  sheetsContainer.innerHTML = '';
+
+  const checkedBoxes = document.querySelectorAll('.beat-cb:checked');
+  if (checkedBoxes.length === 0) {
+    sheetsContainer.innerHTML = '<div style="max-width:1140px; margin:20px auto; padding:15px; background:#fff; border-radius:12px; text-align:center; font-weight:600; color:red; box-shadow:0 4px 12px rgba(0,0,0,0.05);">Please select at least one Route / Beat.</div>';
+    return;
+  }
+
+  let combinedBillsMap = {};
+  let combinedUniqueBillList = [];
+  let beatNamesArray = [];
+  let repCode = "", repName = "", date = "-", delivDate = "-";
+
+  checkedBoxes.forEach(cb => {
+    const targetKey = cb.value;
+    if (!GLOBAL_MAP_DATA[targetKey]) return;
+    const sp = GLOBAL_MAP_DATA[targetKey];
+    repCode = sp.code; repName = sp.name;
+    if (!beatNamesArray.includes(sp.beat)) beatNamesArray.push(sp.beat);
+
+    sp.uniqueBillList.forEach(bNo => {
+      const bData = sp.bills[bNo];
+      if (date === "-") date = bData.bill_date;
+      if (delivDate === "-") delivDate = bData.delivery_date;
+      if (combinedBillsMap[bNo]) {
+        combinedBillsMap[bNo].pre_value += bData.pre_value;
+      } else {
+        combinedBillsMap[bNo] = { ...bData };
+        combinedUniqueBillList.push(bNo);
+      }
+    });
+  });
+
+  const billsArray = combinedUniqueBillList.map(bNo => combinedBillsMap[bNo]);
+  const total_pre_value = billsArray.reduce((a, b) => a + b.pre_value, 0);
+  const combinedBeatString = beatNamesArray.join(', ');
+  const autoVanNo = getVanNumber(repCode);
+
+  const boxMatrixHtml = `<div class="chq-box-container"><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div><div class="chq-digit"></div></div>`;
+
+  const dateMatrixPage1Html = `
+    <div class="date-matrix-container">
+      <div class="date-box-segment"><div class="date-digit"></div><div class="date-digit"></div></div>
+      <div class="date-slash">/</div>
+      <div class="date-box-segment"><div class="date-digit"></div><div class="date-digit"></div></div>
+    </div>`;
+
+  let rowsHtml = billsArray.map((b, i) => {
+    const cleanTCode = b.outlet_code.toString().trim().toUpperCase();
+    const shouldHighlight = SAVED_HIGHLIGHT_CODES.includes(cleanTCode);
+    const rowClass = shouldHighlight ? 'class="highlight-row"' : '';
+
+    return `
+    <tr ${rowClass}>
+      <td class="no">${i + 1}</td>
+      <td>${b.bill_no}</td>
+      <td>${b.outlet_code}</td>
+      <td>${b.party_name}</td>
+      <td class="num amt">${fmt(b.pre_value)}</td>
+      <td></td><td></td><td></td>
+      <td>${boxMatrixHtml}</td>
+      <td>${dateMatrixPage1Html}</td>
+      <td></td>
+    </tr>`;
+  }).join('');
+
+  rowsHtml += `
+  <tr class="table-total-row">
+    <td colspan="4" style="text-align: right; font-weight: 700;">TOTAL VALUE:</td>
+    <td class="num" style="font-weight: 700;">${fmt(total_pre_value)}</td>
+    <td></td><td></td><td></td><td></td><td></td><td></td>
+  </tr>`;
+
+  // 📝 18 ROWS FOR STANDARD INVOICES ON PAGE 2
+  let p2RowsHtml = '';
+  for (let i = 1; i <= 18; i++) {
+    p2RowsHtml += `
+      <tr class="blank-row">
+        <td style="font-weight:600; text-align:center;">${i}</td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>${boxMatrixHtml}</td>
+        <td></td><td></td><td></td>
+      </tr>`;
+  }
+
+  // 🔄 RETURN CHEQUES DATA TABLE GENERATION (5 Rows only now)
+  p2RowsHtml += `
+    <tr class="return-section-title-row">
+      <td colspan="11">Return Cheque Collections</td>
+    </tr>
+    <tr>
+      <th rowspan="2" class="p2-col-no" style="border: 1px solid #000; background:#fff; color:#000;">NO</th>
+      <th rowspan="2" class="p2-col-date" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">INVOICE<br>DATE</th>
+      <th rowspan="2" class="p2-col-inv" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">INVOICE<br>NUMBER</th>
+      <th rowspan="2" class="p2-col-party" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">CUSTOMER NAME</th>
+      <th rowspan="2" class="p2-col-prev" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">PREVIOUS BILL<br>AMOUNT</th>
+      <th rowspan="2" class="p2-col-cash" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">CASH AMOUNT</th>
+      <th rowspan="2" class="p2-col-chq-amt" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">CHEQUE AMOUNT</th>
+      <th colspan="3" style="border: 1px solid #000; padding: 2px; text-align:center; background:#fff; color:#000;">CHEQUE</th>
+      <th rowspan="2" class="p2-col-sig" style="border: 1px solid #000; text-align:center; background:#fff; color:#000;">SIGNATURE</th>
+    </tr>
+    <tr>
+      <th class="p2-col-chq-no" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center; background:#fff; color:#000;">CHEQUE NO.</th>
+      <th class="p2-col-bank" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center; background:#fff; color:#000;">BANK</th>
+      <th class="p2-col-rdate" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center; background:#fff; color:#000;">R. DATE</th>
+    </tr>`;
+
+  // 📐 5 ROWS FOR RETURN CHEQUES (1 TO 5 as requested)
+  for (let i = 1; i <= 5; i++) {
+    p2RowsHtml += `
+      <tr class="blank-row">
+        <td style="font-weight:600; text-align:center;">${i}</td>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>${boxMatrixHtml}</td>
+        <td></td><td></td><td></td>
+      </tr>`;
+  }
+
+  // 🔍 TOTAL TEXT එක 16px කරලා තවත් ලොකු කළා
+  p2RowsHtml += `
+    <tr class="blank-row" style="height:26px;">
+      <td colspan="4" style="text-align: center; font-weight: 700; font-family:'Barlow',sans-serif; font-size:16px; border:1px solid #000;">Total</td>
+      <td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td>
+      <td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td><td style="border:1px solid #000;"></td>
+      <td style="border:1px solid #000;"></td>
+    </tr>`;
+
+  sheetsContainer.innerHTML = `
+  <div class="sheet active">
+    <div class="slip">
+      <div class="slip-header">
+        <div class="company">Sarathchandra Agencies Pvt Ltd<small>Company: Unilever - Balangoda (Cash Collection Slip)</small></div>
+        <div class="slip-title"><div class="value">${repCode}</div></div>
+      </div>
+      <div class="slip-meta">
+        <div class="meta-item"><span class="mlabel">Sales Rep</span><span class="mvalue">${repCode} – ${repName}</span></div>
+        <div class="meta-item"><span class="mlabel">Route / Beat</span><span class="mvalue">${combinedBeatString}</span></div>
+        <div class="meta-item"><span class="mlabel">Van No</span><span class="meta-box-write">${autoVanNo}</span></div>
+        <div class="meta-item"><span class="mlabel">Vehicle No</span><span class="meta-box-write"></span></div>
+        <div class="meta-item"><span class="mlabel">Bill Date</span><span class="mvalue">${date}</span></div>
+        <div class="meta-item"><span class="mlabel">Delivery Date</span><span class="mvalue">${delivDate}</span></div>
+        <div class="meta-item"><span class="mlabel">Unique Bills</span><span class="mvalue">${billsArray.length}</span></div>
+      </div>
+      <table class="slip-table">
+        <thead>
+          <tr>
+            <th class="col-no">#</th><th class="col-inv">Invoice No</th><th class="col-tcode">T Code</th><th class="col-party">Customer Name</th><th class="col-val num">PRE Value</th><th class="col-cash">Cash</th><th class="col-chq-val">Cheque</th><th class="col-credit">Credit</th><th class="col-chq-box center-align">Cheque No</th>
+            <th class="col-chq-date center-align">Chq Date</th>
+            <th class="col-bank">Bank</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      
+      <div class="policy-notice">
+        * Highlighted rows indicate outlets approved under the Credit Policy.
+      </div>
+
+      <div class="cashier-calculation-space">
+        <table class="calc-table">
+          <tr>
+            <td class="label-col">Day Sale Cash</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Day Sale Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Credit Bills Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Credit Bills Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Re/Cheque Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Re/Cheque Paid Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Under Charge Paid</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col">Under Charge Paid Cheque</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col"></td>
+            <td class="rs-col"></td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col"></td>
+            <td class="rs-col"></td>
+            <td class="val-col"></td>
+          </tr>
+          <tr>
+            <td class="label-col">Total Cash</td>
+            <td class="rs-col">Rs.</td>
+            <td class="val-col"></td>
+            <td class="split-col"></td>
+            <td class="label-col" colspan="2">Total Cheques &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rs.</td>
+            <td class="val-col"></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="collection-row">
+        <div class="coll-box"><div class="clabel">Received Cash</div><div class="cvalue">&nbsp;</div></div>
+        <div class="coll-box"><div class="clabel">Cash Excess / Short</div><div class="cvalue">&nbsp;</div></div>
+      </div>
+      <div class="slip-footer">
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cash Collector</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cashier</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Operation Manager</div></div>
+      </div>
+    </div>
+
+    <!-- 🔒 PAGE 2 BLANK FIELD SHEET SECTION -->
+    <div class="page-block-blank">
+      <div class="van-no-right">VAN NO : <span style="font-size:15px; text-decoration: underline; font-weight:700;">&nbsp;${autoVanNo ? autoVanNo : '............................'}&nbsp;</span></div>
+      <div class="blank-header-grid"><div>DATE : ${delivDate}</div><div>ROUTE : ${combinedBeatString}</div><div>SR NAME : ${repName}</div></div>
+      <table class="slip-table" style="border: 1px solid #000;">
+        <thead>
+          <tr>
+            <th rowspan="2" class="p2-col-no" style="border: 1px solid #000;">NO</th><th rowspan="2" class="p2-col-date" style="border: 1px solid #000; text-align:center;">INVOICE<br>DATE</th><th rowspan="2" class="p2-col-inv" style="border: 1px solid #000; text-align:center;">INVOICE<br>NUMBER</th><th rowspan="2" class="p2-col-party" style="border: 1px solid #000; text-align:center;">CUSTOMER NAME</th><th rowspan="2" class="p2-col-prev" style="border: 1px solid #000; text-align:center;">PREVIOUS BILL<br>AMOUNT</th><th rowspan="2" class="p2-col-cash" style="border: 1px solid #000; text-align:center;">CASH AMOUNT</th><th rowspan="2" class="p2-col-chq-amt" style="border: 1px solid #000; text-align:center;">CHEQUE AMOUNT</th><th colspan="3" style="border: 1px solid #000; padding: 2px; text-align:center;">CHEQUE</th><th rowspan="2" class="p2-col-sig" style="border: 1px solid #000; text-align:center;">SIGNATURE</th>
+          </tr>
+          <tr>
+            <th class="p2-col-chq-no" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center;">CHEQUE NO.</th><th class="p2-col-bank" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center;">BANK</th><th class="p2-col-rdate" style="font-size: 11px; padding: 2px; border: 1px solid #000; text-align:center;">R. DATE</th>
+          </tr>
+        </thead>
+        <tbody>${p2RowsHtml}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function downloadStyled12VanExcel() {
+  const wb = XLSX.utils.book_new();
+  const reps = {};
+  Object.values(GLOBAL_MAP_DATA).forEach(item => { reps[item.code] = item.name; });
+  const sortedRepCodes = Object.keys(reps).sort();
+
+  if (sortedRepCodes.length === 0) { alert("Please upload a file first!"); return; }
+  let finalDeliveryDate = "";
+
+  const borderThin = { top: { style: "thin", color: { rgb: "94A3B8" } }, bottom: { style: "thin", color: { rgb: "94A3B8" } }, left: { style: "thin", color: { rgb: "94A3B8" } }, right: { style: "thin", color: { rgb: "94A3B8" } } };
+  const borderBlackThin = { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } };
+  
+  const headerStyle = { font: { name: "Arial", bold: true, size: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1A3A5C" } }, alignment: { vertical: "center", horizontal: "left" }, border: borderThin };
+  const headerStyleRight = { ...headerStyle, alignment: { vertical: "center", horizontal: "right" } };
+  const headerStyleCenter = { ...headerStyle, alignment: { vertical: "center", horizontal: "center" } };
+
+  const excelHighlightFill = { fgColor: { rgb: "F1F5F9" } };
+  const totalStyle = { font: { name: "Arial", bold: true, size: 11, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "F1F5F9" } }, alignment: { vertical: "center", horizontal: "right" }, border: borderThin };
+  const noticeStyle = { font: { name: "Arial", italic: true, size: 9, color: { rgb: "475569" } }, fill: { fgColor: { rgb: "F8FAFC" } }, alignment: { vertical: "center", horizontal: "left" }, border: borderThin };
+  
+  const returnTitleStyleExcel = { font: { name: "Arial", bold: true, size: 12, color: { rgb: "000000" } }, alignment: { vertical: "center", horizontal: "center" } };
+  const returnSubHeaderStyleExcel = { font: { name: "Arial", bold: true, size: 10, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "FFFFFF" } }, alignment: { vertical: "center", horizontal: "center" }, border: borderBlackThin };
+
+  sortedRepCodes.forEach(rCode => {
+    const vanId = getVanNumber(rCode) || rCode;
+    const wsRows = [];
+
+    wsRows.push([{ v: "SARATHCHANDRA AGENCIES (PVT) LTD - UNILEVER BALANGODA", s: { font: { name: "Arial", bold: true, size: 14, color: { rgb: "1A3A5C" } } } }]);
+    wsRows.push([{ v: `SALES REP: ${rCode} - ${reps[rCode]}`, s: { font: { name: "Arial", bold: true, size: 11 } } }, "", "", "", { v: `VAN NO: ${getVanNumber(rCode)}`, s: { font: { name: "Arial", bold: true, size: 11 } } }]);
+    wsRows.push([""]);
+
+    wsRows.push([
+      { v: "#", s: headerStyleCenter }, { v: "INVOICE NO", s: headerStyle }, { v: "T CODE", s: headerStyle },
+      { v: "CUSTOMER NAME", s: headerStyle }, { v: "PRE VALUE", s: headerStyleRight }, { v: "CASH", s: headerStyle },
+      { v: "CHEQUE", s: headerStyle }, { v: "CREDIT", s: headerStyle }, { v: "CHEQUE NO", s: headerStyleCenter }, 
+      { v: "CHQ DATE", s: headerStyleCenter }, { v: "BANK", s: headerStyle }
+    ]);
+
+    let repInvoices = {}; let routesList = []; let bDate = "-"; let dDate = "-";
+    Object.values(GLOBAL_MAP_DATA).filter(item => item.code === rCode).forEach(sp => {
+      if (!routesList.includes(sp.beat)) routesList.push(sp.beat);
+      sp.uniqueBillList.forEach(bNo => {
+        const bData = sp.bills[bNo];
+        if (bDate === "-") bDate = bData.bill_date;
+        if (dDate === "-") dDate = bData.delivery_date;
+        if (bData.delivery_date && bData.delivery_date !== "-") finalDeliveryDate = bData.delivery_date;
+        if (repInvoices[bNo]) { repInvoices[bNo].pre_value += bData.pre_value; } else { repInvoices[bNo] = { ...bData }; }
+      });
+    });
+
+    let idx = 1; let totalPreVal = 0;
+    Object.values(repInvoices).forEach(inv => {
+      const cleanTCode = inv.outlet_code.toString().trim().toUpperCase();
+      const isMatch = SAVED_HIGHLIGHT_CODES.includes(cleanTCode);
+
+      const cellLeft = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+      const cellRight = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center", horizontal: "right" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+      const cellCenter = { font: { name: "Arial", size: 10, bold: isMatch }, alignment: { vertical: "center", horizontal: "center" }, border: borderThin, fill: isMatch ? excelHighlightFill : undefined };
+
+      wsRows.push([
+        { v: idx++, s: cellCenter }, { v: inv.bill_no, s: cellLeft }, { v: inv.outlet_code, s: cellLeft },
+        { v: inv.party_name, s: cellLeft }, { v: inv.pre_value, s: cellRight, t: 'n', z: '"Rs. "#,##0.00' },
+        { v: "", s: cellLeft }, { v: "", s: cellLeft }, { v: "", s: cellLeft }, { v: "", s: cellCenter }, 
+        { v: "", s: cellCenter }, { v: "", s: cellLeft }
+      ]);
+      totalPreVal += inv.pre_value;
+    });
+
+    wsRows.push([
+      { v: "TOTAL VALUE:", s: totalStyle }, "", "", "", { v: totalPreVal, s: totalStyle, t: 'n', z: '"Rs. "#,##0.00' },
+      { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }, { v: totalStyle }, { v: "", s: totalStyle }, { v: "", s: totalStyle }
+    ]);
+
+    wsRows.push([
+      { v: "* Highlighted rows indicate outlets approved under the Credit Policy.", s: noticeStyle },
+      { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle },
+      { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }, { v: "", s: noticeStyle }
+    ]);
+
+    wsRows.push([""], [""]);
+    const p2HeaderStyle = { font: { name: "Arial", bold: true, size: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "334155" } }, alignment: { vertical: "center", horizontal: "center" }, border: borderBlackThin };
+    wsRows.push([{ v: `BLANK FIELD COLLECTION SHEET - ROUTES: ${routesList.join(', ')} (DATE: ${dDate})`, s: { font: { name: "Arial", bold: true, size: 12, color: { rgb: "334155" } } } }]);
+
+    wsRows.push([
+      { v: "NO", s: p2HeaderStyle }, { v: "INVOICE DATE", s: p2HeaderStyle }, { v: "INVOICE NUMBER", s: p2HeaderStyle },
+      { v: "CUSTOMER NAME", s: p2HeaderStyle }, { v: "PREVIOUS BILL AMOUNT", s: p2HeaderStyle }, { v: "CASH AMOUNT", s: p2HeaderStyle },
+      { v: "CHEQUE AMOUNT", s: p2HeaderStyle }, { v: "CHEQUE NO", s: p2HeaderStyle }, { v: "BANK", s: p2HeaderStyle },
+      { v: "R. DATE", s: p2HeaderStyle }, { v: "SIGNATURE", s: p2HeaderStyle }
+    ]);
+
+    const p2CellLeft = { font: { name: "Arial", size: 10 }, border: borderBlackThin };
+    const p2CellRight = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "right" }, border: borderBlackThin };
+    const p2CellCenter = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "center" }, border: borderBlackThin };
+
+    // Standard Invoices Rows 1-18
+    for (let k = 1; k <= 18; k++) {
+      wsRows.push([
+        { v: k, s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft },
+        { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", p2CellCenter },
+        { v: "", s: p2CellLeft }, { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }
+      ]);
+    }
+
+    // 1. "Return Cheque Collections" Title Row
+    wsRows.push([{ v: "Return Cheque Collections", s: returnTitleStyleExcel }, "", "", "", "", "", "", "", "", "", ""]);
+    const excelReturnChequeTitleIndex = wsRows.length - 1;
+
+    // 2. Twin Sub-Header Row
+    wsRows.push([
+      { v: "NO", s: returnSubHeaderStyleExcel }, { v: "INVOICE DATE", s: returnSubHeaderStyleExcel }, { v: "INVOICE NUMBER", s: returnSubHeaderStyleExcel },
+      { v: "CUSTOMER NAME", s: returnSubHeaderStyleExcel }, { v: "PREVIOUS BILL AMOUNT", s: returnSubHeaderStyleExcel }, { v: "CASH AMOUNT", s: returnSubHeaderStyleExcel },
+      { v: "CHEQUE AMOUNT", s: returnSubHeaderStyleExcel }, { v: "CHEQUE NO.", s: returnSubHeaderStyleExcel }, { v: "BANK", s: returnSubHeaderStyleExcel },
+      { v: "R. DATE", s: returnSubHeaderStyleExcel }, { v: "SIGNATURE", s: returnSubHeaderStyleExcel }
+    ]);
+
+    // Return Cheques Rows 1-5 (Excel එකේත් 5 දක්වා අඩු කළා)
+    for (let k = 1; k <= 5; k++) {
+      wsRows.push([
+        { v: k, s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft },
+        { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", p2CellCenter },
+        { v: "", s: p2CellLeft }, { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }
+      ]);
+    }
+
+    // Total Footer (Excel ඩවුන්ලෝඩ් එකේත් ලොකුවට BOLD කරලා මැප් කලා)
+    const returnTotalStyleExcel = { font: { name: "Arial", bold: true, size: 12 }, alignment: { horizontal: "center" }, border: borderBlackThin };
+    wsRows.push([
+      { v: "Total", s: returnTotalStyleExcel }, "", "", "", { v: "", s: p2CellRight }, { v: "", s: p2CellRight }, { v: "", s: p2CellRight },
+      { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellCenter }, { v: "", s: p2CellLeft }
+    ]);
+    const excelReturnTotalIndex = wsRows.length - 1;
+
+    const ws = XLSX.utils.aoa_to_sheet(wsRows);
+    
+    if(!ws['!merges']) ws['!merges'] = [];
+    const noticeRowIndex = wsRows.length - 31 - 2; // Rows ගණන වෙනස් වූ නිසා Index එක dynamically හැදුවා
+    ws['!merges'].push({ s: { r: noticeRowIndex, c: 0 }, e: { r: noticeRowIndex, c: 10 } });
+    
+    ws['!merges'].push({ s: { r: excelReturnChequeTitleIndex, c: 0 }, e: { r: excelReturnChequeTitleIndex, c: 10 } });
+    ws['!merges'].push({ s: { r: excelReturnTotalIndex, c: 0 }, e: { r: excelReturnTotalIndex, c: 3 } });
+
+    ws['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 14 }, { wch: 26 }, { wch: 15 }, { wch: 13 }, { wch: 13 }, { wch: 13 }, { wch: 14 }, { wch: 10 }, { wch: 11 }];
+    XLSX.utils.book_append_sheet(wb, ws, vanId);
+  });
+
+  const formattedDate = finalDeliveryDate && finalDeliveryDate !== "-" ? finalDeliveryDate.trim() : "No-Date";
+  XLSX.writeFile(wb, `${formattedDate} cash slip.xlsx`);
+}
+</script>
+</body>
+</html>

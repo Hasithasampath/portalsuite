@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Portal Pro - Operations Suite</title>
+<style>
+    :root {
+        /* Vibrant Luxury Light Palette */
+        --bg-cosmic: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        --aura-pink: rgba(236, 72, 153, 0.12);
+        --aura-blue: rgba(59, 130, 246, 0.15);
+        --aura-purple: rgba(139, 92, 246, 0.12);
+
+        /* Clean Crystal Glassmorphism */
+        --glass-bg-deep: rgba(255, 255, 255, 0.55);
+        --glass-bg-lighter: rgba(255, 255, 255, 0.75);
+        --glass-border-polished: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.4) 100%);
+        --glass-border-active: linear-gradient(135deg, #3b82f6 0%, #ec4899 100%);
+
+        /* Multi-Color Accents */
+        --accent-cash: #10b981;
+        --accent-data: #3b82f6;
+        --accent-finance: #8b5cf6;
+        --text-pure: #0f172a;
+        --text-main: #334155;
+        --text-sub: #475569;
+        --text-muted: #64748b;
+
+        /* Shadows */
+        --shadow-elevation: 0 15px 35px -5px rgba(148, 163, 184, 0.35);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+    body {
+        font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg-cosmic);
+        background-attachment: fixed;
+        color: var(--text-main);
+        display: flex;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Vibrant Fluid Glow Background Elements */
+    body::before {
+        content: '';
+        position: fixed;
+        top: -50vh; left: -50vw; width: 200vw; height: 200vh;
+        background-image: var(--aura-blue), var(--aura-pink), var(--aura-purple);
+        background-position: top left, bottom right, center center;
+        background-repeat: no-repeat;
+        opacity: 1;
+        z-index: -1;
+    }
+
+    /* === Crystal Glassmorphism Sidebar (Compact Style) === */
+    .sidebar {
+        width: 240px;
+        background: var(--glass-bg-deep);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-right: 1px solid rgba(255, 255, 255, 0.5);
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+        z-index: 10;
+        box-shadow: var(--shadow-elevation);
+    }
+
+    .sidebar-scroll {
+        flex: 1;
+        overflow-y: auto;
+        margin-right: -10px;
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0,0,0,0.1) transparent;
+    }
+    .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+
+    /* Colorful Logo Area */
+    .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 5px 5px 20px 5px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+    .logo-area::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 5px; right: 5px;
+        height: 2px;
+        background: linear-gradient(to right, #3b82f6, #ec4899, #8b5cf6);
+        border-radius: 2px;
+    }
+
+    .logo-icon {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, #3b82f6, #ec4899);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    }
+
+    .logo-text h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        background: linear-gradient(to right, #1e3a8a, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+    }
+
+    .logo-text p {
+        margin: 2px 0 0 0;
+        font-size: 10px;
+        color: #ec4899;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    /* Vibrant Category Labels */
+    .menu-label {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin: 18px 0 8px 10px;
+        font-weight: 800;
+    }
+    .label-cash { color: #059669; }
+    .label-data { color: #2563eb; }
+    .label-finance { color: #7c3aed; }
+
+    .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        color: var(--text-sub);
+        text-decoration: none;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .menu-item:not(.active):hover {
+        background: var(--glass-bg-lighter);
+        color: var(--text-pure);
+        transform: translateX(4px);
+        box-shadow: 0 4px 10px rgba(148, 163, 184, 0.15);
+    }
+
+    /* Active Dynamic Backgrounds based on categories */
+    .cash-item.active { background: linear-gradient(135deg, #e6f4ea 0%, rgba(16, 185, 129, 0.15) 100%); border-color: var(--accent-cash); color: #065f46; }
+    .data-item.active { background: linear-gradient(135deg, #e8f0fe 0%, rgba(59, 130, 246, 0.15) 100%); border-color: var(--accent-data); color: #1e40af; }
+    .finance-item.active { background: linear-gradient(135deg, #f3e8ff 0%, rgba(139, 92, 246, 0.15) 100%); border-color: var(--accent-finance); color: #5b21b6; }
+
+    .menu-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 15%; height: 70%;
+        width: 4px;
+        border-radius: 0 4px 4px 0;
+    }
+    .cash-item.active::before { background: var(--accent-cash); }
+    .data-item.active::before { background: var(--accent-data); }
+    .finance-item.active::before { background: var(--accent-finance); }
+
+    .item-icon {
+        font-size: 16px;
+        transition: transform 0.2s;
+    }
+    .menu-item:hover .item-icon {
+        transform: scale(1.15);
+    }
+
+    /* === Sidebar Footer === */
+    .sidebar-footer {
+        padding: 12px 5px 2px 5px;
+        border-top: 1px solid rgba(0,0,0,0.03);
+        text-align: center;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .credits-text {
+        font-size: 8px;
+        color: rgba(15, 23, 42, 0.06);
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        transition: all 0.4s ease;
+    }
+
+    .sidebar-footer:hover .credits-text {
+        color: #3b82f6;
+        text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    /* === Main Content Area === */
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: relative;
+    }
+
+    /* Modern Soft Light Navbar */
+    .top-navbar {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px;
+        margin: 12px 12px 0 12px;
+        border-radius: 16px;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        background: var(--glass-bg-lighter);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: var(--shadow-elevation);
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-pure);
+    }
+
+    .system-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        background: #ffffff;
+        border: 1px solid #10b981;
+        padding: 6px 12px;
+        border-radius: 50px;
+        color: #065f46;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.15);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: pulseStatus 2s infinite;
+    }
+
+    /* Viewport Area */
+    .view-container {
+        flex: 1;
+        padding: 15px;
+        position: relative;
+    }
+
+    .tool-iframe {
+        width: 100%;
+        height: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: var(--shadow-elevation);
+        transition: opacity 0.3s ease;
+    }
+
+    /* Welcome Screen overlay inside view area */
+    .welcome-screen {
+        position: absolute;
+        top: 15px; left: 15px; right: 15px; bottom: 15px;
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        background: rgba(248, 250, 252, 0.6);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        transition: opacity 0.4s ease;
+    }
+
+    .welcome-card {
+        text-align: center;
+        max-width: 500px;
+        padding: 40px 30px;
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,1);
+        box-shadow: var(--shadow-elevation);
+    }
+
+    .gilded-pulsar {
+        width: 70px; height: 70px;
+        background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+        border-radius: 50%;
+        border: 2px dashed #ec4899;
+        margin: 0 auto 20px auto;
+        position: relative;
+        animation: pulsarSpin 20s linear infinite;
+    }
+
+    .welcome-card h2 {
+        margin: 0 0 10px 0;
+        font-size: 26px;
+        font-weight: 800;
+        background: linear-gradient(to right, #1e3a8a, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .welcome-card p {
+        color: var(--text-sub);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .start-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 30px;
+        font-size: 12px;
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+    /* === Custom Center Glassmorphism Error Pop-up === */
+    .error-blur-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(15, 23, 42, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 99998;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .error-popup-center {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid #f87171;
+        padding: 25px 35px;
+        border-radius: 20px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 25px 60px -10px rgba(239, 68, 68, 0.2);
+        z-index: 99999;
+        display: none;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Active States for Center Pop-up */
+    .error-blur-overlay.show { display: block; opacity: 1; }
+    .error-popup-center.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    .error-icon-box {
+        width: 55px; height: 55px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 15px auto;
+        font-size: 24px;
+        color: #ef4444;
+        animation: pulseErrorIcon 2s infinite;
+    }
+
+    .error-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #dc2626;
+        margin: 0 0 8px 0;
+    }
+
+    .error-text {
+        font-size: 13.5px;
+        color: #475569;
+        line-height: 1.5;
+        margin: 0 0 20px 0;
+    }
+
+    .error-btn {
+        background: #ef4444;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    .error-btn:hover { background: #dc2626; }
+
+    /* Animations */
+    @keyframes pulseStatus {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    @keyframes pulseErrorIcon {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    @keyframes pulsarSpin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+</head>
+<body>
+
+    <div id="error-overlay" class="error-blur-overlay" onclick="closeError()"></div>
+    <div id="error-pop-center" class="error-popup-center">
+        <div class="error-icon-box">⚠️</div>
+        <div class="error-title">Component Loading Error</div>
+        <p id="error-msg" class="error-text">The selected Page is missing or currently unavailable...</p>
+        <button class="error-btn" onclick="closeError()">Close</button>
+    </div>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">
+                <h1>SMART PORTAL</h1>
+                <p>Operations Suite Pro</p>
+            </div>
+        </div>
+
+        <div class="sidebar-scroll">
+            <div class="menu-label label-cash">Cash Slip Tools</div>
+            <ul class="menu-list">
+                <li class="menu-item cash-item" onclick="loadTool('Cash slip (new).html', '💵 Cash Slip Summary (New Update)', this)">
+                    <span class="item-icon">💵</span> Cash Slip Summary (New)
+                </li>
+                <li class="menu-item cash-item" onclick="loadTool('Cash Slip.html', '📄 Cash Slip Summary (Standard)', this)">
+                    <span class="item-icon">📄</span> Cash Slip Standard
+                </li>
+            </ul>
+
+            <div class="menu-label label-data">Data Converters</div>
+            <ul class="menu-list">
+                <li class="menu-item data-item" onclick="loadTool('unilever_converter.html', '🔄 Unilever Claim Converter', this)">
+                    <span class="item-icon">🔄</span> Unilever Claim Converter
+                </li>
+                <li class="menu-item data-item" onclick="loadTool('general_excel.html', '✨ General Excel Viewer', this)">
+                    <span class="item-icon">✨</span> General Excel Viewer
+                </li>
+            </ul>
+
+            <div class="menu-label label-finance">Finance & Reports</div>
+            <ul class="menu-list">
+                <li class="menu-item finance-item" onclick="loadTool('market_billing.html', '🛒 Market Order Billing', this)">
+                    <span class="item-icon">🛒</span> Market Billing Tool
+                </li>
+                <li class="menu-item finance-item" onclick="loadTool('credit_report.html', '💳 Credit Report Tool', this)">
+                    <span class="item-icon">💳</span> Credit Report Tool
+                </li>
+                <li class="menu-item finance-item" onclick="loadTool('cheque_report.html', '🏦 Cheque Status Report', this)">
+                    <span class="item-icon">🏦</span> Cheque Report Tool
+                </li>
+                <li class="menu-item finance-item" onclick="loadTool('stock_report.html', '📦 Stock Sheet / Sales Report', this)">
+                    <span class="item-icon">📦</span> Stock Sheet Tool
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-footer">
+            <span class="credits-text">Developed by Hasitha Sampath</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-navbar">
+            <h2 class="page-title" id="current-title">Dashboard Overview</h2>
+            <div class="system-status">
+                <div class="status-dot"></div>
+                <span id="status-text">System Live (Local Mode)</span>
+            </div>
+        </div>
+
+        <div class="view-container">
+            <div class="welcome-screen" id="welcome-overlay">
+                <div class="welcome-card">
+                    <div class="gilded-pulsar"></div>
+                    <h2>Welcome to Smart Portal Pro</h2>
+                    <p>Select an operational tool from the sidebar to launch the system workspace modules.</p>
+                    <span class="start-badge">👈 Select a tool to start</span>
+                </div>
+            </div>
+
+            <iframe id="tool-viewport" class="tool-iframe" style="display:none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function loadTool(fileName, toolTitle, element) {
+            // 1. ෆයිල් එක නිකන්ම ඩබල් ක්ලික් කරලා බ්‍රවුසර් එකෙන් ඕපන් කරලා තියෙනවා නම් (file:/// ප්‍රොටොකෝල්)
+            // බ්‍රවුසර් එකේ CORS බ්ලොක් එක නිසා HTTP Request එකක් කරන්න බැරි බැවින් කෙලින්ම Iframe එකට ලෝඩ් වෙන්න සලස්වයි.
+            if (window.location.protocol === 'file:') {
+                executeNavigation(fileName, toolTitle, element);
+                return;
+            }
+
+            // 2. සර්වර් එකක (HTTP / Localhost / XAMPP) දුවනවා නම් පමණක් ෆයිල් එක තිබේදැයි හරියටම චෙක් කරයි.
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', fileName, true);
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        executeNavigation(fileName, toolTitle, element);
+                    } else {
+                        showCenterError(`The selected Page is missing or currently unavailable...`);
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                showCenterError(`The selected Page is missing or currently unavailable...`);
+            };
+            
+            xhr.send();
+        }
+
+        function executeNavigation(fileName, toolTitle, element) {
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            document.getElementById('current-title').innerText = toolTitle;
+
+            document.getElementById('welcome-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcome-overlay').style.display = 'none';
+            }, 400);
+
+            const iframe = document.getElementById('tool-viewport');
+            iframe.src = fileName;
+            iframe.style.display = 'block';
+        }
+
+        // Mid-Screen Center Error Display Control
+        function showCenterError(message) {
+            document.getElementById('error-msg').innerText = message;
+            document.getElementById('error-overlay').style.display = 'block';
+            document.getElementById('error-pop-center').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('error-overlay').classList.add('show');
+                document.getElementById('error-pop-center').classList.add('show');
+            }, 10);
+        }
+
+        // Close Pop-up
+        function closeError() {
+            document.getElementById('error-overlay').classList.remove('show');
+            document.getElementById('error-pop-center').classList.remove('show');
+            setTimeout(() => {
+                document.getElementById('error-overlay').style.display = 'none';
+                document.getElementById('error-pop-center').style.display = 'none';
+            }, 300);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Report Tool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+<style>
+    :root { 
+        --primary: #4f46e5; 
+        --success: #10b981; 
+        --danger: #ef4444; 
+        --text: #1e293b; 
+    }
+    
+    body { 
+        margin: 0; 
+        padding: 20px; 
+        background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #faf5ff 100%); 
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+        color: var(--text);
+        min-height: 100vh;
+        font-size: 11.5px;
+    }
+
+    /* Modern Glassmorphic Container */
+    .container { 
+        max-width: 1250px; 
+        margin: auto; 
+        background: rgba(255, 255, 255, 0.7); 
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: 25px 35px 35px 35px; 
+        border-radius: 28px; 
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.04);
+        transform: translateY(10px);
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Bigger Header Style with modern Bottom Border Line */
+    h2 { 
+        margin-top: 0; 
+        margin-bottom: 12px; 
+        color: #1e3a8a; 
+        padding-bottom: 8px; 
+        font-size: 34px; 
+        font-weight: 800;
+        letter-spacing: -1px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 2px solid transparent;
+        border-image: linear-gradient(to right, #4f46e5 10%, rgba(79, 70, 229, 0.1) 100%) 1;
+    }
+
+    /* Actions Header Area */
+    .top { 
+        display: flex; 
+        gap: 12px; 
+        flex-wrap: wrap; 
+        margin-bottom: 20px; 
+        align-items: center; 
+        background: rgba(255, 255, 255, 0.5);
+        padding: 10px 15px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    button { 
+        padding: 10px 18px; 
+        border-radius: 12px; 
+        font-size: 12px; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: 600; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    button:hover { 
+        transform: translateY(-1px); 
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    }
+    button:active { transform: translateY(0); }
+
+    .excel { background: #000000; color: white; }
+    .excel:hover { background: #1e293b; }
+    
+    .danger { background: #fee2e2; color: #991b1b; }
+    .danger:hover { background: #fca5a5; }
+    
+    /* Upload Area Button */
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+    .file-upload-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .btn-upload {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.3);
+        transition: all 0.3s ease;
+    }
+    .btn-upload:hover { 
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+    }
+    #fileNameDisplay { font-size: 12px; color: #475569; font-weight: 600; margin-left: 5px; }
+
+    textarea { display: none; }
+
+    /* Dashboard Cards Style */
+    .stats { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+        gap: 15px; 
+        margin-bottom: 20px; 
+    }
+    
+    .card { 
+        background: white; 
+        padding: 15px 20px; 
+        border-radius: 20px; 
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 25px -10px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-info h3 { margin: 0; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-info p { margin: 4px 0 0; font-size: 26px; font-weight: 800; color: #0f172a; }
+    
+    .card-icon {
+        padding: 10px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card-icon .material-symbols-outlined { font-size: 24px; }
+    
+    .card-total .card-icon { background: #e0e7ff; color: #4f46e5; }
+    .card-critical .card-icon { background: #fee2e2; color: #ef4444; }
+    .card-balance .card-icon { background: #dcfce7; color: #16a34a; }
+    
+    /* Clean Table with Borders */
+    .table-wrap { 
+        margin-top: 20px; 
+        overflow: auto; 
+        border-radius: 20px; 
+        border: 1px solid #cbd5e1; 
+        display: none; 
+        max-height: 550px; 
+        box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.5s ease forwards;
+        background: white;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 1200px; text-align: left; }
+    
+    th, td { 
+        padding: 10px 12px; 
+        border-bottom: 1px solid #e2e8f0; 
+        border-right: 1px solid #e2e8f0; 
+        white-space: nowrap; 
+    }
+    th:last-child, td:last-child {
+        border-right: none; 
+    }
+    
+    /* Styled Web Preview Table Header with Light Gradient Color */
+    th { 
+        background: linear-gradient(to bottom, #f0f2fe, #e0e7ff); 
+        color: #1e3a8a; 
+        position: sticky; 
+        top: 0; 
+        z-index: 10; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        font-size: 10.5px; 
+        letter-spacing: 0.5px; 
+        border-bottom: 2px solid #94a3b8; 
+    }
+    
+    /* Grand Total Row Styling */
+    tfoot tr {
+        background-color: #f8fafc !important;
+        font-weight: bold;
+        color: #1e3a8a;
+    }
+    tfoot td {
+        border-top: 2px solid #94a3b8;
+        border-bottom: 2px solid #94a3b8;
+    }
+    
+    tr { background: white; transition: background 0.2s ease; color: #334155; }
+    tr:hover { background: #f8fafc; }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2><span class="material-symbols-outlined" style="font-size:38px;color:#4f46e5;">payments</span> Exceed Credit / Outstanding Report</h2>
+    
+    <div class="top">
+        <div class="file-upload-wrapper">
+            <span class="btn-upload"><span class="material-symbols-outlined" style="font-size:16px;">upload_file</span> Choose Your Excel File</span>
+            <input type="file" id="fileInput" accept=".xlsx, .xls">
+        </div>
+        <span id="fileNameDisplay">No file selected</span>
+
+        <button class="excel" id="exportBtn"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Export Excel</button>
+        <button class="danger" id="clearBtn"><span class="material-symbols-outlined" style="font-size:16px;">delete</span> Clear All</button>
+    </div>
+    
+    <textarea id="rawData"></textarea>
+    
+    <div class="stats">
+        <div class="card card-total">
+            <div class="card-info">
+                <h3>Total Rows</h3>
+                <p id="rowsCount">0</p>
+            </div>
+            <div class="card-icon">
+                <span class="material-symbols-outlined">analytics</span>
+            </div>
+        </div>
+        <div class="card card-critical">
+            <div class="card-info">
+                <h3>Critical Rows (&gt;30 Days)</h3>
+                <p id="highlightCount">0</p>
+            </div>
+            <div class="card-icon">
+                <span class="material-symbols-outlined">error</span>
+            </div>
+        </div>
+        <div class="card card-balance">
+            <div class="card-info">
+                <h3>Total Balance Amount</h3>
+                <p id="balanceSumDisplay">0.00</p>
+            </div>
+            <div class="card-icon">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-wrap" id="tableWrap">
+        <table>
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+            <tfoot id="tableFoot"></tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+    let clipboardOutput = "", exportHTMLTableContent = "", rowCounter = 0, highlightCounter = 0;
+    let excelRowsData = [];
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        document.getElementById('fileNameDisplay').innerText = file.name;
+        
+        const reader = new FileReader();
+        reader.onerror = function() { alert("Error reading file!"); };
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array', raw: true });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            excelRowsData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+            document.getElementById('rawData').value = excelRowsData.map(r => r.join("\t")).join("\n");
+            
+            processExcelData();
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // Helper function to format strings to localized comma-separated currency values
+    function formatWithCommas(num) {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function processExcelData() {
+        let rows = excelRowsData;
+        if (rows.length === 0) return;
+
+        rowCounter = 0; highlightCounter = 0;
+        let totalBillValue = 0, totalPaidValue = 0, totalBalanceValue = 0;
+
+        let headers = ["S.No", "Customer Name", "Address", "SMN Code", "Sales Rep", "Route", "Invoice No", "Bill Value", "Paid", "Balance", "Bill Date", "Approved Days", "Passed Days", "Total Age"];
+        
+        let headHtml = "<tr>" + headers.map(h => `<th>${escapeHtml(h)}</th>`).join("") + "</tr>";
+        let bodyHtml = "", excelBodyHtml = "", textOutput = headers.join("\t") + "\n";
+        let currentCustomer = "", currentAddress = "", currentCode = "", currentRep = "";
+
+        rows.forEach(row => {
+            if(row.length < 2) return;
+            if(row[2] && row[2].toString().trim().startsWith("SMN")){
+                currentCustomer = row[0]?row[0].toString().trim():""; currentAddress = row[1] || ""; currentCode = row[2] || ""; currentRep = row[3] || ""; return;
+            }
+            let invoice = row[1] ? row[1].toString().trim() : "";
+            
+            let billValue = row[5] ? formatDecimal(row[5]) : "0.00";
+            let paidValue = row[6] ? formatDecimal(row[6]) : "0.00";
+            let balance = row[7] ? formatDecimal(row[7]) : "0.00";
+            
+            let approvedDays = Number(row[9]) || 0;
+            let passedDays = Number(row[10]) || 0;
+            let totalAge = approvedDays + passedDays;
+            
+            let inlineStyle = ""; 
+            if(totalAge > 50){ inlineStyle = "background-color:#fee2e2; color:#991b1b; font-weight:700; border-radius:4px;"; highlightCounter++; }
+            else if(totalAge >= 30){ inlineStyle = "background-color:#ffedd5; color:#9a3412; font-weight:700; border-radius:4px;"; highlightCounter++; }
+
+            if(invoice && (parseFloat(billValue) !== 0 || parseFloat(balance) !== 0)){
+                rowCounter++;
+                
+                let bNum = parseFloat(billValue);
+                let pNum = parseFloat(paidValue);
+                let blNum = parseFloat(balance);
+
+                totalBillValue += bNum;
+                totalPaidValue += pNum;
+                totalBalanceValue += blNum;
+
+                let dateFormatted = formatExcelDate(row[0] || "");
+
+                let rawDataArray = [rowCounter, currentCustomer, currentAddress, currentCode, currentRep, row[4]?row[4].toString().trim():"", invoice, billValue, paidValue, balance, dateFormatted, approvedDays, passedDays, totalAge];
+                textOutput += rawDataArray.join("\t") + "\n";
+
+                // Preview Table Output Row with Comma Formatting applied dynamically
+                bodyHtml += "<tr>" + 
+                    `<td>${rowCounter}</td>` +
+                    `<td>${escapeHtml(currentCustomer)}</td>` +
+                    `<td>${escapeHtml(String(currentAddress))}</td>` +
+                    `<td>${escapeHtml(String(currentCode))}</td>` +
+                    `<td>${escapeHtml(String(currentRep))}</td>` +
+                    `<td>${escapeHtml(row[4]?row[4].toString().trim():"")}</td>` +
+                    `<td>${escapeHtml(invoice)}</td>` +
+                    `<td>${formatWithCommas(bNum)}</td>` +
+                    `<td>${formatWithCommas(pNum)}</td>` +
+                    `<td>${formatWithCommas(blNum)}</td>` +
+                    `<td>${escapeHtml(dateFormatted)}</td>` +
+                    `<td>${approvedDays}</td>` +
+                    `<td>${passedDays}</td>` +
+                    `<td style="${inlineStyle}">${totalAge}</td>` +
+                "</tr>";
+
+                // Distinct template row used for generation of structured Microsoft Excel XML rows using explicit custom formatting styles
+                excelBodyHtml += "<tr>" + 
+                    `<td style="border: 1px solid #94a3b8; padding:10px;">${rowCounter}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(currentCustomer)}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentAddress))}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentCode))}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentRep))}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(row[4]?row[4].toString().trim():"")}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(invoice)}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${bNum}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${pNum}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${blNum}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(dateFormatted)}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px;">${approvedDays}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px;">${passedDays}</td>` +
+                    `<td style="border: 1px solid #94a3b8; padding:10px; ${inlineStyle}">${totalAge}</td>` +
+                "</tr>";
+            }
+        });
+
+        // Setup UI Web Preview Table Grand Total Row with localized comma notation
+        let footHtml = `<tr>
+            <td colspan="7" style="text-align:right; font-weight:bold;">Grand Total:</td>
+            <td>${formatWithCommas(totalBillValue)}</td>
+            <td>${formatWithCommas(totalPaidValue)}</td>
+            <td>${formatWithCommas(totalBalanceValue)}</td>
+            <td colspan="4"></td>
+        </tr>`;
+
+        // Update Dashboard Cards
+        document.getElementById("rowsCount").innerText = rowCounter;
+        document.getElementById("highlightCount").innerText = highlightCounter;
+        document.getElementById("balanceSumDisplay").innerText = formatWithCommas(totalBalanceValue);
+        
+        // Inject into Preview Layout
+        document.getElementById("tableHead").innerHTML = headHtml;
+        document.getElementById("tableBody").innerHTML = bodyHtml;
+        document.getElementById("tableFoot").innerHTML = footHtml;
+        document.getElementById("tableWrap").style.display = "block";
+        clipboardOutput = textOutput; 
+        
+        // Build Structured Excel Markup Incorporating Excel Number Mask formatting tags smoothly
+        let excelHeadHtml = "<tr>" + headers.map(h => `<th style="background-color: #e0f2fe; color: #1e293b; border: 2px solid #94a3b8; font-weight: bold; padding: 10px; white-space: nowrap;">${escapeHtml(h)}</th>`).join("") + "</tr>";
+        
+        let excelFootHtml = `<tr style="background-color: #f8fafc; font-weight: bold; color: #1e3a8a;">
+            <td colspan="7" style="text-align:right; font-weight:bold; border: 1px solid #94a3b8; padding:10px;">Grand Total:</td>
+            <td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${totalBillValue}</td>
+            <td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${totalPaidValue}</td>
+            <td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${totalBalanceValue}</td>
+            <td colspan="4" style="border: 1px solid #94a3b8; padding:10px;"></td>
+        </tr>`;
+
+        exportHTMLTableContent = "<thead>" + excelHeadHtml + "</thead><tbody>" + excelBodyHtml + "</tbody><tfoot>" + excelFootHtml + "</tfoot>";
+    }
+
+    function formatDecimal(val) {
+        if (!val) return "0.00";
+        let num = parseFloat(val.toString().replace(/[^0-9.-]/g, ""));
+        return isNaN(num) ? "0.00" : num.toFixed(2);
+    }
+
+    // Export Excel - Generates Unique Timestamped Filenames
+    document.getElementById('exportBtn').addEventListener('click', function() { 
+        if(!exportHTMLTableContent){ alert("Please upload and process data first!"); return; } 
+        
+        const excelFile = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><style>table { border-collapse: collapse; } td { padding: 10px; white-space: nowrap; }</style></head><body><table>${exportHTMLTableContent}</table></body></html>`; 
+        
+        const blob = new Blob([excelFile], { type: "application/vnd.ms-excel;charset=utf-8" }); 
+        const link = document.createElement("a"); 
+        link.href = URL.createObjectURL(blob); 
+        
+        let now = new Date();
+        let dateString = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        
+        link.download = `credit_report_${dateString}.xls`; 
+        link.click(); 
+    });
+    
+    document.getElementById('clearBtn').addEventListener('click', function() { document.getElementById("rawData").value = ""; document.getElementById("tableHead").innerHTML = ""; document.getElementById("tableBody").innerHTML = ""; document.getElementById("tableFoot").innerHTML = ""; document.getElementById("tableWrap").style.display = "none"; document.getElementById("rowsCount").innerText = "0"; document.getElementById("highlightCount").innerText = "0"; document.getElementById("balanceSumDisplay").innerText = "0.00"; clipboardOutput = ""; exportHTMLTableContent = ""; document.getElementById('fileNameDisplay').innerText = "No file selected"; document.getElementById('fileInput').value = ""; excelRowsData = []; });
+    
+    function formatExcelDate(serial){ if(!serial) return ""; if(isNaN(serial) || serial.toString().includes("/") || serial.toString().includes("-")) return serial; let date_info = new Date(Math.floor(parseFloat(serial) - 25569) * 86400 * 1000); return `${date_info.getFullYear()}-${("0" + (date_info.getMonth()+1)).slice(-2)}-${("0" + date_info.getDate()).slice(-2)}`; }
+    function escapeHtml(text){ if (!text) return ''; const div = document.createElement("div"); div.innerText = text; return div.innerHTML; }
+</script>
+</body>
+</html>
