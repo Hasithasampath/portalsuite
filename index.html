@@ -73,6 +73,13 @@
         padding: 15px;
         z-index: 10;
         box-shadow: var(--shadow-elevation);
+        overflow: hidden;
+        transition: width 0.3s ease, padding 0.3s ease, border 0.3s ease;
+    }
+    .sidebar.collapsed {
+        width: 0;
+        padding: 0;
+        border-right: none;
     }
 
     .sidebar-scroll {
@@ -446,8 +453,89 @@
     }
     .error-btn:hover { background: #dc2626; }
 
-    /* Animations */
-    @keyframes pulseStatus {
+    /* === Navbar Layout (Left / Right Groups) === */
+    .navbar-left, .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Sidebar Expand/Collapse Toggle Button */
+    .expand-btn {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--text-sub);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+    .expand-btn:hover {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--text-pure);
+        transform: scale(1.08);
+        box-shadow: 0 4px 10px rgba(148, 163, 184, 0.2);
+    }
+
+    /* Live Clock */
+    .live-clock {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-sub);
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        padding: 6px 14px;
+        border-radius: 50px;
+        letter-spacing: 0.5px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    /* Status Variants — Offline & Local */
+    .system-status.offline {
+        border-color: #ef4444;
+        color: #991b1b;
+        box-shadow: 0 2px 10px rgba(239, 68, 68, 0.15);
+    }
+    .system-status.local {
+        border-color: #f59e0b;
+        color: #78350f;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.15);
+    }
+    .status-dot.offline {
+        background: #ef4444;
+        animation: pulseStatusOffline 2s infinite;
+    }
+    .status-dot.local {
+        background: #f59e0b;
+        animation: pulseStatusLocal 2s infinite;
+    }
+
+    /* Keyboard Focus Ring on Menu Items */
+    .menu-item:focus {
+        outline: none;
+        background: var(--glass-bg-lighter);
+        color: var(--text-pure);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+    }
+
+    @keyframes pulseStatusOffline {
+        0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70%  { transform: scale(1);    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    @keyframes pulseStatusLocal {
+        0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+        70%  { transform: scale(1);    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
         0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
         70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
@@ -527,10 +615,16 @@
 
     <div class="main-content">
         <div class="top-navbar">
-            <h2 class="page-title" id="current-title">Dashboard Overview</h2>
-            <div class="system-status">
-                <div class="status-dot"></div>
-                <span id="status-text">System Live (Local Mode)</span>
+            <div class="navbar-left">
+                <button class="expand-btn" id="expand-btn" onclick="toggleSidebar()" title="Hide Sidebar">◀</button>
+                <h2 class="page-title" id="current-title">Dashboard Overview</h2>
+            </div>
+            <div class="navbar-right">
+                <div class="live-clock" id="live-clock">-- --- --:--:--</div>
+                <div class="system-status" id="status-badge">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Checking...</span>
+                </div>
             </div>
         </div>
 
@@ -549,6 +643,95 @@
     </div>
 
     <script>
+        // ===== 1. LIVE CLOCK =====
+        function startClock() {
+            function tick() {
+                const now = new Date();
+                const date = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                const time = now.toLocaleTimeString('en-GB');
+                document.getElementById('live-clock').textContent = date + '  ' + time;
+            }
+            tick();
+            setInterval(tick, 1000);
+        }
+        startClock();
+
+        // ===== 2. CONNECTIVITY CHECKER =====
+        function checkConnectivity() {
+            const dot    = document.getElementById('status-dot');
+            const text   = document.getElementById('status-text');
+            const badge  = document.getElementById('status-badge');
+
+            if (window.location.protocol === 'file:') {
+                dot.className   = 'status-dot local';
+                badge.className = 'system-status local';
+                text.textContent = 'Local Mode';
+                return;
+            }
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 4000);
+
+            fetch('https://www.gstatic.com/generate_204', {
+                method: 'HEAD', mode: 'no-cors', signal: controller.signal
+            })
+            .then(() => {
+                clearTimeout(timer);
+                dot.className   = 'status-dot';
+                badge.className = 'system-status';
+                text.textContent = 'System Online';
+            })
+            .catch(() => {
+                dot.className   = 'status-dot offline';
+                badge.className = 'system-status offline';
+                text.textContent = 'No Internet';
+            });
+        }
+
+        let _connBusy = false;
+        function safeConnectivityCheck() {
+            if (_connBusy) return;
+            _connBusy = true;
+            checkConnectivity();
+            setTimeout(() => { _connBusy = false; }, 5000);
+        }
+        safeConnectivityCheck();
+        setInterval(safeConnectivityCheck, 30000);
+
+        // ===== 4. KEYBOARD NAVIGATION =====
+        function setupKeyboardNav() {
+            const items = Array.from(document.querySelectorAll('.menu-item'));
+            items.forEach((item, index) => {
+                item.setAttribute('tabindex', '0');
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const next = items[index + 1];
+                        if (next) next.focus();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prev = items[index - 1];
+                        if (prev) prev.focus();
+                    } else if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        item.click();
+                    }
+                });
+            });
+        }
+        setupKeyboardNav();
+
+        // ===== 7. SIDEBAR FULLSCREEN TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const btn     = document.getElementById('expand-btn');
+            const isNowCollapsed = !sidebar.classList.contains('collapsed');
+            sidebar.classList.toggle('collapsed');
+            btn.textContent = isNowCollapsed ? '▶' : '◀';
+            btn.title       = isNowCollapsed ? 'Show Sidebar' : 'Hide Sidebar';
+        }
+
+
         function loadTool(fileName, toolTitle, element) {
             // 1. ෆයිල් එක නිකන්ම ඩබල් ක්ලික් කරලා බ්‍රවුසර් එකෙන් ඕපන් කරලා තියෙනවා නම් (file:/// ප්‍රොටොකෝල්)
             // බ්‍රවුසර් එකේ CORS බ්ලොක් එක නිසා HTTP Request එකක් කරන්න බැරි බැවින් කෙලින්ම Iframe එකට ලෝඩ් වෙන්න සලස්වයි.
