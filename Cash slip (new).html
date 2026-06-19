@@ -507,8 +507,8 @@
   .blank-header-grid { display: grid; grid-template-columns: 1.2fr 1.5fr 1.5fr; gap: 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; margin-bottom: 4px; }
   
   .p2-col-no { width: 3.5%; text-align: center; } .p2-col-date { width: 8%; } .p2-col-inv { width: 10.5%; } .p2-col-party { width: 17%; }
-  .p2-col-prev { width: 8.5%; } .p2-col-cash { width: 7.5%; } .p2-col-chq-amt { width: 7.5%; } .p2-col-chq-no { width: 14.5%; } .p2-col-bank { width: 5.5%; }
-  .p2-col-rdate { width: 11%; } .p2-col-sig { width: 7%; }
+  .p2-col-prev { width: 8.5%; } .p2-col-cash { width: 7.5%; } .p2-col-chq-amt { width: 7.5%; } .p2-col-chq-no { width: 14.5%; } .p2-col-bank { width: 7%; }
+  .p2-col-rdate { width: 9.5%; } .p2-col-sig { width: 7%; }
   
   .blank-row { height: 20px !important; } 
   .blank-row td { padding: 3px 4px !important; height: 25px !important; font-size: 11px !important; }
@@ -1466,7 +1466,7 @@ function handleVehicleChange() {
 function checkVehicleSelected() {
   const vehicleNo = document.getElementById('vehicleSelect').value.trim();
   if (!vehicleNo) {
-    alert("⚠️ You cannot print or download the Excel file without selecting a Lorry Number. Please select a Lorry Number and try again..");
+    alert("⚠️ You cannot print or download the file without selecting a Lorry Number. Please select a Lorry Number and try again..");
     const vSelect = document.getElementById('vehicleSelect');
     vSelect.classList.add('error-highlight');
     vSelect.focus();
@@ -2126,9 +2126,9 @@ function generateCombinedSheets() {
             <th rowspan="2" class="p2-col-prev"    style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">PREVIOUS<br>BILL<br>AMOUNT</th>
             <th rowspan="2" class="p2-col-cash"    style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CASH<br>AMOUNT</th>
             <th rowspan="2" class="p2-col-chq-amt" style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">CHEQUE<br>AMOUNT</th>
-            <th rowspan="2" class="p2-col-chq-no"  style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">CHEQUE NO.</th>
-            <th rowspan="2"class="p2-col-bank"   style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">BANK</th>
-            <th rowspan="2"class="p2-col-rdate"  style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:2px;">R. DATE</th>
+            <th rowspan="2" class="p2-col-chq-no"  style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:3px 2px;">CHEQUE NO.</th>
+            <th rowspan="2"class="p2-col-bank"   style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:3px 2px">BANK</th>
+            <th rowspan="2"class="p2-col-rdate"  style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:10px; font-weight:700; padding:3px 2px">R. DATE</th>
             <th rowspan="2" class="p2-col-sig"     style="border:1px solid #000; text-align:center; vertical-align:middle; font-size:11px; font-weight:700; padding:3px 2px;">SIGNATURE</th>
           </tr>
         <tbody>${p2RowsHtml}</tbody>
