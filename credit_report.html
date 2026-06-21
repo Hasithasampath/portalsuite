@@ -230,6 +230,207 @@
         from { opacity: 0; }
         to { opacity: 1; }
     }
+
+    /* ===== Risk Settings Bar ===== */
+    .risk-settings {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 12px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        margin-bottom: 16px;
+        font-size: 12px;
+    }
+    .risk-settings label { font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; }
+    .risk-settings input[type=number] {
+        width: 90px;
+        padding: 7px 10px;
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        font-family: inherit;
+    }
+    .risk-settings .hint { color: #94a3b8; font-size: 10.5px; font-weight: 500; }
+
+    /* ===== High Risk Alert Banner ===== */
+    .alert-banner {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        padding: 14px 20px;
+        border-radius: 18px;
+        margin-bottom: 16px;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 8px 20px -10px rgba(239, 68, 68, 0.3);
+    }
+    .alert-banner .material-symbols-outlined { font-size: 26px; }
+    .alert-banner .sub { font-size: 11px; font-weight: 500; color: #b91c1c; margin-top: 2px; }
+    .alert-banner-content { flex: 1; }
+    .risk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .risk-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: white;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 10px 5px 8px;
+        border-radius: 100px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .risk-chip:hover { background: #991b1b; color: white; border-color: #991b1b; }
+    .risk-chip .chip-bal { font-weight: 800; opacity: 0.85; }
+
+    /* ===== Search & Filter ===== */
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    .filter-bar input[type=text] {
+        flex: 1;
+        min-width: 200px;
+        padding: 11px 16px;
+        border-radius: 14px;
+        border: 1px solid #cbd5e1;
+        font-size: 12.5px;
+        font-family: inherit;
+        background: white;
+    }
+    .filter-bar select {
+        padding: 11px 14px;
+        border-radius: 14px;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        font-family: inherit;
+        background: white;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+    }
+    .filter-count { font-size: 11px; color: #64748b; font-weight: 600; white-space: nowrap; }
+
+    /* ===== Section Headers ===== */
+    .section-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #1e3a8a;
+        margin: 22px 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-title .material-symbols-outlined { font-size: 20px; color: #4f46e5; }
+
+    /* ===== Aging Bucket Cards ===== */
+    .aging-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .aging-card {
+        background: white;
+        border-radius: 16px;
+        padding: 14px 16px;
+        box-shadow: 0 8px 20px -10px rgba(0,0,0,0.06);
+        border-left: 5px solid #cbd5e1;
+    }
+    .aging-card h4 { margin: 0 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700; }
+    .aging-card .amt { font-size: 20px; font-weight: 800; color: #0f172a; }
+    .aging-card .cnt { font-size: 10.5px; color: #94a3b8; font-weight: 600; }
+    .aging-card.b1 { border-left-color: #10b981; }
+    .aging-card.b2 { border-left-color: #f59e0b; }
+    .aging-card.b3 { border-left-color: #f97316; }
+    .aging-card.b4 { border-left-color: #ef4444; }
+
+    /* ===== Top Debtors Table ===== */
+    .top-debtors-wrap { background: white; border-radius: 18px; overflow: auto; border: 1px solid #cbd5e1; margin-bottom: 6px; box-shadow: 0 8px 20px -10px rgba(0,0,0,0.05); }
+    .top-debtors-wrap table { min-width: unset; font-size: 11.5px; }
+    .top-debtors-wrap tr.clickable-row { cursor: pointer; }
+    .risk-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+    .risk-pill.high { background: #fee2e2; color: #991b1b; }
+    .risk-pill.ok { background: #dcfce7; color: #15803d; }
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 11px;
+    }
+
+    /* ===== Customer name clickable in main table ===== */
+    td.cust-link { color: #4f46e5; font-weight: 700; cursor: pointer; text-decoration: underline dotted; }
+    td.cust-link:hover { color: #312e81; }
+
+    /* ===== Modal Popup ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(3px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.2s ease forwards;
+    }
+    .modal-box {
+        background: white;
+        border-radius: 24px;
+        max-width: 700px;
+        width: 100%;
+        max-height: 85vh;
+        overflow: auto;
+        padding: 28px 30px;
+        box-shadow: 0 30px 60px -20px rgba(0,0,0,0.3);
+    }
+    .modal-box h3 { margin: 0 0 2px; font-size: 20px; font-weight: 800; color: #0f172a; }
+    .modal-box .modal-sub { font-size: 11.5px; color: #64748b; margin-bottom: 18px; }
+    .modal-close {
+        position: absolute;
+        top: 18px; right: 22px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 50%;
+        width: 32px; height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        color: #475569;
+    }
+    .modal-close:hover { background: #e2e8f0; }
+    .modal-box { position: relative; }
+    .modal-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .modal-stat { background: #f8fafc; border-radius: 14px; padding: 10px 14px; }
+    .modal-stat h5 { margin: 0; font-size: 9.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.4px; }
+    .modal-stat p { margin: 3px 0 0; font-size: 17px; font-weight: 800; color: #0f172a; }
+    .modal-box table { width: 100%; font-size: 11px; min-width: unset; }
+    .modal-box table th { position: static; }
 </style>
 </head>
 <body>
@@ -246,7 +447,23 @@
         <button class="excel" id="exportBtn"><span class="material-symbols-outlined" style="font-size:16px;">download</span> Export Excel</button>
         <button class="danger" id="clearBtn"><span class="material-symbols-outlined" style="font-size:16px;">delete</span> Clear All</button>
     </div>
-    
+
+    <div class="risk-settings">
+        <label><span class="material-symbols-outlined" style="font-size:16px;color:#ef4444;">warning</span> High Risk Threshold:</label>
+        <label>Balance &gt; <input type="number" id="riskBalanceInput" value="100000" step="1000"></label>
+        <label>Age &gt; <input type="number" id="riskAgeInput" value="60" step="5"> days</label>
+        <!--<span class="hint">Customer is flagged High Risk only when BOTH conditions are true</span>-->
+    </div>
+
+    <div class="alert-banner" id="alertBanner">
+        <span class="material-symbols-outlined">report</span>
+        <div class="alert-banner-content">
+            <div id="alertBannerMain">0 High Risk Customers Detected</div>
+            <div class="sub" id="alertBannerSub"></div>
+            <div class="risk-chips" id="riskChips"></div>
+        </div>
+    </div>
+
     <textarea id="rawData"></textarea>
     
     <div class="stats">
@@ -261,7 +478,7 @@
         </div>
         <div class="card card-critical">
             <div class="card-info">
-                <h3>Critical Rows (&gt;30 Days)</h3>
+                <h3>Critical Rows (&ge;30 Days)</h3>
                 <p id="highlightCount">0</p>
             </div>
             <div class="card-icon">
@@ -278,7 +495,38 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- ===== Aging Analysis ===== -->
+    <div class="section-title" id="agingSectionTitle" style="display:none;">
+        <span class="material-symbols-outlined">schedule</span> Aging Analysis
+    </div>
+    <div class="aging-grid" id="agingGrid"></div>
+
+    <!-- ===== Top 10 Debtors ===== -->
+    <div class="section-title" id="topDebtorsSectionTitle" style="display:none;">
+        <span class="material-symbols-outlined">leaderboard</span> Top 10 Debtors
+    </div>
+    <div class="top-debtors-wrap" id="topDebtorsWrap" style="display:none;">
+        <table>
+            <thead><tr>
+                <th>#</th><th>Customer Name</th><th>Route</th><th>Total Balance</th><th>Invoices</th><th>Oldest Age (Days)</th><th>Risk</th>
+            </tr></thead>
+            <tbody id="topDebtorsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ===== Search & Filter ===== -->
+    <div class="filter-bar" id="filterBar" style="display:none;">
+        <input type="text" id="searchInput" placeholder="🔍 Search by customer, invoice no, route...">
+        <select id="riskFilterSelect">
+            <option value="all">All Rows</option>
+            <option value="critical">Critical (50+ days)</option>
+            <option value="warning">Warning (30-50 days)</option>
+            <option value="normal">Normal (&lt;30 days)</option>
+        </select>
+        <span class="filter-count" id="filterCount"></span>
+    </div>
+
     <div class="table-wrap" id="tableWrap">
         <table>
             <thead id="tableHead"></thead>
@@ -288,9 +536,32 @@
     </div>
 </div>
 
+<!-- ===== Customer Summary Modal ===== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <button class="modal-close" id="modalCloseBtn"><span class="material-symbols-outlined" style="font-size:18px;">close</span></button>
+        <h3 id="modalCustName">Customer Name</h3>
+        <div class="modal-sub" id="modalCustMeta">Address · Route</div>
+        <div class="modal-stats">
+            <div class="modal-stat"><h5>Total Invoices</h5><p id="modalStatInvoices">0</p></div>
+            <div class="modal-stat"><h5>Total Bill Value</h5><p id="modalStatBill">0.00</p></div>
+            <div class="modal-stat"><h5>Total Balance</h5><p id="modalStatBalance">0.00</p></div>
+            <div class="modal-stat"><h5>Oldest Age</h5><p id="modalStatAge">0 days</p></div>
+        </div>
+        <table>
+            <thead><tr><th>Invoice No</th><th>Bill Date</th><th>Bill Value</th><th>Paid</th><th>Balance</th><th>Age</th></tr></thead>
+            <tbody id="modalInvoiceBody"></tbody>
+        </table>
+    </div>
+</div>
+
 <script>
     let clipboardOutput = "", exportHTMLTableContent = "", rowCounter = 0, highlightCounter = 0;
     let excelRowsData = [];
+    let allRecords = [];       // flat list of every invoice row (the data model used by every feature)
+    let customerMap = {};      // customerName -> aggregated stats
+    let currentFilterText = "";
+    let currentRiskFilter = "all";
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -319,17 +590,19 @@
         return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    function getRiskThresholds() {
+        let balanceLimit = parseFloat(document.getElementById('riskBalanceInput').value) || 0;
+        let ageLimit = parseFloat(document.getElementById('riskAgeInput').value) || 0;
+        return { balanceLimit, ageLimit };
+    }
+
+    // ===== STEP 1: Parse raw excel rows into a flat record list (allRecords) =====
     function processExcelData() {
         let rows = excelRowsData;
         if (rows.length === 0) return;
 
         rowCounter = 0; highlightCounter = 0;
-        let totalBillValue = 0, totalPaidValue = 0, totalBalanceValue = 0;
-
-        let headers = ["S.No", "Customer Name", "Address", "SMN Code", "Sales Rep", "Route", "Invoice No", "Bill Value", "Paid", "Balance", "Bill Date", "Approved Days", "Passed Days", "Total Age"];
-        
-        let headHtml = "<tr>" + headers.map(h => `<th>${escapeHtml(h)}</th>`).join("") + "</tr>";
-        let bodyHtml = "", excelBodyHtml = "", textOutput = headers.join("\t") + "\n";
+        allRecords = [];
         let currentCustomer = "", currentAddress = "", currentCode = "", currentRep = "";
 
         rows.forEach(row => {
@@ -338,74 +611,219 @@
                 currentCustomer = row[0]?row[0].toString().trim():""; currentAddress = row[1] || ""; currentCode = row[2] || ""; currentRep = row[3] || ""; return;
             }
             let invoice = row[1] ? row[1].toString().trim() : "";
-            
+
             let billValue = row[5] ? formatDecimal(row[5]) : "0.00";
             let paidValue = row[6] ? formatDecimal(row[6]) : "0.00";
             let balance = row[7] ? formatDecimal(row[7]) : "0.00";
-            
+
             let approvedDays = Number(row[9]) || 0;
             let passedDays = Number(row[10]) || 0;
             let totalAge = approvedDays + passedDays;
-            
-            let inlineStyle = ""; 
-            if(totalAge > 50){ inlineStyle = "background-color:#fee2e2; color:#991b1b; font-weight:700; border-radius:4px;"; highlightCounter++; }
-            else if(totalAge >= 30){ inlineStyle = "background-color:#ffedd5; color:#9a3412; font-weight:700; border-radius:4px;"; highlightCounter++; }
 
-            if(invoice && (parseFloat(billValue) !== 0 || parseFloat(balance) !== 0)){
+            let bNum = parseFloat(billValue);
+            let pNum = parseFloat(paidValue);
+            let blNum = parseFloat(balance);
+
+            if(invoice && (bNum !== 0 || blNum !== 0)){
                 rowCounter++;
-                
-                let bNum = parseFloat(billValue);
-                let pNum = parseFloat(paidValue);
-                let blNum = parseFloat(balance);
-
-                totalBillValue += bNum;
-                totalPaidValue += pNum;
-                totalBalanceValue += blNum;
-
-                let dateFormatted = formatExcelDate(row[0] || "");
-
-                let rawDataArray = [rowCounter, currentCustomer, currentAddress, currentCode, currentRep, row[4]?row[4].toString().trim():"", invoice, billValue, paidValue, balance, dateFormatted, approvedDays, passedDays, totalAge];
-                textOutput += rawDataArray.join("\t") + "\n";
-
-                // Preview Table Output Row with Comma Formatting applied dynamically
-                bodyHtml += "<tr>" + 
-                    `<td>${rowCounter}</td>` +
-                    `<td>${escapeHtml(currentCustomer)}</td>` +
-                    `<td>${escapeHtml(String(currentAddress))}</td>` +
-                    `<td>${escapeHtml(String(currentCode))}</td>` +
-                    `<td>${escapeHtml(String(currentRep))}</td>` +
-                    `<td>${escapeHtml(row[4]?row[4].toString().trim():"")}</td>` +
-                    `<td>${escapeHtml(invoice)}</td>` +
-                    `<td>${formatWithCommas(bNum)}</td>` +
-                    `<td>${formatWithCommas(pNum)}</td>` +
-                    `<td>${formatWithCommas(blNum)}</td>` +
-                    `<td>${escapeHtml(dateFormatted)}</td>` +
-                    `<td>${approvedDays}</td>` +
-                    `<td>${passedDays}</td>` +
-                    `<td style="${inlineStyle}">${totalAge}</td>` +
-                "</tr>";
-
-                // Distinct template row used for generation of structured Microsoft Excel XML rows using explicit custom formatting styles
-                excelBodyHtml += "<tr>" + 
-                    `<td style="border: 1px solid #94a3b8; padding:10px;">${rowCounter}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(currentCustomer)}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentAddress))}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentCode))}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(currentRep))}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(row[4]?row[4].toString().trim():"")}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(invoice)}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${bNum}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${pNum}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${blNum}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(dateFormatted)}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px;">${approvedDays}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px;">${passedDays}</td>` +
-                    `<td style="border: 1px solid #94a3b8; padding:10px; ${inlineStyle}">${totalAge}</td>` +
-                "</tr>";
+                allRecords.push({
+                    sno: rowCounter,
+                    customer: currentCustomer,
+                    address: currentAddress,
+                    code: currentCode,
+                    rep: currentRep,
+                    route: row[4] ? row[4].toString().trim() : "",
+                    invoice: invoice,
+                    billValue: bNum,
+                    paidValue: pNum,
+                    balance: blNum,
+                    billDate: formatExcelDate(row[0] || ""),
+                    approvedDays: approvedDays,
+                    passedDays: passedDays,
+                    totalAge: totalAge
+                });
             }
         });
 
-        // Setup UI Web Preview Table Grand Total Row with localized comma notation
+        buildCustomerMap();
+        applyFiltersAndRender();
+    }
+
+    // ===== STEP 2: Aggregate records by customer (for Top Debtors, Risk Alert, Modal) =====
+    function buildCustomerMap() {
+        customerMap = {};
+        allRecords.forEach(r => {
+            let key = r.customer || "(Unknown Customer)";
+            if (!customerMap[key]) {
+                customerMap[key] = {
+                    name: key, address: r.address, code: r.code, rep: r.rep, route: r.route,
+                    totalBill: 0, totalPaid: 0, totalBalance: 0, invoiceCount: 0, oldestAge: 0,
+                    invoices: []
+                };
+            }
+            let c = customerMap[key];
+            c.totalBill += r.billValue;
+            c.totalPaid += r.paidValue;
+            c.totalBalance += r.balance;
+            c.invoiceCount += 1;
+            c.oldestAge = Math.max(c.oldestAge, r.totalAge);
+            c.invoices.push(r);
+        });
+    }
+
+    function isCustomerHighRisk(c, thresholds) {
+        return c.totalBalance > thresholds.balanceLimit && c.oldestAge > thresholds.ageLimit;
+    }
+
+    // ===== STEP 3: Master render pipeline - called on upload, filter change, or threshold change =====
+    function applyFiltersAndRender() {
+        if (allRecords.length === 0) return;
+        let thresholds = getRiskThresholds();
+
+        renderAlertBanner(thresholds);
+        renderAgingAnalysis();
+        renderTopDebtors(thresholds);
+        renderMainTable(thresholds);
+
+        document.getElementById('filterBar').style.display = 'flex';
+        document.getElementById('agingSectionTitle').style.display = 'flex';
+        document.getElementById('topDebtorsSectionTitle').style.display = 'flex';
+    }
+
+    // ===== FEATURE: High Risk Customer Alert =====
+    function renderAlertBanner(thresholds) {
+        let highRiskCustomers = Object.values(customerMap).filter(c => isCustomerHighRisk(c, thresholds));
+        let banner = document.getElementById('alertBanner');
+        if (highRiskCustomers.length > 0) {
+            let totalExposure = highRiskCustomers.reduce((s, c) => s + c.totalBalance, 0);
+            document.getElementById('alertBannerMain').innerText = `${highRiskCustomers.length} High Risk Customer${highRiskCustomers.length > 1 ? 's' : ''} Detected`;
+            document.getElementById('alertBannerSub').innerText = `Combined outstanding balance: ${formatWithCommas(totalExposure)} — review immediately`;
+
+            let sortedHighRisk = highRiskCustomers.slice().sort((a, b) => b.totalBalance - a.totalBalance);
+            let chipsHtml = sortedHighRisk.map(c => `
+                <span class="risk-chip" onclick="openCustomerModal('${escapeAttr(c.name)}')">
+                    <span class="material-symbols-outlined" style="font-size:13px;">person</span>
+                    ${escapeHtml(c.name)} <span class="chip-bal">· ${formatWithCommas(c.totalBalance)}</span>
+                </span>`).join("");
+            document.getElementById('riskChips').innerHTML = chipsHtml;
+
+            banner.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
+            document.getElementById('riskChips').innerHTML = '';
+        }
+    }
+
+    // ===== FEATURE: Aging Analysis (0-30 / 31-60 / 61-90 / 90+) =====
+    function renderAgingAnalysis() {
+        let buckets = [
+            { key: 'b1', label: '0 - 30 Days', min: 0, max: 30, amt: 0, cnt: 0 },
+            { key: 'b2', label: '31 - 60 Days', min: 31, max: 60, amt: 0, cnt: 0 },
+            { key: 'b3', label: '61 - 90 Days', min: 61, max: 90, amt: 0, cnt: 0 },
+            { key: 'b4', label: '90+ Days', min: 91, max: Infinity, amt: 0, cnt: 0 }
+        ];
+        allRecords.forEach(r => {
+            let b = buckets.find(b => r.totalAge >= b.min && r.totalAge <= b.max);
+            if (b) { b.amt += r.balance; b.cnt += 1; }
+        });
+        let html = buckets.map(b => `
+            <div class="aging-card ${b.key}">
+                <h4>${b.label}</h4>
+                <div class="amt">${formatWithCommas(b.amt)}</div>
+                <div class="cnt">${b.cnt} invoice${b.cnt !== 1 ? 's' : ''}</div>
+            </div>`).join("");
+        document.getElementById('agingGrid').innerHTML = html;
+    }
+
+    // ===== FEATURE: Top 10 Debtors =====
+    function renderTopDebtors(thresholds) {
+        let sorted = Object.values(customerMap).sort((a, b) => b.totalBalance - a.totalBalance).slice(0, 10);
+        let html = sorted.map((c, i) => {
+            let risk = isCustomerHighRisk(c, thresholds);
+            return `<tr class="clickable-row" onclick="openCustomerModal('${escapeAttr(c.name)}')">
+                <td><span class="rank-badge">${i + 1}</span></td>
+                <td>${escapeHtml(c.name)}</td>
+                <td>${escapeHtml(String(c.route))}</td>
+                <td style="font-weight:700;">${formatWithCommas(c.totalBalance)}</td>
+                <td>${c.invoiceCount}</td>
+                <td>${c.oldestAge}</td>
+                <td><span class="risk-pill ${risk ? 'high' : 'ok'}">${risk ? 'High Risk' : 'OK'}</span></td>
+            </tr>`;
+        }).join("");
+        document.getElementById('topDebtorsBody').innerHTML = html || `<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No data</td></tr>`;
+        document.getElementById('topDebtorsWrap').style.display = 'block';
+    }
+
+    // ===== FEATURE: Search & Filter + Main Table Render =====
+    function renderMainTable(thresholds) {
+        let headers = ["S.No", "Customer Name", "Address", "SMN Code", "Sales Rep", "Route", "Invoice No", "Bill Value", "Paid", "Balance", "Bill Date", "Approved Days", "Passed Days", "Total Age"];
+        let headHtml = "<tr>" + headers.map(h => `<th>${escapeHtml(h)}</th>`).join("") + "</tr>";
+
+        let searchText = currentFilterText.toLowerCase().trim();
+        let riskFilter = currentRiskFilter;
+
+        let filtered = allRecords.filter(r => {
+            if (searchText) {
+                let haystack = `${r.customer} ${r.invoice} ${r.route}`.toLowerCase();
+                if (!haystack.includes(searchText)) return false;
+            }
+            if (riskFilter === 'critical' && !(r.totalAge > 50)) return false;
+            if (riskFilter === 'warning' && !(r.totalAge >= 30 && r.totalAge <= 50)) return false;
+            if (riskFilter === 'normal' && !(r.totalAge < 30)) return false;
+            return true;
+        });
+
+        let totalBillValue = 0, totalPaidValue = 0, totalBalanceValue = 0;
+        highlightCounter = 0;
+        let bodyHtml = "", excelBodyHtml = "", textOutput = headers.join("\t") + "\n";
+
+        filtered.forEach(r => {
+            let inlineStyle = "";
+            if (r.totalAge > 50) { inlineStyle = "background-color:#fee2e2; color:#991b1b; font-weight:700; border-radius:4px;"; highlightCounter++; }
+            else if (r.totalAge >= 30) { inlineStyle = "background-color:#ffedd5; color:#9a3412; font-weight:700; border-radius:4px;"; highlightCounter++; }
+
+            totalBillValue += r.billValue;
+            totalPaidValue += r.paidValue;
+            totalBalanceValue += r.balance;
+
+            let rawDataArray = [r.sno, r.customer, r.address, r.code, r.rep, r.route, r.invoice, r.billValue.toFixed(2), r.paidValue.toFixed(2), r.balance.toFixed(2), r.billDate, r.approvedDays, r.passedDays, r.totalAge];
+            textOutput += rawDataArray.join("\t") + "\n";
+
+            bodyHtml += "<tr>" +
+                `<td>${r.sno}</td>` +
+                `<td class="cust-link" onclick="openCustomerModal('${escapeAttr(r.customer)}')">${escapeHtml(r.customer)}</td>` +
+                `<td>${escapeHtml(String(r.address))}</td>` +
+                `<td>${escapeHtml(String(r.code))}</td>` +
+                `<td>${escapeHtml(String(r.rep))}</td>` +
+                `<td>${escapeHtml(r.route)}</td>` +
+                `<td>${escapeHtml(r.invoice)}</td>` +
+                `<td>${formatWithCommas(r.billValue)}</td>` +
+                `<td>${formatWithCommas(r.paidValue)}</td>` +
+                `<td>${formatWithCommas(r.balance)}</td>` +
+                `<td>${escapeHtml(r.billDate)}</td>` +
+                `<td>${r.approvedDays}</td>` +
+                `<td>${r.passedDays}</td>` +
+                `<td style="${inlineStyle}">${r.totalAge}</td>` +
+            "</tr>";
+
+            excelBodyHtml += "<tr>" +
+                `<td style="border: 1px solid #94a3b8; padding:10px;">${r.sno}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(r.customer)}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(r.address))}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(r.code))}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(String(r.rep))}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(r.route)}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(r.invoice)}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${r.billValue}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${r.paidValue}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${r.balance}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\@';">${escapeHtml(r.billDate)}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px;">${r.approvedDays}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px;">${r.passedDays}</td>` +
+                `<td style="border: 1px solid #94a3b8; padding:10px; ${inlineStyle}">${r.totalAge}</td>` +
+            "</tr>";
+        });
+
         let footHtml = `<tr>
             <td colspan="7" style="text-align:right; font-weight:bold;">Grand Total:</td>
             <td>${formatWithCommas(totalBillValue)}</td>
@@ -414,21 +832,18 @@
             <td colspan="4"></td>
         </tr>`;
 
-        // Update Dashboard Cards
-        document.getElementById("rowsCount").innerText = rowCounter;
+        document.getElementById("rowsCount").innerText = filtered.length;
         document.getElementById("highlightCount").innerText = highlightCounter;
         document.getElementById("balanceSumDisplay").innerText = formatWithCommas(totalBalanceValue);
-        
-        // Inject into Preview Layout
+        document.getElementById("filterCount").innerText = `Showing ${filtered.length} of ${allRecords.length} rows`;
+
         document.getElementById("tableHead").innerHTML = headHtml;
         document.getElementById("tableBody").innerHTML = bodyHtml;
         document.getElementById("tableFoot").innerHTML = footHtml;
         document.getElementById("tableWrap").style.display = "block";
-        clipboardOutput = textOutput; 
-        
-        // Build Structured Excel Markup Incorporating Excel Number Mask formatting tags smoothly
-        let excelHeadHtml = "<tr>" + headers.map(h => `<th style="background-color: #e0f2fe; color: #1e293b; border: 2px solid #94a3b8; font-weight: bold; padding: 10px; white-space: nowrap;">${escapeHtml(h)}</th>`).join("") + "</tr>";
-        
+        clipboardOutput = textOutput;
+
+        let excelHeadHtml = "<tr>" + headers.map(h => `<th style="background-color: #e0f2fe; color: #1e293b; border: 2px solid #94a3b8; font-weight: bold; padding: 10px; white-space: nowrap;">${escapeHtml(h)}</th>`).join("");
         let excelFootHtml = `<tr style="background-color: #f8fafc; font-weight: bold; color: #1e3a8a;">
             <td colspan="7" style="text-align:right; font-weight:bold; border: 1px solid #94a3b8; padding:10px;">Grand Total:</td>
             <td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${totalBillValue}</td>
@@ -436,9 +851,58 @@
             <td style="border: 1px solid #94a3b8; padding:10px; mso-number-format:'\\#,\\#\\#0\\.00';">${totalBalanceValue}</td>
             <td colspan="4" style="border: 1px solid #94a3b8; padding:10px;"></td>
         </tr>`;
-
         exportHTMLTableContent = "<thead>" + excelHeadHtml + "</thead><tbody>" + excelBodyHtml + "</tbody><tfoot>" + excelFootHtml + "</tfoot>";
     }
+
+    // ===== FEATURE: Customer Summary Popup =====
+    function openCustomerModal(customerName) {
+        let c = customerMap[customerName];
+        if (!c) return;
+        document.getElementById('modalCustName').innerText = c.name;
+        document.getElementById('modalCustMeta').innerText = `${c.address || ''} ${c.route ? '· Route: ' + c.route : ''} ${c.rep ? '· Rep: ' + c.rep : ''}`;
+        document.getElementById('modalStatInvoices').innerText = c.invoiceCount;
+        document.getElementById('modalStatBill').innerText = formatWithCommas(c.totalBill);
+        document.getElementById('modalStatBalance').innerText = formatWithCommas(c.totalBalance);
+        document.getElementById('modalStatAge').innerText = `${c.oldestAge} days`;
+
+        let rowsHtml = c.invoices.slice().sort((a, b) => b.totalAge - a.totalAge).map(inv => {
+            let style = inv.totalAge > 50 ? "background-color:#fee2e2; color:#991b1b; font-weight:700;" : (inv.totalAge >= 30 ? "background-color:#ffedd5; color:#9a3412; font-weight:700;" : "");
+            return `<tr>
+                <td>${escapeHtml(inv.invoice)}</td>
+                <td>${escapeHtml(inv.billDate)}</td>
+                <td>${formatWithCommas(inv.billValue)}</td>
+                <td>${formatWithCommas(inv.paidValue)}</td>
+                <td>${formatWithCommas(inv.balance)}</td>
+                <td style="${style}">${inv.totalAge}</td>
+            </tr>`;
+        }).join("");
+        document.getElementById('modalInvoiceBody').innerHTML = rowsHtml;
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeCustomerModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+    document.getElementById('modalCloseBtn').addEventListener('click', closeCustomerModal);
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeCustomerModal();
+    });
+
+    // ===== Event wiring: search box, risk filter dropdown, threshold inputs =====
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        currentFilterText = e.target.value;
+        if (allRecords.length) renderMainTable(getRiskThresholds());
+    });
+    document.getElementById('riskFilterSelect').addEventListener('change', function(e) {
+        currentRiskFilter = e.target.value;
+        if (allRecords.length) renderMainTable(getRiskThresholds());
+    });
+    document.getElementById('riskBalanceInput').addEventListener('input', function() {
+        if (allRecords.length) applyFiltersAndRender();
+    });
+    document.getElementById('riskAgeInput').addEventListener('input', function() {
+        if (allRecords.length) applyFiltersAndRender();
+    });
 
     function formatDecimal(val) {
         if (!val) return "0.00";
@@ -463,10 +927,35 @@
         link.click(); 
     });
     
-    document.getElementById('clearBtn').addEventListener('click', function() { document.getElementById("rawData").value = ""; document.getElementById("tableHead").innerHTML = ""; document.getElementById("tableBody").innerHTML = ""; document.getElementById("tableFoot").innerHTML = ""; document.getElementById("tableWrap").style.display = "none"; document.getElementById("rowsCount").innerText = "0"; document.getElementById("highlightCount").innerText = "0"; document.getElementById("balanceSumDisplay").innerText = "0.00"; clipboardOutput = ""; exportHTMLTableContent = ""; document.getElementById('fileNameDisplay').innerText = "No file selected"; document.getElementById('fileInput').value = ""; excelRowsData = []; });
+    document.getElementById('clearBtn').addEventListener('click', function() {
+        document.getElementById("rawData").value = "";
+        document.getElementById("tableHead").innerHTML = "";
+        document.getElementById("tableBody").innerHTML = "";
+        document.getElementById("tableFoot").innerHTML = "";
+        document.getElementById("tableWrap").style.display = "none";
+        document.getElementById("rowsCount").innerText = "0";
+        document.getElementById("highlightCount").innerText = "0";
+        document.getElementById("balanceSumDisplay").innerText = "0.00";
+        document.getElementById("alertBanner").style.display = "none";
+        document.getElementById("riskChips").innerHTML = "";
+        document.getElementById("agingGrid").innerHTML = "";
+        document.getElementById("agingSectionTitle").style.display = "none";
+        document.getElementById("topDebtorsBody").innerHTML = "";
+        document.getElementById("topDebtorsWrap").style.display = "none";
+        document.getElementById("topDebtorsSectionTitle").style.display = "none";
+        document.getElementById("filterBar").style.display = "none";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("riskFilterSelect").value = "all";
+        currentFilterText = ""; currentRiskFilter = "all";
+        clipboardOutput = ""; exportHTMLTableContent = "";
+        document.getElementById('fileNameDisplay').innerText = "No file selected";
+        document.getElementById('fileInput').value = "";
+        excelRowsData = []; allRecords = []; customerMap = {};
+    });
     
-    function formatExcelDate(serial){ if(!serial) return ""; if(isNaN(serial) || serial.toString().includes("/") || serial.toString().includes("-")) return serial; let date_info = new Date(Math.floor(parseFloat(serial) - 25569) * 86400 * 1000); return `${date_info.getFullYear()}-${("0" + (date_info.getMonth()+1)).slice(-2)}-${("0" + date_info.getDate()).slice(-2)}`; }
-    function escapeHtml(text){ if (!text) return ''; const div = document.createElement("div"); div.innerText = text; return div.innerHTML; }
+    function formatExcelDate(serial){ if(serial === "" || serial === null || serial === undefined) return ""; if(isNaN(serial) || serial.toString().includes("/") || serial.toString().includes("-")) return serial; let date_info = new Date(Math.floor(parseFloat(serial) - 25569) * 86400 * 1000); return `${date_info.getFullYear()}-${("0" + (date_info.getMonth()+1)).slice(-2)}-${("0" + date_info.getDate()).slice(-2)}`; }
+    function escapeHtml(text){ if (text === null || text === undefined || text === '') return ''; const div = document.createElement("div"); div.innerText = text; return div.innerHTML; }
+    function escapeAttr(text){ return String(text).replace(/'/g, "\\'"); }
 </script>
 </body>
 </html>
