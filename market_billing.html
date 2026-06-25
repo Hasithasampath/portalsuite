@@ -385,68 +385,112 @@
         btn.disabled = true;
 
         try {
+            // ── Date helpers ──
+            const now      = new Date();
+            const yyyy     = now.getFullYear();
+            const mm       = String(now.getMonth() + 1).padStart(2, '0');
+            const dd       = String(now.getDate()).padStart(2, '0');
+            const dateStr  = `${yyyy}-${mm}-${dd}`;                          // filename
+            const timeStr  = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const labelDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            const tableRows    = Array.from(document.querySelectorAll('#tableBody tr')).filter(tr => tr.style.display !== 'none');
+            const outletCount  = tableRows.length;
+            const filteredTotal = tableRows.reduce((sum, tr) => {
+                const val = parseFloat((tr.querySelectorAll('td')[6]?.innerText || '0').replace(/,/g, ''));
+                return sum + (isNaN(val) ? 0 : val);
+            }, 0);
+            const isFiltered   = document.getElementById('search').value.trim() !== '';
+            const totalVal     = isFiltered
+                ? filteredTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : document.getElementById('totalValue').innerText;
+
             const wb = new ExcelJS.Workbook();
-            wb.creator = 'Market Billing Tool';
+            wb.creator  = 'Pro Market Billing Tool';
+            wb.created  = now;
+            wb.modified = now;
+
             const ws = wb.addWorksheet('Market Billing', {
-                views: [{ state: 'frozen', ySplit: 1 }]
+                views:    [{ state: 'frozen', ySplit: 2 }],   // freeze below title + header
+                tabColor: { argb: 'FF4F46E5' }
             });
 
-            // Column widths
+            // ── Column widths ──
             ws.columns = [
-                { key: 'a', width: 14 }, { key: 'b', width: 14 },
-                { key: 'c', width: 18 }, { key: 'd', width: 34 },
-                { key: 'e', width: 22 }, { key: 'f', width: 26 },
-                { key: 'g', width: 20 }, { key: 'h', width: 12 },
-                { key: 'i', width: 16 }, { key: 'j', width: 14 },
+                { key: 'a', width: 16 }, { key: 'b', width: 15 },
+                { key: 'c', width: 18 }, { key: 'd', width: 36 },
+                { key: 'e', width: 24 }, { key: 'f', width: 28 },
+                { key: 'g', width: 22 }, { key: 'h', width: 13 },
+                { key: 'i', width: 17 }, { key: 'j', width: 15 },
             ];
 
+            // ── Colors ──
+            const C_TITLE_BG  = 'FF312E81';  // Deep indigo (title row)
             const C_HEADER_BG = 'FF4F46E5';  // Indigo
-            const C_HEADER_BD = 'FF3730A3';  // Indigo dark (border)
+            const C_HEADER_BD = 'FF3730A3';  // Indigo dark
             const C_WHITE     = 'FFFFFFFF';
-            const C_ALT       = 'FFEEF2FF';  // Light indigo
-            const C_TOTAL_BG  = 'FFE0E7FF';
+            const C_ALT       = 'FFEEF2FF';  // Light indigo zebra
+            const C_TOTAL_BG  = 'FF312E81';  // Deep indigo (matches title)
             const C_BORDER    = 'FFE2E8F0';  // Slate-200
+            const C_GOLD      = 'FFFBBF24';  // Amber – accent text in title
 
-            const border = (c) => ({ style: 'thin', color: { argb: c } });
-            const allBorders = (c) => ({ top: border(c), bottom: border(c), left: border(c), right: border(c) });
+            const thinBorder  = (c) => ({ style: 'thin',   color: { argb: c } });
+            const medBorder   = (c) => ({ style: 'medium', color: { argb: c } });
+            const allThin     = (c) => ({ top: thinBorder(c), bottom: thinBorder(c), left: thinBorder(c), right: thinBorder(c) });
+            const allMed      = (c) => ({ top: medBorder(c),  bottom: medBorder(c),  left: medBorder(c),  right: medBorder(c) });
 
-            // ── Header row ──
+            // ── Row 1 — Title banner ──
+            ws.mergeCells('A1:J1');
+            const titleCell       = ws.getCell('A1');
+            const filterLabel = isFiltered ? `  [FILTERED: "${document.getElementById('search').value.trim()}"]` : '';
+            titleCell.value       = `🧾  Market Billing credit Exceed Report${filterLabel}  |  ${labelDate}  ${timeStr}  |  Outlets: ${outletCount}  |  Total: LKR ${totalVal}`;
+            titleCell.font        = { bold: true, size: 12, color: { argb: C_GOLD }, name: 'Calibri' };
+            titleCell.fill        = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_TITLE_BG } };
+            titleCell.alignment   = { vertical: 'middle', horizontal: 'center' };
+            titleCell.border      = { bottom: medBorder(C_GOLD) };
+            ws.getRow(1).height   = 36;
+
+            // ── Row 2 — Column headers ──
             const headers = ["Order Type", "Order Date", "Party HUL Code", "Party Name",
                              "Beat Name", "Salesperson Name", "Total Order Value",
-                             "Bill Age", "Approval Days", "Exceed days"];
+                             "Bill Age", "Approval Days", "Exceed Days"];
             const hRow = ws.addRow(headers);
-            hRow.height = 32;
+            hRow.height = 30;
             hRow.eachCell(cell => {
                 cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_HEADER_BG } };
-                cell.font      = { bold: true, color: { argb: C_WHITE }, size: 11, name: 'Poppins' };
+                cell.font      = { bold: true, color: { argb: C_WHITE }, size: 10, name: 'Calibri' };
                 cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-                cell.border    = allBorders(C_HEADER_BD);
+                cell.border    = allMed(C_HEADER_BD);
             });
 
-            // Auto-filter on header
-            ws.autoFilter = { from: 'A1', to: 'J1' };
+            // Auto-filter on header row (row 2)
+            ws.autoFilter = { from: 'A2', to: 'J2' };
 
-            // ── Data rows ──
-            const tableRows = document.querySelectorAll('#tableBody tr');
+            // ── Data rows (start at row 3) ──
             tableRows.forEach((tr, idx) => {
                 const cells  = tr.querySelectorAll('td');
                 const values = Array.from(cells).map(td => td.innerText.trim());
 
-                // Parse Total Order Value as real number
                 const num = parseFloat(values[6].replace(/,/g, ''));
                 if (!isNaN(num)) values[6] = num;
 
-                const dRow  = ws.addRow(values);
-                dRow.height = 22;
-                const bg    = idx % 2 === 0 ? C_WHITE : C_ALT;
+                const dRow = ws.addRow(values);
+                dRow.height = 20;
+                const bg   = idx % 2 === 0 ? C_WHITE : C_ALT;
 
                 dRow.eachCell({ includeEmpty: true }, (cell, col) => {
                     cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
-                    cell.font      = { size: 10 };
-                    cell.border    = allBorders(C_BORDER);
-                    cell.alignment = { vertical: 'middle' };
+                    cell.font      = { size: 10, name: 'Calibri' };
+                    cell.border    = allThin(C_BORDER);
+                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
 
-                    if (col === 7) {   // Total Order Value
+                    if (col === 2) {  // Order Date — center
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    }
+                    if (col === 3) {  // HUL Code — center
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    }
+                    if (col === 7) {  // Total Order Value — right + number format
                         cell.numFmt    = '#,##0.00';
                         cell.alignment = { vertical: 'middle', horizontal: 'right' };
                     }
@@ -454,33 +498,34 @@
             });
 
             // ── Total row ──
-            const lastDataRow = tableRows.length + 1;
+            const lastDataRow = tableRows.length + 2;   // +2 because data starts at row 3
             const totalRow = ws.addRow([
-                '', '', '', '', '', 'TOTAL',
-                { formula: `SUM(G2:G${lastDataRow})` },
+                '', '', '', '', '', 'GRAND TOTAL',
+                { formula: `SUM(G3:G${lastDataRow})` },
                 '', '', ''
             ]);
-            totalRow.height = 26;
+            totalRow.height = 28;
             totalRow.eachCell({ includeEmpty: true }, (cell, col) => {
-                cell.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_TOTAL_BG } };
-                cell.font   = { bold: true, size: 11 };
-                cell.border = allBorders(C_HEADER_BG);
+                cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: C_TOTAL_BG } };
+                cell.font      = { bold: true, size: 11, color: { argb: C_WHITE }, name: 'Calibri' };
+                cell.border    = allMed(C_HEADER_BD);
                 cell.alignment = { vertical: 'middle' };
                 if (col === 6) cell.alignment = { vertical: 'middle', horizontal: 'right' };
                 if (col === 7) {
-                    cell.numFmt    = '#,##0.00';
+                    cell.numFmt    = '"LKR "#,##0.00';
+                    cell.font      = { bold: true, size: 11, color: { argb: C_GOLD }, name: 'Calibri' };
                     cell.alignment = { vertical: 'middle', horizontal: 'right' };
                 }
             });
 
-            // ── Download ──
+            // ── Download with date-stamped filename ──
             const buffer = await wb.xlsx.writeBuffer();
             const blob   = new Blob([buffer], {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             });
-            const link   = document.createElement('a');
-            link.href    = URL.createObjectURL(blob);
-            link.download = 'market_billing_report.xlsx';
+            const link      = document.createElement('a');
+            link.href       = URL.createObjectURL(blob);
+            link.download   = `market_billing_${dateStr}.xlsx`;
             link.click();
             URL.revokeObjectURL(link.href);
 

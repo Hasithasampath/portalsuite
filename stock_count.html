@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unilever Balangoda - Premium Stock Controller</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1726;
+            --navy: #1e3a8a;
+            --navy-deep: #142a63;
+            --navy-tint: #eef1fb;
+            --paper: #f3f5fa;
+            --surface: #ffffff;
+            --line: #e3e7f0;
+            --muted: #64748b;
+            --amber: #b45309;
+            --amber-bg: #fef3e2;
+            --success: #047857;
+            --success-soft: #10b981;
+            --success-bg: #e6f6ef;
+            --danger: #b91c1c;
+            --danger-soft: #ef4444;
+            --danger-bg: #fdeceb;
+            --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+        }
+
+        [data-theme="dark"] {
+            --ink: #e8ecf5;
+            --navy: #3b5fc9;
+            --navy-deep: #16224a;
+            --navy-tint: #1b2747;
+            --paper: #0b1220;
+            --surface: #121a2e;
+            --line: #243049;
+            --muted: #8b97b3;
+            --amber: #f3a23b;
+            --amber-bg: #3a2c14;
+            --success: #34d399;
+            --success-soft: #10b981;
+            --success-bg: #11301f;
+            --danger: #f87171;
+            --danger-soft: #ef4444;
+            --danger-bg: #3a1717;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: var(--font-sans); 
+            margin: 0;
+            padding: 32px 20px;
+            background:
+                radial-gradient(circle at 12% -10%, rgba(30,58,138,0.06), transparent 45%),
+                radial-gradient(circle at 100% 0%, rgba(180,83,9,0.05), transparent 40%),
+                var(--paper);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        .container { 
+            max-width: 1120px; 
+            margin: auto; 
+            background: var(--surface); 
+            padding: 32px 36px 36px; 
+            border-radius: 16px; 
+            border: 1px solid var(--line);
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 24px 48px -28px rgba(15,23,42,0.22);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand-mark {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(155deg, var(--navy), var(--navy-deep));
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 6px 14px -6px rgba(30,58,138,0.5);
+        }
+        .brand-mark svg { width: 22px; height: 22px; }
+        .eyebrow {
+            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 2px;
+        }
+
+        h2 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .location-badge {
+            background: var(--navy-tint); color: var(--navy); font-weight: 600;
+            padding: 7px 14px; border-radius: 100px; font-size: 12px;
+            letter-spacing: 0.02em; border: 1px solid var(--line);
+        }
+        .theme-toggle {
+            width: auto;
+            background: var(--navy-tint);
+            color: var(--navy);
+            border: 1px solid var(--line);
+            padding: 9px;
+            border-radius: 9px;
+            box-shadow: none;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover { background: var(--paper); }
+        .theme-toggle svg { width: 16px; height: 16px; }
+
+        /* Step Navigation Layout across the top row */
+        .top-flow-row { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 18px; 
+            margin-bottom: 26px;
+        }
+
+        .step-box { 
+            background: var(--surface); 
+            border: 1px solid var(--line); 
+            padding: 18px; 
+            border-radius: 14px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+            transition: border-color .25s ease, box-shadow .25s ease;
+        }
+        .step-box:not(.disabled):hover {
+            border-color: #c7d2e8;
+            box-shadow: 0 14px 28px -20px rgba(15,23,42,0.28);
+        }
+
+        .step-box.disabled { 
+            pointer-events: none; 
+            background: var(--paper); 
+        }
+        .step-box.disabled .step-body { opacity: 0.32; filter: saturate(0.6); }
+
+        .lock-badge {
+            display: none;
+            position: absolute; top: 14px; right: 14px;
+            align-items: center; gap: 5px;
+            background: var(--ink); color: #fff;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
+            padding: 5px 10px 5px 8px; border-radius: 100px;
+            z-index: 2;
+        }
+        .lock-badge svg { width: 11px; height: 11px; }
+        .step-box.disabled .lock-badge { display: inline-flex; }
+
+        .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .step-icon {
+            width: 34px; height: 34px; flex-shrink: 0;
+            border-radius: 10px;
+            background: var(--navy-tint); color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step-icon svg { width: 18px; height: 18px; }
+
+        .step-num {
+            font-size: 10.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        .step-box h3 { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 12px; color: var(--muted); }
+        
+        input[type="file"] { 
+            display: block; 
+            margin-bottom: 12px; 
+            border: 1px dashed #cdd5e3; 
+            padding: 9px; 
+            width: 100%; 
+            background: var(--paper); 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 12px;
+            font-family: var(--font-sans);
+            color: var(--ink);
+        }
+
+        button { 
+            background: var(--navy); 
+            color: white; 
+            border: none; 
+            padding: 11px 16px; 
+            font-family: var(--font-sans);
+            font-size: 13px; 
+            font-weight: 600; 
+            letter-spacing: 0.01em;
+            border-radius: 9px; 
+            cursor: pointer; 
+            transition: background .18s ease, transform .12s ease; 
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.06);
+        }
+        button:hover { background: var(--navy-deep); }
+        button:active { transform: translateY(1px); }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #03634f; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #95180f; }
+
+        .status-msg { 
+            margin-top: 10px; 
+            padding: 8px 10px; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            font-weight: 500; 
+            display: none; 
+            background: var(--success-bg); 
+            color: var(--success); 
+            border: 1px solid #b7e4cf; 
+        }
+        .status-msg.error {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid #f3c2bd;
+        }
+
+        /* Review Section Dashboard Panels */
+        .review-dashboard { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 14px; 
+            margin-top: 5px; 
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--line);
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+        }
+        .card-short { border-left-color: var(--danger); }
+        .card-excess { border-left-color: var(--success); }
+        .card-net { border-left-color: var(--ink); }
+
+        .card-title { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+        .card-value { font-family: var(--font-mono); font-size: 21px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+        .card-short .card-value { color: var(--danger); }
+        .card-excess .card-value { color: var(--success); }
+        .card-sub { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+
+        .stat-mini-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .stat-mini-row-3 {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .top10-panel {
+            grid-column: span 3;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .top10-header { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+        .top10-list { display: flex; flex-direction: column; gap: 6px; }
+        .top10-row { display: flex; align-items: center; padding: 7px 10px; border-radius: 8px; background: var(--paper); font-size: 12px; }
+        .top10-rank {
+            width: 20px; height: 20px; border-radius: 6px;
+            background: var(--navy-tint); color: var(--navy);
+            font-size: 10.5px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-right: 9px;
+        }
+        .top10-sku { font-family: var(--font-mono); font-weight: 600; color: var(--ink); margin-right: 9px; flex-shrink: 0; }
+        .top10-name { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 9px; }
+        .top10-value { font-family: var(--font-mono); font-weight: 700; flex-shrink: 0; }
+        .stat-mini {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+        .stat-mini-label { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+        .stat-mini-value { font-family: var(--font-mono); font-size: 17px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+        .accuracy-bar-track {
+            margin-top: 8px;
+            height: 6px;
+            border-radius: 100px;
+            background: var(--line);
+            overflow: hidden;
+        }
+        .accuracy-bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: var(--success);
+            width: 0%;
+            transition: width .5s ease, background-color .3s ease;
+        }
+
+        .details-panel { 
+            grid-column: span 3; 
+            background: var(--paper); 
+            border: 1px solid var(--line);
+            padding: 16px; 
+            border-radius: 12px;
+        }
+        
+        .panel-header { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title-group { display: flex; align-items: center; gap: 12px; }
+
+        /* Action bar routing */
+        .action-bar { display: flex; gap: 10px; width: 240px; }
+        .btn-ghost {
+            width: auto;
+            background: transparent;
+            color: var(--navy);
+            border: 1px solid var(--line);
+            padding: 7px 12px;
+            font-size: 11.5px;
+            box-shadow: none;
+        }
+        .btn-ghost:hover { background: var(--navy-tint); }
+        .btn-ghost svg { width: 13px; height: 13px; }
+
+        /* Preview Table Design Formatting */
+        .table-controls { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        .search-input {
+            flex: 1; min-width: 180px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 12.5px;
+            background: var(--surface);
+            color: var(--ink);
+        }
+        .search-input:focus { outline: none; border-color: var(--navy); }
+        .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filter-btn {
+            width: auto;
+            background: var(--surface);
+            color: var(--muted);
+            border: 1px solid var(--line);
+            padding: 8px 13px;
+            font-size: 11.5px;
+            box-shadow: none;
+        }
+        .filter-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+        .filter-btn:hover { background: var(--navy-tint); color: var(--navy); }
+        .filter-btn.active:hover { background: var(--navy-deep); color: #fff; }
+
+        .table-container { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px; }
+        th { background: var(--navy-deep); color: white; padding: 10px 12px; position: sticky; top: 0; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; z-index: 5; }
+        td { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+        td:nth-child(1), td:nth-child(4), td:nth-child(5) { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+        tr:nth-child(even) td { background-color: var(--paper); }
+        .txt-short { color: var(--danger); font-weight: 600; }
+        .txt-excess { color: var(--success); font-weight: 600; }
+        .txt-matched { color: var(--success-soft); font-weight: 500; }
+        .txt-na { color: var(--muted); font-style: italic; }
+        .tag-unknown {
+            display: inline-block;
+            margin-top: 3px;
+            background: var(--amber-bg);
+            color: var(--amber);
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            padding: 2px 6px;
+            border-radius: 100px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 13px; height: 13px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin-right: 7px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media print {
+            :root, [data-theme="dark"] {
+                --ink: #0f1726; --paper: #ffffff; --surface: #ffffff;
+                --line: #d7def5; --muted: #475569;
+            }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: #fff !important; padding: 0; }
+            .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+            .top-flow-row, .table-controls, .action-bar, .theme-toggle, .panel-title-group .btn-ghost { display: none !important; }
+            .table-container { max-height: none; overflow: visible; border: none; }
+            .card, .stat-mini, .top10-panel, .details-panel { break-inside: avoid; }
+            th { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="brand">
+            <span class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/><path d="M12 14v7"/></svg>
+            </span>
+            <div>
+                <div class="eyebrow">Sarathchandra Agencies</div>
+                <h2>Stock Processing Controller Engine</h2>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="location-badge">Balangoda Agency</div>
+            <button class="theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()" title="Toggle dark mode">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="top-flow-row">
+        <div class="step-box" id="boxStep1">
+            <div class="step-body">
+                <div class="step-head">
+                    <span class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    </span>
+                    <div>
+                        <div class="step-num">Step 01</div>
+                        <h3>Generate Template</h3>
+                    </div>
+                </div>
+                <label>Upload Current Stock File (LeverEDGE):</label>
+                <input type="file" id="currentStockFile" accept=".xlsx, .xls">
+            </div>
+            <div>
+                <button onclick="generateCountSheet(this)">Download Template</button>
+                <div id="status1" class="status-msg"></div>
+            </div>
+        </div>
+
+        <div class="step-box" id="boxStep2">
+            <div class="step-body">
+                <div class="step-head">
+                    <span class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    </span>
+                    <div>
+                        <div class="step-num">Step 02</div>
+                        <h3>Upload & Analyze</h3>
+                    </div>
+                </div>
+                <label>Upload Filled Count Sheet:</label>
+                <input type="file" id="filledCountFile" accept=".xlsx, .xls">
+            </div>
+            <div>
+                <button class="btn-success" onclick="loadCountSheetPreview(this)">Scan Variance Data</button>
+            </div>
+        </div>
+
+        <div class="step-box disabled" id="correctionSection">
+            <span class="lock-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                Locked
+            </span>
+            <div class="step-body">
+                <div class="step-head">
+                    <span class="step-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    </span>
+                    <div>
+                        <div class="step-num">Step 03</div>
+                        <h3>Process & Export</h3>
+                    </div>
+                </div>
+                <label>Upload Live System Correction Sheet:</label>
+                <input type="file" id="liveCorrectionFile" accept=".xlsx, .xls">
+            </div>
+            <div>
+                <button class="btn-success" onclick="processStockCorrection(this)">Download Final Upload Sheet</button>
+                <div id="status2" class="status-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="review-dashboard" id="reviewDashboard">
+        <div class="card card-short">
+            <div class="card-title">Total Shortage Metrics</div>
+            <div class="card-value" id="valShortValue">Rs. 0.00</div>
+            <div class="card-sub" id="valShortDetails">0 Units Affected</div>
+        </div>
+        
+        <div class="card card-excess">
+            <div class="card-title">Total Excess Metrics</div>
+            <div class="card-value" id="valExcessValue">Rs. 0.00</div>
+            <div class="card-sub" id="valExcessDetails">0 Units Affected</div>
+        </div>
+        
+        <div class="card card-net">
+            <div class="card-title">Net Valuation Balance</div>
+            <div class="card-value" id="valNetGap">Rs. 0.00</div>
+            <div class="card-sub">Stock Value Variance Gap</div>
+        </div>
+
+        <div class="stat-mini-row">
+            <div class="stat-mini">
+                <div class="stat-mini-label">Total SKU Count</div>
+                <div class="stat-mini-value" id="statTotalSku">0</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-label">Counted SKU Count</div>
+                <div class="stat-mini-value" id="statCountedSku">0</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-label">Uncounted SKU Count</div>
+                <div class="stat-mini-value" id="statUncountedSku">0</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-label">Accuracy %</div>
+                <div class="stat-mini-value" id="statAccuracy">0.0%</div>
+                <div class="accuracy-bar-track">
+                    <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-mini-row-3">
+            <div class="stat-mini">
+                <div class="stat-mini-label">Total System Pieces</div>
+                <div class="stat-mini-value" id="statTotalSystemUnits">0</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-label">Total Counted Pieces</div>
+                <div class="stat-mini-value" id="statTotalCountedUnits">0</div>
+            </div>
+            <div class="stat-mini">
+                <div class="stat-mini-label">Total Variance (Pieces)</div>
+                <div class="stat-mini-value" id="statTotalVarianceUnits">0</div>
+            </div>
+        </div>
+
+        <div class="top10-panel">
+            <div class="top10-header">Top 10 Highest-Value Variances</div>
+            <div id="top10List" class="top10-list"></div>
+        </div>
+
+        <div class="details-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <span>Captured Variance Summary Breakdown</span>
+                    <button class="btn-ghost" onclick="exportVariancePDF()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                        Export PDF
+                    </button>
+                    <button class="btn-ghost" onclick="exportVarianceReport()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                        Export Full Stock Report
+                    </button>
+                </div>
+                <div class="action-bar">
+                    <button class="btn-success" onclick="approveCountSheet()">Confirm & Approve</button>
+                    <button class="btn-danger" onclick="rejectCountSheet()">Reject & Reset</button>
+                </div>
+            </div>
+            <div class="table-controls">
+                <input type="text" id="varianceSearch" class="search-input" placeholder="Search by SKU or Product Name...">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all" onclick="setVarianceFilter('all')">All</button>
+                    <button class="filter-btn" data-filter="short" onclick="setVarianceFilter('short')">Shortages Only</button>
+                    <button class="filter-btn" data-filter="excess" onclick="setVarianceFilter('excess')">Excess Only</button>
+                    <button class="filter-btn" data-filter="uncounted" onclick="setVarianceFilter('uncounted')">Not Counted Only</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU7 Code</th>
+                            <th>Product Name</th>
+                            <th>Status Tracking</th>
+                            <th>Variance Size</th>
+                            <th>AIP Discrepancy Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="varianceTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let globalPhyCasesMap = {}, globalPhyPiecesMap = {}, globalAipValueMap = {};
+    let globalExportRows = [];
+    let isCountApproved = false;
+    let isScanned = false;
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    function showStatus(boxId, message, isError) {
+        const box = document.getElementById(boxId);
+        if (!box) { alert(message); return; }
+        box.innerText = message;
+        box.classList.toggle('error', !!isError);
+        box.style.display = "block";
+    }
+
+    function setButtonLoading(button, loading, loadingText) {
+        if (!button) return;
+        if (loading) {
+            if (!button.dataset.originalHtml) button.dataset.originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.dataset.loading = "true";
+            button.innerHTML = '<span class="spinner"></span>' + (loadingText || 'Processing...');
+        } else {
+            button.disabled = false;
+            button.dataset.loading = "false";
+            if (button.dataset.originalHtml) { button.innerHTML = button.dataset.originalHtml; }
+        }
+    }
+    function resetAllLoadingButtons() {
+        document.querySelectorAll('button[data-loading="true"]').forEach(b => setButtonLoading(b, false));
+    }
+
+    function readFileAsArrayBuffer(fileInput, callback) {
+        const file = fileInput.files[0];
+        if (!file) { alert("Please select the required Excel file input before continuing."); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) { callback(new Uint8Array(e.target.result)); };
+        reader.onerror = function() { alert("Failed to read the file. If the file is corrupt, please re-upload and try again."); resetAllLoadingButtons(); };
+        reader.readAsArrayBuffer(file);
+    }
+
+    document.getElementById('filledCountFile').addEventListener('change', function() {
+        isScanned = false;
+        isCountApproved = false;
+        globalPhyCasesMap = {}; globalPhyPiecesMap = {}; globalAipValueMap = {}; globalExportRows = [];
+        currentFilter = 'all'; currentSearch = '';
+        document.getElementById('varianceSearch').value = '';
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+        document.getElementById('varianceTableBody').innerHTML = "";
+        document.getElementById('reviewDashboard').style.display = "none";
+        document.getElementById('correctionSection').classList.add('disabled');
+        try { sessionStorage.removeItem('stockCountState'); } catch (e) {}
+    });
+
+    document.getElementById('varianceSearch').addEventListener('input', function(e) {
+        currentSearch = e.target.value;
+        renderVarianceTable();
+    });
+
+    function setVarianceFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filter));
+        renderVarianceTable();
+    }
+
+    function getFilteredExportRows() {
+        const search = currentSearch.trim().toLowerCase();
+        return globalExportRows.filter(item => {
+            if (search && !(item.sku.toLowerCase().includes(search) || item.name.toLowerCase().includes(search))) return false;
+            if (currentFilter === 'short') return item.counted && item.diff < 0;
+            if (currentFilter === 'excess') return item.counted && item.diff > 0;
+            if (currentFilter === 'uncounted') return !item.counted;
+            return true;
+        });
+    }
+
+    function renderVarianceTable() {
+        const tableBody = document.getElementById('varianceTableBody');
+        const rows = getFilteredExportRows();
+
+        if (rows.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted); font-weight:600; padding:20px;">No items match the current filter or search.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        rows.forEach(item => {
+            let statusCell, varCell, valCell;
+            if (!item.counted) {
+                statusCell = `<td class="txt-na">NOT COUNTED</td>`;
+                varCell = `<td class="txt-na">—</td>`;
+                valCell = `<td class="txt-na">—</td>`;
+            } else if (item.diff === 0) {
+                statusCell = `<td class="txt-matched">MATCHED</td>`;
+                varCell = `<td class="txt-matched">0 Pcs</td>`;
+                valCell = `<td>Rs. 0.00</td>`;
+            } else if (item.diff < 0) {
+                statusCell = `<td class="txt-short">SHORTAGE</td>`;
+                varCell = `<td class="txt-short">-${Math.abs(item.diff)} Pcs</td>`;
+                valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
+            } else {
+                let isUnknownSku = (item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0);
+                let unknownTag = isUnknownSku ? '<br><span class="tag-unknown">NOT IN SYSTEM</span>' : '';
+                statusCell = `<td class="txt-excess">EXCESS${unknownTag}</td>`;
+                varCell = `<td class="txt-excess">+${item.diff} Pcs</td>`;
+                valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
+            }
+            html += `<tr><td><strong>${item.sku}</strong></td><td>${item.name}</td>${statusCell}${varCell}${valCell}</tr>`;
+        });
+        tableBody.innerHTML = html;
+    }
+
+    function renderTopVariance() {
+        const container = document.getElementById('top10List');
+        const top10 = globalExportRows
+            .filter(i => i.counted && i.diff !== 0)
+            .sort((a, b) => Math.abs(b.valGap) - Math.abs(a.valGap))
+            .slice(0, 10);
+
+        if (top10.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:12px; padding:10px;">No variance items found.</div>`;
+            return;
+        }
+
+        container.innerHTML = top10.map((item, idx) => {
+            const isShort = item.diff < 0;
+            const colorClass = isShort ? 'txt-short' : 'txt-excess';
+            return `<div class="top10-row">
+                <span class="top10-rank">${idx + 1}</span>
+                <span class="top10-sku">${item.sku}</span>
+                <span class="top10-name">${item.name}</span>
+                <span class="top10-value ${colorClass}">${isShort ? '-' : '+'}Rs. ${Math.abs(item.valGap).toFixed(2)}</span>
+            </div>`;
+        }).join('');
+    }
+
+    async function exportVariancePDF() {
+        const rows = getFilteredExportRows();
+        if (rows.length === 0) {
+            alert("No data to export. Please check your filter or search settings.");
+            return;
+        }
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(14);
+            doc.text("Stock Variance Report - Sarathchandra Agencies (Balangoda)", 14, 16);
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text("Generated: " + new Date().toLocaleString(), 14, 22);
+
+            doc.setFontSize(7.5);
+            const legendItems = [
+                { color: [185, 28, 28],  label: "Shortage" },
+                { color: [4, 120, 87],   label: "Excess" },
+                { color: [180, 83, 9],   label: "Not In System" },
+                { color: [100, 116, 139],label: "Not Counted" }
+            ];
+            let lx = 14;
+            legendItems.forEach(item => {
+                doc.setFillColor(...item.color);
+                doc.rect(lx, 24, 3, 3, 'F');
+                doc.setTextColor(...item.color);
+                doc.text(item.label, lx + 4.5, 26.8);
+                lx += doc.getTextWidth(item.label) + 10;
+            });
+            doc.setTextColor(0);
+
+            const body = rows.map(item => {
+                let status = !item.counted ? "NOT COUNTED" : (item.diff === 0 ? "MATCHED" : (item.diff < 0 ? "SHORTAGE" : "EXCESS"));
+                let isUnknownSku = item.counted && item.diff > 0 && item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0;
+                return [
+                    item.sku,
+                    item.name,
+                    item.totalSysUnits,
+                    item.counted ? item.totalPhyUnits : "—",
+                    item.counted ? item.diff : "—",
+                    item.counted ? "Rs. " + Math.abs(item.valGap).toFixed(2) : "—",
+                    status + (isUnknownSku ? " (Not In System)" : "")
+                ];
+            });
+
+            doc.autoTable({
+                startY: 31,
+                head: [["SKU", "Product Name", "Sys Units", "Phy Units", "Variance", "Value", "Status"]],
+                body: body,
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [247, 248, 251] },
+                didParseCell: function(data) {
+                    if (data.section !== 'body') return;
+                    const statusText = String(data.row.raw[6] || '');
+                    let fill = null, text = null;
+                    if (statusText.indexOf('SHORTAGE') === 0) {
+                        fill = [253, 236, 235]; text = [185, 28, 28];
+                    } else if (statusText.indexOf('EXCESS') === 0) {
+                        fill = [230, 246, 239]; text = [4, 120, 87];
+                        if (statusText.indexOf('Not In System') !== -1) { text = [180, 83, 9]; }
+                    } else if (statusText.indexOf('NOT COUNTED') === 0) {
+                        fill = [243, 245, 250]; text = [100, 116, 139];
+                    }
+                    if (fill) data.cell.styles.fillColor = fill;
+                    if (text && (data.column.index === 4 || data.column.index === 5 || data.column.index === 6)) {
+                        data.cell.styles.textColor = text;
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
+
+            const d = new Date();
+            const dateStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+            doc.save("Stock_Variance_Report_" + dateStr + ".pdf");
+        } catch (err) {
+            alert("Failed to generate PDF: " + err.message);
+        }
+    }
+
+    const themeIconMoon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    const themeIconSun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.getElementById('themeToggleBtn').innerHTML = theme === 'dark' ? themeIconSun : themeIconMoon;
+        try { localStorage.setItem('stockToolTheme', theme); } catch (e) {}
+    }
+
+    function toggleDarkMode() {
+        const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    (function initTheme() {
+        let saved = 'light';
+        try { saved = localStorage.getItem('stockToolTheme') || 'light'; } catch (e) {}
+        applyTheme(saved);
+    })();
+
+    restoreFromSession();
+
+    function generateCountSheet(btn) {
+        const fileIn = document.getElementById('currentStockFile');
+        const statusBox = document.getElementById('status1');
+        if (!fileIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
+        setButtonLoading(btn, true, 'Generating...');
+        readFileAsArrayBuffer(fileIn, async function(arrayBuffer) {
+            try {
+                const workbook = XLSX.read(arrayBuffer, {type: 'array'});
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { range: 17, defval: "" });
+                let grouped = {};
+                jsonData.forEach(row => {
+                    let sku = row["SKU7"] ? String(row["SKU7"]).trim() : "";
+                    if (sku && sku !== "undefined") {
+                        if (!grouped[sku]) {
+                            grouped[sku] = { SKU7: sku, "Product Name": row["Product Name"] || "", MRP: parseFloat(row["MRP"]) || 0, "AIP Value": parseFloat(row["Pur.Rate + Tax"]) || 0, UPC: parseFloat(row["UPC"]) || 1, total_units: 0 };
+                        }
+                        grouped[sku]["total_units"] += parseFloat(row["Units"]) || 0;
+                    }
+                });
+                if (Object.keys(grouped).length === 0) {
+                    throw new Error("'SKU7' column not found in the uploaded file. Please verify this is the correct LeverEDGE Current Stock export and the format has not changed.");
+                }
+                const outputRows = Object.values(grouped).map(item => {
+                    let u = item.UPC <= 0 ? 1 : item.UPC;
+                    return [item.SKU7, item["Product Name"], item.MRP, item["AIP Value"], u, Math.floor(item.total_units / u), item.total_units % u, "", ""];
+                });
+
+                // --- Styled, premium .xlsx export (presentation only — outputRows data above is unchanged) ---
+                const headerLabels = ["SKU7 Code", "Product Name", "MRP (Rs.)", "AIP Value", "UPC", "System Cases", "System Pieces", "Physical Cases", "Physical Pieces"];
+                const wb = new ExcelJS.Workbook();
+                const ws = wb.addWorksheet("Count Sheet", { views: [{ state: 'frozen', ySplit: 1 }] });
+                ws.columns = [{width:14},{width:38},{width:13},{width:13},{width:9},{width:14},{width:14},{width:16},{width:16}];
+
+                const headerRow = ws.addRow(headerLabels);
+                headerRow.height = 22;
+                headerRow.eachCell(cell => {
+                    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'FF1E3A8A' } }, left: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                        bottom: { style: 'thin', color: { argb: 'FF1E3A8A' } }, right: { style: 'thin', color: { argb: 'FF1E3A8A' } }
+                    };
+                });
+
+                outputRows.forEach((rowData, i) => {
+                    const row = ws.addRow(rowData);
+                    const isEven = i % 2 === 0;
+                    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                        const isFillInCol = (colNumber === 8 || colNumber === 9);
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'FFD9DEE8' } }, left: { style: 'thin', color: { argb: 'FFD9DEE8' } },
+                            bottom: { style: 'thin', color: { argb: 'FFD9DEE8' } }, right: { style: 'thin', color: { argb: 'FFD9DEE8' } }
+                        };
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isFillInCol ? 'FFFEF3E2' : (isEven ? 'FFF7F8FB' : 'FFFFFFFF') } };
+                        if (colNumber === 3 || colNumber === 4) cell.numFmt = '#,##0.00';
+                        if (colNumber >= 5) cell.alignment = { horizontal: 'center' };
+                    });
+                });
+
+                ws.autoFilter = { from: 'A1', to: 'I1' };
+
+                const buffer = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "LeverEDGE_Count_Sheet_Designed.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showStatus('status1', "Template Generated!", false);
+            } catch (err) {
+                showStatus('status1', "Error: " + err.message, true);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+    }
+
+    function loadCountSheetPreview(btn) {
+        const countIn = document.getElementById('filledCountFile');
+        const dashboard = document.getElementById('reviewDashboard');
+        const tableBody = document.getElementById('varianceTableBody');
+        if (!countIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
+        setButtonLoading(btn, true, 'Scanning...');
+        readFileAsArrayBuffer(countIn, function(countBuffer) {
+            try {
+                const wbCount = XLSX.read(countBuffer, {type: 'array'});
+                const countData = XLSX.utils.sheet_to_json(wbCount.Sheets[wbCount.SheetNames[0]], { defval: "" });
+
+                if (countData.length === 0 || !("SKU7 Code" in countData[0])) {
+                    throw new Error("'SKU7 Code' column not found in the uploaded file. Please upload only the template generated from Step 1.");
+                }
+
+                globalPhyCasesMap = {}; globalPhyPiecesMap = {}; globalAipValueMap = {}; globalExportRows = [];
+                tableBody.innerHTML = "";
+
+                let totalShortValue = 0, totalShortUnits = 0;
+                let totalExcessValue = 0, totalExcessUnits = 0;
+                let varianceDetected = false;
+
+                countData.forEach(row => {
+                    let sku = row["SKU7 Code"] ? String(row["SKU7 Code"]).trim() : "";
+                    if (sku) {
+                        let pCases = row["Physical Cases"] !== "" ? parseFloat(row["Physical Cases"]) || 0 : null;
+                        let pPieces = row["Physical Pieces"] !== "" ? parseFloat(row["Physical Pieces"]) || 0 : null;
+                        let sysCases = parseFloat(row["System Cases"]) || 0;
+                        let sysPieces = parseFloat(row["System Pieces"]) || 0;
+                        let upc = parseFloat(row["UPC"]) || 1;
+                        let aipPrice = parseFloat(row["AIP Value"]) || 0;
+                        let name = row["Product Name"] || "Unknown Item Reference";
+
+                        globalPhyCasesMap[sku] = pCases;
+                        globalPhyPiecesMap[sku] = pPieces;
+                        globalAipValueMap[sku] = aipPrice;
+
+                        let expTotalSysUnits = (sysCases * upc) + sysPieces;
+                        let expCounted = (pCases !== null || pPieces !== null);
+                        let expTotalPhyUnits = expCounted ? (((pCases || 0) * upc) + (pPieces || 0)) : null;
+                        let expDiff = expCounted ? (expTotalPhyUnits - expTotalSysUnits) : null;
+                        let expValGap = expCounted ? (expDiff * aipPrice) : null;
+                        globalExportRows.push({
+                            sku, name, sysCases, sysPieces, pCases, pPieces, aipPrice,
+                            totalSysUnits: expTotalSysUnits, totalPhyUnits: expTotalPhyUnits,
+                            diff: expDiff, valGap: expValGap, counted: expCounted
+                        });
+
+                        if (pCases !== null || pPieces !== null) {
+                            let totalSysUnits = (sysCases * upc) + sysPieces;
+                            let totalPhyUnits = ((pCases || 0) * upc) + (pPieces || 0);
+                            let diff = totalPhyUnits - totalSysUnits;
+
+                            if (diff !== 0) {
+                                varianceDetected = true;
+                                let valGap = Math.abs(diff) * aipPrice;
+
+                                if (diff < 0) {
+                                    totalShortUnits += Math.abs(diff);
+                                    totalShortValue += valGap;
+                                } else {
+                                    totalExcessUnits += diff;
+                                    totalExcessValue += valGap;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                finalizeDashboard(totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits);
+            } catch (err) {
+                dashboard.style.display = "none";
+                alert("Error: " + err.message);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+    }
+
+    function finalizeDashboard(totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits) {
+        const dashboard = document.getElementById('reviewDashboard');
+
+        const totalSkuCount = globalExportRows.length;
+        const countedSkuCount = globalExportRows.filter(i => i.counted).length;
+        const uncountedSkuCount = totalSkuCount - countedSkuCount;
+        const matchedSkuCount = globalExportRows.filter(i => i.counted && i.diff === 0).length;
+        const accuracyPct = countedSkuCount > 0 ? (matchedSkuCount / countedSkuCount * 100) : 0;
+
+        document.getElementById('statTotalSku').innerText = totalSkuCount;
+        document.getElementById('statCountedSku').innerText = countedSkuCount;
+        document.getElementById('statUncountedSku').innerText = uncountedSkuCount;
+        document.getElementById('statAccuracy').innerText = accuracyPct.toFixed(1) + "%";
+        const accBar = document.getElementById('accuracyBarFill');
+        accBar.style.width = Math.min(Math.max(accuracyPct, 0), 100) + "%";
+        accBar.style.background = accuracyPct >= 95 ? "var(--success)" : (accuracyPct >= 85 ? "var(--amber)" : "var(--danger)");
+
+        const totalSystemUnitsSum = globalExportRows.reduce((s, i) => s + i.totalSysUnits, 0);
+        const totalCountedUnitsSum = globalExportRows.filter(i => i.counted).reduce((s, i) => s + i.totalPhyUnits, 0);
+        const totalVarianceUnitsSum = globalExportRows.filter(i => i.counted).reduce((s, i) => s + i.diff, 0);
+
+        document.getElementById('statTotalSystemUnits').innerText = totalSystemUnitsSum.toLocaleString('en-US');
+        document.getElementById('statTotalCountedUnits').innerText = totalCountedUnitsSum.toLocaleString('en-US');
+        const varianceEl = document.getElementById('statTotalVarianceUnits');
+        varianceEl.innerText = (totalVarianceUnitsSum >= 0 ? "+" : "") + totalVarianceUnitsSum.toLocaleString('en-US');
+        varianceEl.style.color = totalVarianceUnitsSum > 0 ? "#047857" : (totalVarianceUnitsSum < 0 ? "#b91c1c" : "var(--ink)");
+
+        currentFilter = 'all'; currentSearch = '';
+        document.getElementById('varianceSearch').value = '';
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+        renderVarianceTable();
+        renderTopVariance();
+
+        document.getElementById('valShortValue').innerText = "Rs. " + totalShortValue.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('valShortDetails').innerText = totalShortUnits + " Units Checked";
+        document.getElementById('valExcessValue').innerText = "Rs. " + totalExcessValue.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('valExcessDetails').innerText = totalExcessUnits + " Units Checked";
+
+        let netGap = totalExcessValue - totalShortValue;
+        document.getElementById('valNetGap').innerText = (netGap >= 0 ? "+" : "") + "Rs. " + netGap.toLocaleString('en-US', {minimumFractionDigits: 2});
+        document.getElementById('valNetGap').style.color = netGap >= 0 ? "#047857" : "#b91c1c";
+
+        dashboard.style.display = "grid";
+        isScanned = true;
+
+        try {
+            sessionStorage.setItem('stockCountState', JSON.stringify({
+                globalPhyCasesMap, globalPhyPiecesMap, globalAipValueMap, globalExportRows,
+                isCountApproved, isScanned,
+                totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits
+            }));
+        } catch (e) { /* sessionStorage unavailable/full - non-critical, scan still works */ }
+    }
+
+    function restoreFromSession() {
+        try {
+            const saved = sessionStorage.getItem('stockCountState');
+            if (!saved) return;
+            const state = JSON.parse(saved);
+            if (!state || !state.isScanned || !Array.isArray(state.globalExportRows) || state.globalExportRows.length === 0) return;
+
+            globalPhyCasesMap = state.globalPhyCasesMap || {};
+            globalPhyPiecesMap = state.globalPhyPiecesMap || {};
+            globalAipValueMap = state.globalAipValueMap || {};
+            globalExportRows = state.globalExportRows;
+            isCountApproved = !!state.isCountApproved;
+
+            finalizeDashboard(state.totalShortValue || 0, state.totalShortUnits || 0, state.totalExcessValue || 0, state.totalExcessUnits || 0);
+
+            if (isCountApproved) {
+                document.getElementById('correctionSection').classList.remove('disabled');
+            }
+            alert("Previous scan session restored (" + globalExportRows.length + " SKUs). Upload a new file and re-scan to replace this data.");
+        } catch (e) {
+            try { sessionStorage.removeItem('stockCountState'); } catch (e2) {}
+        }
+    }
+
+    async function exportVarianceReport() {
+        if (globalExportRows.length === 0) {
+            alert("Please run 'Scan Variance Data' before exporting.");
+            return;
+        }
+        try {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet("Full Stock Report");
+            const headerLabels = ["SKU7 Code", "Product Name", "System Units", "Physical Units", "Variance (Units)", "Variance Value (Rs.)", "Status", "Remarks"];
+            ws.columns = [{width:14},{width:38},{width:14},{width:14},{width:16},{width:18},{width:14},{width:18}];
+
+            // --- Summary block (mirrors the web dashboard's stat cards) ---
+            const totalSkuCount = globalExportRows.length;
+            const countedSkuCount = globalExportRows.filter(i => i.counted).length;
+            const uncountedSkuCount = totalSkuCount - countedSkuCount;
+            const matchedSkuCount = globalExportRows.filter(i => i.counted && i.diff === 0).length;
+            const accuracyPct = countedSkuCount > 0 ? (matchedSkuCount / countedSkuCount * 100) : 0;
+            const totalShortageValue = globalExportRows.filter(i => i.counted && i.diff < 0).reduce((s, i) => s + Math.abs(i.valGap), 0);
+            const totalExcessValueSum = globalExportRows.filter(i => i.counted && i.diff > 0).reduce((s, i) => s + Math.abs(i.valGap), 0);
+            const netGapSum = totalExcessValueSum - totalShortageValue;
+
+            const titleRow = ws.addRow(["Stock Variance Report — Sarathchandra Agencies (Balangoda)"]);
+            ws.mergeCells(titleRow.number, 1, titleRow.number, 8);
+            titleRow.getCell(1).font = { bold: true, size: 13, color: { argb: 'FF1E3A8A' } };
+
+            const dateRow = ws.addRow(["Generated: " + new Date().toLocaleString()]);
+            ws.mergeCells(dateRow.number, 1, dateRow.number, 8);
+            dateRow.getCell(1).font = { italic: true, size: 9, color: { argb: 'FF64748B' } };
+
+            ws.addRow([]);
+
+            const summaryItems = [
+                ["Total SKU Count", totalSkuCount],
+                ["Counted SKU Count", countedSkuCount],
+                ["Uncounted SKU Count", uncountedSkuCount],
+                ["Accuracy % (SKU Match Rate)", accuracyPct.toFixed(1) + "%"],
+                ["Total Shortage Value (Rs.)", totalShortageValue.toFixed(2)],
+                ["Total Excess Value (Rs.)", totalExcessValueSum.toFixed(2)],
+                ["Net Valuation Gap (Rs.)", (netGapSum >= 0 ? "+" : "") + netGapSum.toFixed(2)]
+            ];
+            summaryItems.forEach(([label, value]) => {
+                const r = ws.addRow([label, value]);
+                r.getCell(1).font = { bold: true, color: { argb: 'FF334155' }, size: 10 };
+                r.getCell(2).font = { bold: true, color: { argb: 'FF0F1726' }, size: 10 };
+                [1, 2].forEach(c => {
+                    r.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEF1FB' } };
+                    r.getCell(c).border = { bottom: { style: 'thin', color: { argb: 'FFD7DEF5' } } };
+                });
+            });
+
+            ws.addRow([]);
+
+            const headerRow = ws.addRow(headerLabels);
+            ws.views = [{ state: 'frozen', ySplit: headerRow.number }];
+            headerRow.height = 22;
+            headerRow.eachCell(cell => {
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF1E3A8A' } }, left: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                    bottom: { style: 'thin', color: { argb: 'FF1E3A8A' } }, right: { style: 'thin', color: { argb: 'FF1E3A8A' } }
+                };
+            });
+
+            globalExportRows.forEach(item => {
+                let isUnknownSku = item.counted && item.diff > 0 && item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0;
+                let status = !item.counted ? "NOT COUNTED" : (item.diff === 0 ? "MATCHED" : (item.diff < 0 ? "SHORTAGE" : "EXCESS"));
+                let remarks = isUnknownSku ? "Not In System" : "";
+                const row = ws.addRow([
+                    item.sku,
+                    item.name,
+                    item.totalSysUnits,
+                    item.counted ? item.totalPhyUnits : "—",
+                    item.counted ? item.diff : "—",
+                    item.counted ? item.valGap : "—",
+                    status,
+                    remarks
+                ]);
+                let fillColor = 'FFFFFFFF';
+                if (status === "SHORTAGE") fillColor = 'FFFDECEB';
+                else if (status === "EXCESS") fillColor = 'FFE6F6EF';
+                else if (status === "NOT COUNTED") fillColor = 'FFF3F5FA';
+
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'FFD9DEE8' } }, left: { style: 'thin', color: { argb: 'FFD9DEE8' } },
+                        bottom: { style: 'thin', color: { argb: 'FFD9DEE8' } }, right: { style: 'thin', color: { argb: 'FFD9DEE8' } }
+                    };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+                    if (colNumber >= 3) cell.alignment = { horizontal: 'center' };
+                    if (colNumber === 6 && item.counted) cell.numFmt = '#,##0.00';
+                    if (status === "SHORTAGE" && (colNumber === 5 || colNumber === 6 || colNumber === 7)) cell.font = { color: { argb: 'FFB91C1C' }, bold: true };
+                    if (status === "EXCESS" && (colNumber === 5 || colNumber === 6 || colNumber === 7)) cell.font = { color: { argb: 'FF047857' }, bold: true };
+                    if (colNumber === 8 && isUnknownSku) cell.font = { color: { argb: 'FFB45309' }, bold: true };
+                });
+            });
+
+            ws.autoFilter = { from: 'A' + headerRow.number, to: 'H' + headerRow.number };
+
+            const d = new Date();
+            const dateStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Stock_Variance_Full_Report_" + dateStr + ".xlsx";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            alert("Failed to generate report: " + err.message);
+        }
+    }
+
+    function approveCountSheet() {
+        if (!isScanned) { alert("Please scan the count sheet first before approving."); return; }
+        isCountApproved = true;
+        document.getElementById('correctionSection').classList.remove('disabled');
+        try {
+            const saved = sessionStorage.getItem('stockCountState');
+            if (saved) {
+                const state = JSON.parse(saved);
+                state.isCountApproved = true;
+                sessionStorage.setItem('stockCountState', JSON.stringify(state));
+            }
+        } catch (e) {}
+        alert("Count Summary Confirmed! Step 3 has now unlocked successfully.");
+    }
+
+    function rejectCountSheet() {
+        isCountApproved = false;
+        isScanned = false;
+        document.getElementById('filledCountFile').value = "";
+        document.getElementById('reviewDashboard').style.display = "none";
+        document.getElementById('correctionSection').classList.add('disabled');
+        try { sessionStorage.removeItem('stockCountState'); } catch (e) {}
+        alert("Count data cleared. Please re-upload and re-scan.");
+    }
+
+    function processStockCorrection(btn) {
+        if(!isCountApproved) { alert("Action Locked. Prior verification required."); return; }
+        const correctionIn = document.getElementById('liveCorrectionFile');
+        const statusBox = document.getElementById('status2');
+        if (!correctionIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
+        setButtonLoading(btn, true, 'Processing...');
+
+        readFileAsArrayBuffer(correctionIn, function(correctionBuffer) {
+            try {
+                const wbCorrection = XLSX.read(correctionBuffer, {type: 'array', cellStyles: true});
+                const wsCorrection = wbCorrection.Sheets[wbCorrection.SheetNames[0]];
+                const correctionData = XLSX.utils.sheet_to_json(wsCorrection, { range: 0, defval: "" });
+
+                if (correctionData.length === 0 || !("SKU7 CODE" in correctionData[0]) || !("Current Stock Qty in Units" in correctionData[0])) {
+                    throw new Error("'SKU7 CODE' or 'Current Stock Qty in Units' column not found. Please verify this is the correct Live System Correction sheet.");
+                }
+
+                let skuGroups = {};
+                correctionData.forEach((row, idx) => {
+                    let sku = row["SKU7 CODE"] ? String(row["SKU7 CODE"]).trim() : "";
+                    if (sku) {
+                        if (!skuGroups[sku]) skuGroups[sku] = [];
+                        skuGroups[sku].push({ rowIdx: idx + 2, data: row });
+                    }
+                });
+
+                for (let sku in skuGroups) {
+                    let group = skuGroups[sku];
+                    let pCases = globalPhyCasesMap[sku];
+                    let pPieces = globalPhyPiecesMap[sku];
+                    
+                    if (pCases === null && pPieces === null) {
+                        group.forEach(item => {
+                            let cellRef = XLSX.utils.encode_cell({c: 10, r: item.rowIdx - 1});
+                            wsCorrection[cellRef] = { t: 'n', v: parseFloat(item.data["Current Stock Qty in Units"]) || 0 };
+                        });
+                        continue;
+                    }
+
+                    let upc = parseFloat(group[0].data["UPC"]) || 1; 
+                    let totalPhy = ((pCases || 0) * upc) + (pPieces || 0);
+                    let totalCurr = group.reduce((sum, item) => sum + (parseFloat(item.data["Current Stock Qty in Units"]) || 0), 0);
+                    let difference = totalPhy - totalCurr;
+
+                    if (difference === 0) {
+                        group.forEach(item => {
+                            let cellRef = XLSX.utils.encode_cell({c: 10, r: item.rowIdx - 1});
+                            wsCorrection[cellRef] = { t: 'n', v: parseFloat(item.data["Current Stock Qty in Units"]) || 0 };
+                        });
+                    } else if (difference < 0) {
+                        group.sort((a, b) => {
+                            let pkmA = String(a.data["PKM"] || '9999'), pkmB = String(b.data["PKM"] || '9999');
+                            return (pkmA.substring(2,4)+pkmA.substring(0,2)).localeCompare(pkmB.substring(2,4)+pkmB.substring(0,2));
+                        });
+                        let deficit = Math.abs(difference);
+                        group.forEach(item => {
+                            let cellRef = XLSX.utils.encode_cell({c: 10, r: item.rowIdx - 1});
+                            let val = parseFloat(item.data["Current Stock Qty in Units"]) || 0;
+                            if (deficit > 0) {
+                                if (val >= deficit) { wsCorrection[cellRef] = { t: 'n', v: val - deficit }; deficit = 0; }
+                                else { wsCorrection[cellRef] = { t: 'n', v: 0 }; deficit -= val; }
+                            } else { wsCorrection[cellRef] = { t: 'n', v: val }; }
+                        });
+                    } else if (difference > 0) {
+                        group.sort((a, b) => {
+                            let pkmA = String(a.data["PKM"] || '9999'), pkmB = String(b.data["PKM"] || '9999');
+                            return (pkmA.substring(2,4)+pkmA.substring(0,2)).localeCompare(pkmB.substring(2,4)+pkmB.substring(0,2));
+                        });
+                        let cellRefOldest = XLSX.utils.encode_cell({c: 10, r: group[0].rowIdx - 1});
+                        wsCorrection[cellRefOldest] = { t: 'n', v: (parseFloat(group[0].data["Current Stock Qty in Units"]) || 0) + difference };
+                        for(let i = 1; i < group.length; i++) {
+                            let cellRefOther = XLSX.utils.encode_cell({c: 10, r: group[i].rowIdx - 1});
+                            wsCorrection[cellRefOther] = { t: 'n', v: parseFloat(group[i].data["Current Stock Qty in Units"]) || 0 };
+                        }
+                    }
+                }
+
+                let skippedSkus = [];
+                for (let sku in globalPhyCasesMap) {
+                    let pCases = globalPhyCasesMap[sku];
+                    let pPieces = globalPhyPiecesMap[sku];
+                    if ((pCases !== null || pPieces !== null) && !skuGroups[sku]) {
+                        skippedSkus.push(sku);
+                    }
+                }
+
+                XLSX.writeFile(wbCorrection, "Stock_Correction_Final_Upload.xlsx");
+                showStatus('status2', "Export File Downloaded!", false);
+
+                if (skippedSkus.length > 0) {
+                    alert("Warning: " + skippedSkus.length + " counted SKU(s) were not found in the Live System Correction Sheet (no system record exists — cannot be added to the final file):\n\n" + skippedSkus.join(", ") + "\n\nThese items must be added manually via stock-in / GRN in the live system.");
+                }
+            } catch (err) {
+                showStatus('status2', "Error: " + err.message, true);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+    }
+</script>
+</body>
+</html>
