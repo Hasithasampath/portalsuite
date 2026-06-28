@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sarathchandra Agencies - Cash Slip Summary</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
 
 <!-- Preconnect to speed up font + CDN DNS lookup -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,17 +113,6 @@
     border: 1px solid rgba(255, 255, 255, 0.6);
     position: relative;
   }
-  .top-container h2 {
-    font-family: 'Barlow Condensed', sans-serif;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 6px;
-    font-size: 26px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0px;
-  }
   .top-container p { color: var(--muted); margin-bottom: 20px; font-size: 14px; font-weight: 500; }
   
   .upload-row {
@@ -133,22 +123,6 @@
     flex-wrap: wrap;
   }
   
-  .upload-row input[type="file"] {
-    padding: 10px 16px;
-    background: #f1f5f9;
-    border: 2px dashed #cbd5e1;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--muted);
-    transition: all 0.2s ease;
-  }
-  .upload-row input[type="file"]:hover {
-    border-color: #2563eb;
-    background: #eff6ff;
-  }
-
   .plus-setup-btn {
     padding: 11px 20px;
     background: var(--btn-neutral);
@@ -303,11 +277,11 @@
     margin: 0 auto 25px auto;
     padding: 20px;
     border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
     display: none;
     flex-direction: column;
     gap: 15px;
-    border-left: 5px solid #1e3c72;
+    border: 1.5px solid #e2e8f0;
   }
   .panel-top-row {
     display: flex;
@@ -342,8 +316,8 @@
   .print-btn {
     padding: 9px 16px;
     background: #fff;
-    border: 1px solid #475569;
-    border-radius: 4px;
+    border: 1.5px solid #475569;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -352,6 +326,9 @@
     gap: 6px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     transition: all 0.2s;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
   .print-btn:hover { background: #f8fafc; border-color: #0f172a; }
   .excel-btn { background: #fff; border-color: #107c41; color: #107c41; margin-right: 5px;}
@@ -537,10 +514,352 @@
   .pdf-export * { background-color: transparent; }
   .pdf-export.slip, .pdf-export .slip, .pdf-export .page-block-blank { background-color: #ffffff !important; }
 
+  /* ── Toast Notifications ─────────────────────────────── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 99999; pointer-events: none; }
+  .toast { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff; opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; max-width: 340px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); pointer-events: auto; font-family: 'Barlow', sans-serif; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: linear-gradient(135deg, #059669, #10b981); }
+  .toast.error   { background: linear-gradient(135deg, #dc2626, #ef4444); }
+  .toast.info    { background: linear-gradient(135deg, #1e3c72, #2a5298); }
+  .toast.warning { background: linear-gradient(135deg, #b45309, #d97706); }
+
+  /* ── Loading Overlay ──────────────────────────────────── */
+  .loading-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 99998; gap: 14px; }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.15); border-top-color: #38ef7d; border-radius: 50%; animation: spin 0.75s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-msg { color: #fff; font-size: 14px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.6px; }
+  .loading-prog-track { width: 200px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 4px; overflow: hidden; }
+  .loading-prog-fill { height: 100%; background: linear-gradient(90deg, #11998e, #38ef7d); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+
+  /* ── Summary Stats Bar ────────────────────────────────── */
+  .summary-stats-bar { display: none; max-width: 1140px; margin: 0 auto 18px auto; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .summary-stats-bar.visible { display: grid; }
+  .stat-card { background: rgba(255,255,255,0.97); border-radius: 10px; padding: 12px 16px; border: 1px solid #e8edf3; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; font-family: 'Barlow Condensed', sans-serif; line-height: 1.1; }
+  .stat-value.accent { color: #1e3c72; }
+
+  /* ── Beat Checkbox pill badge ─────────────────────────── */
+  .beat-count-badge { font-size: 10px; font-weight: 700; background: #e2e8f0; color: #475569; padding: 1px 6px; border-radius: 10px; margin-left: 4px; font-family: 'Barlow Condensed', sans-serif; }
+
+  /* ── Bulk progress bar ────────────────────────────────── */
+  .bulk-prog-track { width: 100%; height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .bulk-prog-fill { height: 100%; background: linear-gradient(90deg, #059669, #10b981); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+
+  /* ── Beat checkbox — checked state highlight ────────────── */
+  .checkbox-item:has(input[type="checkbox"]:checked) {
+    border-color: #1e3c72;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px #1e3c7222;
+  }
+  .checkbox-item:has(input[type="checkbox"]:checked) .beat-count-badge {
+    background: #1e3c72;
+    color: #fff;
+  }
+  .checkbox-item input[type="checkbox"] { accent-color: #1e3c72; }
+
+  /* ── File name badge ─────────────────────────────────────── */
+  .file-name-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: #f0fdf4;
+    border: 1.5px solid #6ee7b7;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #047857;
+    font-family: 'Barlow Condensed', sans-serif;
+    max-width: 320px;
+    overflow: hidden;
+  }
+  .file-name-badge .fname-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  .file-clear-btn {
+    background: none;
+    border: none;
+    color: #047857;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .file-clear-btn:hover { opacity: 1; }
+
+  /* ── Top container layout ────────────────────────────────── */
+  .upload-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .setup-divider {
+    width: 100%;
+    border: none;
+    border-top: 1px dashed #e2e8f0;
+    margin: 14px 0 10px 0;
+  }
+  .setup-btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .setup-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+
+  /* ── Control panel header strip ──────────────────────────── */
+  .panel-header-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .panel-header-strip .ph-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1e3c72;
+    letter-spacing: 0.8px;
+  }
+  .panel-header-strip .ph-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    flex-shrink: 0;
+  }
+
+  /* ── Stat cards with icon ────────────────────────────────── */
+  .stat-icon {
+    font-size: 18px;
+    line-height: 1;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* ── Print button — blue ─────────────────────────────────── */
+  .print-btn.btn-print-action { border-color: #1e3c72; color: #1e3c72; }
+  .print-btn.btn-print-action:hover { background: #eff6ff; border-color: #1e293b; }
+
+  /* ══════════════════════════════════════════════════════════
+     UI POLISH v2
+     ══════════════════════════════════════════════════════════ */
+
+  /* ── Custom Upload Zone ─────────────────────────────────── */
+  .upload-zone {
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 15px 28px; background: #f8fafc;
+    border: 2px dashed #cbd5e1; border-radius: 12px;
+    cursor: pointer; transition: all 0.22s ease;
+    font-family: 'Barlow Condensed', sans-serif; color: #475569;
+    user-select: none; text-decoration: none;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: #1e3c72; background: #eff6ff; color: #1e3c72;
+    box-shadow: 0 0 0 4px rgba(30,60,114,0.07);
+  }
+  .upload-zone-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+  .upload-zone-text { font-size: 14px; font-weight: 700; text-align: left; line-height: 1.5; }
+  .upload-zone-text small { display: block; font-size: 11px; font-weight: 600; color: #94a3b8; font-family:'Barlow',sans-serif; }
+  .upload-zone input[type="file"] { display: none; }
+
+  /* ── Empty State Guide ──────────────────────────────────── */
+  .empty-state-guide {
+    max-width: 1140px; margin: 0 auto 22px auto;
+    background: rgba(255,255,255,0.92); border-radius: 14px;
+    padding: 20px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    border: 1px solid rgba(255,255,255,0.6);
+  }
+  .guide-steps {
+    display: flex; align-items: center;
+    justify-content: center; gap: 10px; flex-wrap: wrap;
+  }
+  .guide-step { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 110px; }
+  .guide-step-num {
+    width: 34px; height: 34px; background: var(--accent-gradient);
+    color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+  }
+  .guide-step-text {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; color: #475569; text-align: center; letter-spacing: 0.3px;
+  }
+  .guide-arrow { font-size: 18px; color: #cbd5e1; font-weight: 700; flex-shrink: 0; }
+
+  /* ── Modal Accent Strips ────────────────────────────────── */
+  .modal-box::before {
+    content: ''; display: block; height: 5px;
+    background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+    margin: -25px -25px 18px -25px; border-radius: 14px 14px 0 0;
+  }
+  #geotagModal .modal-box::before { background: linear-gradient(90deg,#7c3aed,#4f46e5); }
+  #gsheetModal .modal-box::before { background: linear-gradient(90deg,#0284c7,#0ea5e9); }
+  #lorryModal  .modal-box::before { background: linear-gradient(90deg,#1e293b,#334155); }
+  #vanModal    .modal-box::before { background: linear-gradient(90deg,#0891b2,#0e7490); }
+
+  /* ── Stat Card Accent Top Borders ──────────────────────── */
+  .stat-card:nth-child(1) { border-top: 3px solid #1e3c72; }
+  .stat-card:nth-child(2) { border-top: 3px solid #0891b2; }
+  .stat-card:nth-child(3) { border-top: 3px solid #4f46e5; }
+  .stat-card:nth-child(4) { border-top: 3px solid #059669; }
+
+  /* ── Stats Bar entrance animation ───────────────────────── */
+  @keyframes statFadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .summary-stats-bar.visible .stat-card:nth-child(1) { animation: statFadeUp 0.3s 0.05s ease both; }
+  .summary-stats-bar.visible .stat-card:nth-child(2) { animation: statFadeUp 0.3s 0.13s ease both; }
+  .summary-stats-bar.visible .stat-card:nth-child(3) { animation: statFadeUp 0.3s 0.21s ease both; }
+  .summary-stats-bar.visible .stat-card:nth-child(4) { animation: statFadeUp 0.3s 0.29s ease both; }
+
+  /* ── Setup Button Row Container ─────────────────────────── */
+  .setup-btn-row {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 10px 18px;
+  }
+
+  /* ── Control Panel Slide Animation ─────────────────────── */
+  @keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .control-panel.anim-in { animation: slideDownFade 0.28s ease both; }
+
+  /* ── Beat Section Active State ──────────────────────────── */
+  .beat-checkbox-container.has-data {
+    border-color: rgba(30,60,114,0.2);
+    background: linear-gradient(135deg, #f8fbff, #f0f7ff);
+  }
+
+  /* ── Custom Scrollbar in Modals ─────────────────────────── */
+  .table-scroll-container::-webkit-scrollbar { width: 5px; }
+  .table-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+  .table-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .table-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  /* ── Top Title upgrade ──────────────────────────────────── */
+  .top-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-size: 26px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0; margin-bottom: 2px; line-height: 1.1;
+  }
+  .top-title-sep { opacity: 0.4; }
+  .top-subtitle {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+    color: #64748b; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 14px;
+  }
+
+  /* ── Button Group Separator ─────────────────────────────── */
+  .btn-separator { width: 1px; height: 26px; background: #e2e8f0; flex-shrink: 0; align-self: center; }
+
+  /* ── Preview Label ──────────────────────────────────────── */
+  .preview-label {
+    display: flex; align-items: center; gap: 12px;
+    max-width: 1140px; margin: 0 auto 10px auto; padding: 0 4px;
+  }
+  .preview-label-line { flex: 1; height: 1px; background: #e2e8f0; }
+  .preview-label-text {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+    font-weight: 700; text-transform: uppercase; color: #94a3b8;
+    letter-spacing: 1px; white-space: nowrap;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     UI POLISH v3
+     ══════════════════════════════════════════════════════════ */
+
+  /* #1 — Modal entrance animation */
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-overlay.open .modal-box { animation: modalIn 0.2s ease-out both; }
+
+  /* #4 — Beat Select All / Clear All buttons */
+  .beat-btn {
+    padding: 4px 12px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #1e3c72;
+    transition: all 0.18s;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.4px;
+  }
+  .beat-btn:hover { background: #1e3c72; color: #fff; border-color: #1e3c72; }
+
+  /* #5 — Modal action button hover states */
+  .modal-btn { transition: all 0.18s ease; }
+  .modal-btn.save:hover  { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(30,60,114,0.25); }
+  .modal-btn.close:hover { background: #cbd5e1; transform: translateY(-1px); }
+  .modal-btn.secondary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  /* #6 — GSheet sync badge */
+  .gsync-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    background: #f0fdf4; border: 1.5px solid #86efac;
+    border-radius: 20px; font-size: 11px; font-weight: 700;
+    color: #15803d; font-family: 'Barlow Condensed', sans-serif;
+    cursor: pointer; transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .gsync-badge:hover { background: #dcfce7; border-color: #4ade80; }
+  .gsync-badge .gsync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #22c55e; flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+  }
+  .gsync-badge.stale { background: #fefce8; border-color: #fde047; color: #854d0e; }
+  .gsync-badge.stale .gsync-dot { background: #eab308; box-shadow: 0 0 0 2px rgba(234,179,8,0.25); }
+  .gsync-badge.no-sync { background: #f8fafc; border-color: #e2e8f0; color: #94a3b8; }
+  .gsync-badge.no-sync .gsync-dot { background: #cbd5e1; box-shadow: none; }
+
+  /* #7 — DP keyboard shortcut hint */
+  .dp-kb-hint {
+    font-size: 10px; color: #94a3b8; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; letter-spacing: 0.3px; margin-top: 3px;
+  }
+  kbd {
+    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 3px;
+    padding: 1px 4px; font-size: 10px; font-family: monospace; color: #475569;
+  }
+
+  /* #10 — Unify focus color to navy */
+  input:focus, select:focus, textarea:focus { border-color: #1e3c72 !important; outline: none; }
+
   @media print {
     @page { size: A4 landscape; margin: 4mm 5mm; }
     body { background: #fff; padding-bottom: 0; }
-    .top-container, .control-panel, .modal-overlay { display: none !important; }
+    .top-container, .control-panel, .modal-overlay, .summary-stats-bar { display: none !important; }
     .sheet { display: none !important; }
     .sheet.active { display: block !important; max-width: 100% !important; margin: 0; padding: 0; }
     
@@ -565,18 +884,73 @@
 </head>
 <body>
 
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-msg" id="loadingMsg">Processing...</div>
+  <div class="loading-prog-track"><div class="loading-prog-fill" id="loadingProgFill"></div></div>
+</div>
 
 <div class="top-container">
-  <h2>Sarathchandra Agencies - Balangoda</h2>
-  <h2 style="text-align: center; white-space: normal; word-wrap: break-word;">Collection Sheet Summary</h2>
-  <p>Please upload the Your Excel <b>(.xlsx)</b> file downloaded from LeverEDGE.</p>
+  <h1 class="top-title">Sarathchandra Agencies <span class="top-title-sep">·</span> Balangoda</h1>
+  <p class="top-subtitle">Collection Sheet Summary</p>
   
-  <div class="upload-row">
-    <input type="file" id="excelFileInput" accept=".xlsx, .xls">
-    <button class="plus-setup-btn" onclick="openHighlightModal()">⭐ Credit Policy</button>
-    <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);" onclick="openGeotagModal()">🎯 Non-Geotag Setup</button>
-    <button class="plus-setup-btn lorry-btn" onclick="openLorryModal()">🚚 Lorry Numbers</button>
+  <div class="upload-row" style="flex-direction:column; gap:0;">
+    <div class="upload-input-wrap">
+      <label class="upload-zone" for="excelFileInput">
+        <span class="upload-zone-icon">📂</span>
+        <div class="upload-zone-text">
+          Drop your LeverEDGE Excel here
+          <small>or click to browse &nbsp;·&nbsp; .xlsx / .xls</small>
+        </div>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls">
+      </label>
+      <div class="file-name-badge" id="fileNameBadge">
+        <span>📄</span>
+        <span class="fname-text" id="fileNameText"></span>
+        <button class="file-clear-btn" title="Clear data" onclick="clearAllData()">✕</button>
+      </div>
+    </div>
+    <hr class="setup-divider">
+    <div class="setup-btn-row">
+      <span class="setup-label">⚙️ Setup</span>
+      <button class="plus-setup-btn" id="clearDataBtn" style="background:linear-gradient(135deg,#64748b,#475569); display:none;" onclick="clearAllData()">🗑️ Clear Data</button>
+      <button class="plus-setup-btn" onclick="openHighlightModal()">⭐ Credit Policy</button>
+      <span class="gsync-badge no-sync" id="gsyncBadge" onclick="openGsheetModal()" title="Google Sheets sync status">
+        <span class="gsync-dot"></span>
+        <span id="gsyncBadgeText">Not Synced</span>
+      </span>
+      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);" onclick="openGeotagModal()">🎯 Non-Geotag</button>
+      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);" onclick="openVanModal()">👤 DM Setup</button>
+      <button class="plus-setup-btn lorry-btn" onclick="openLorryModal()">🚚 Lorry</button>
+    </div>
+  </div>
+</div>
+
+<div class="empty-state-guide" id="emptyStateGuide">
+  <div class="guide-steps">
+    <div class="guide-step">
+      <div class="guide-step-num">①</div>
+      <div class="guide-step-text">Upload LeverEDGE Excel</div>
+    </div>
+    <div class="guide-arrow">→</div>
+    <div class="guide-step">
+      <div class="guide-step-num">②</div>
+      <div class="guide-step-text">Select Delivery Person</div>
+    </div>
+    <div class="guide-arrow">→</div>
+    <div class="guide-step">
+      <div class="guide-step-num">③</div>
+      <div class="guide-step-text">Choose Vehicle &amp; Beats</div>
+    </div>
+    <div class="guide-arrow">→</div>
+    <div class="guide-step">
+      <div class="guide-step-num">④</div>
+      <div class="guide-step-text">Print / PDF / Export</div>
+    </div>
   </div>
 </div>
 
@@ -704,12 +1078,82 @@
   </div>
 </div>
 
+<!-- VAN / DM Mapping Modal -->
+<div class="modal-overlay" id="vanModal">
+  <div class="modal-box">
+    <h3>👤 Delivery Person / DM Setup</h3>
+    <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Delivery person names, VAN codes, and full DM names. Saves to Firebase automatically.</p>
+
+    <div class="add-form-row">
+      <input type="text" id="addVanDPName" placeholder="DP Name uppercase (e.g., CC MANOJ)" style="flex:1; min-width:160px;">
+      <input type="text" id="addVanCode" placeholder="VAN Code (e.g., DM000001)" style="width:130px;">
+      <input type="text" id="addVanDMCode" placeholder="Full DM Name" style="flex:1; min-width:150px;">
+      <button class="plus-setup-btn" style="padding:6px 12px; font-size:12px; background:linear-gradient(135deg,#0891b2,#0e7490);" onclick="addVanMappingItem()">➕ Add</button>
+    </div>
+
+    <div class="search-bar-row">
+      <input type="text" id="vanModalSearchInput" placeholder="🔍 Filter by name..." oninput="renderVanMappingTable()">
+      <button class="print-btn excel-btn" style="padding:4px 10px; font-size:12px;" onclick="downloadVanMappingTemplate()">📥 Export</button>
+      <button class="print-btn" style="padding:4px 10px; font-size:12px; border-color:#107c41; color:#107c41;" onclick="document.getElementById('vanFileInput').click()">📤 Import</button>
+      <input type="file" id="vanFileInput" accept=".xlsx,.xls" style="display:none;" onchange="importVanMappingExcel(event)">
+    </div>
+
+    <div class="table-scroll-container">
+      <table class="policy-mgmt-table">
+        <thead>
+          <tr>
+            <th>DP Name (UPPERCASE)</th>
+            <th>VAN Code</th>
+            <th>Full DM Name</th>
+            <th style="text-align:center; width:50px;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="vanMappingTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn close" onclick="closeVanModal()">Close Window</button>
+      <button class="modal-btn secondary" onclick="clearAllVanMapping()">Reset to Defaults</button>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Stats Bar -->
+<div class="summary-stats-bar" id="summaryStatsBar">
+  <div class="stat-card">
+    <span class="stat-icon">👥</span>
+    <div class="stat-label">Delivery Persons</div>
+    <div class="stat-value accent" id="statDPs">0</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">🗺️</span>
+    <div class="stat-label">Total Beats</div>
+    <div class="stat-value accent" id="statBeats">0</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">📋</span>
+    <div class="stat-label">Total Bills</div>
+    <div class="stat-value" id="statBills">0</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">💰</span>
+    <div class="stat-label">Total Value</div>
+    <div class="stat-value" id="statValue" style="font-size:16px;">Rs. 0.00</div>
+  </div>
+</div>
+
 <div class="control-panel" id="controlPanel">
+  <div class="panel-header-strip">
+    <span class="ph-dot"></span>
+    <span class="ph-title">📋 Session Controls</span>
+  </div>
   <div class="panel-top-row">
     <div class="selector-group">
       <div class="filter-box">
         <label for="srSelect">Select Delivery Person:</label>
         <select id="srSelect" class="rep-dropdown"></select>
+        <div class="dp-kb-hint"><kbd>Ctrl</kbd> + <kbd>←</kbd><kbd>→</kbd> to switch</div>
       </div>
       <div class="filter-box">
         <label for="vehicleSelect" style="color: #ff416c; font-weight: bold;">Select Vehicle Number (Required):</label>
@@ -719,18 +1163,22 @@
       </div>
     </div>
     <div class="btn-group">
-      <!--<button class="print-btn excel-btn" onclick="validateAndDownloadExcel()">📥 Download Excel Workbook</button>-->
-      <button class="print-btn" onclick="validateAndPrint()">🖨 Print Current Summary</button>
+      <!--<button class="print-btn excel-btn" onclick="validateAndDownloadExcel()">📥 Download Excel</button>-->
+      <button class="print-btn btn-print-action" onclick="validateAndPrint()">🖨 Print Current Summary</button>
+      <div class="btn-separator"></div>
       <button class="print-btn" style="border-color:#dc2626; color:#dc2626;" onclick="downloadSlipPDF()">📄 Download PDF</button>
       <!--<button class="print-btn" style="border-color:#25D366; color:#25D366;" onclick="shareSlipPDF()">📤 Share</button>-->
     </div>
 
-    <div id="bulkDownloadPanel" style="display:none; margin-top:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-      <div style="font-size:12px; font-weight:700; color:#047857;">
-        ✅ All delivery persons have a lorry assigned — you can now download PDFs for everyone.
-        <div id="bulkDownloadStatus" style="font-weight:500; color:#059669; margin-top:2px;"></div>
+    <div id="bulkDownloadPanel" style="display:none; margin-top:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; flex-direction:column; gap:6px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; font-weight:700; color:#047857;">
+          ✅ All delivery persons have a lorry assigned — you can now download PDFs for everyone.
+          <div id="bulkDownloadStatus" style="font-weight:500; color:#059669; margin-top:2px;"></div>
+        </div>
+        <button class="print-btn" style="border-color:#059669; color:#059669;" onclick="downloadAllPDFs()">📦 Download All PDFs (ZIP)</button>
       </div>
-      <button class="print-btn" style="border-color:#059669; color:#059669;" onclick="downloadAllPDFs()">📦 Download All PDFs (ZIP)</button>
+      <div class="bulk-prog-track" id="bulkProgTrack" style="display:none;"><div class="bulk-prog-fill" id="bulkProgFill"></div></div>
     </div>
   </div>
 
@@ -756,8 +1204,25 @@ function debounce(fn, delay) {
   };
 }
 
-// 🛠️ Professional Complete Mapping Added As Requested Without Disrupting Existing Logic
-const VAN_MAPPING = {
+// ─── Count-up animation for stat cards ───────────────────────────────────
+function animateCount(el, target, isValue = false, duration = 550) {
+  let startTime = null;
+  const step = (ts) => {
+    if (!startTime) startTime = ts;
+    const progress = Math.min((ts - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(eased * target);
+    el.textContent = isValue
+      ? 'Rs. ' + current.toLocaleString('en-LK') + '.00'
+      : current;
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = isValue ? fmt(target) : target;
+  };
+  requestAnimationFrame(step);
+}
+
+// 🛠️ Default VAN Mapping — loaded from Firebase on init; editable via DM Setup modal
+const DEFAULT_VAN_MAPPING = {
   "CC MANOJ":        { van: "DM000001", dmCode: "I.A.Manoj Madusanka" },
   "CC GAYAN":        { van: "DM000002", dmCode: "T.D.Gayan Rasika" },
   "CC THARUSHA":     { van: "DM000003", dmCode: "K.G.Tharusha Shashimal" },
@@ -772,19 +1237,69 @@ const VAN_MAPPING = {
   "CC HIRUNA":       { van: "DM000012", dmCode: "H.A.Hiruna Wimukthi" }
 };
 
+let DYNAMIC_VAN_MAPPING = {}; // populated from Firebase in initializeVanMapping()
+
 function getVanNumber(name) {
   if (!name) return "";
   const key = name.toString().trim().toUpperCase();
-  return VAN_MAPPING[key] ? VAN_MAPPING[key].van : "";
+  return DYNAMIC_VAN_MAPPING[key] ? DYNAMIC_VAN_MAPPING[key].van : "";
 }
 
 function getDMCode(name) {
   if (!name) return "................";
   const key = name.toString().trim().toUpperCase();
-  return VAN_MAPPING[key] ? VAN_MAPPING[key].dmCode : "................";
+  return DYNAMIC_VAN_MAPPING[key] ? DYNAMIC_VAN_MAPPING[key].dmCode : "................";
 }
 
 const fmt = n => 'Rs. ' + (Number(n) || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+// ─── Toast Notifications ──────────────────────────────────────────────────────
+function showToast(msg, type = 'info', duration = 3500) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+// ─── Loading Overlay ──────────────────────────────────────────────────────────
+function showLoader(msg = 'Processing...', progress = null) {
+  document.getElementById('loadingMsg').textContent = msg;
+  const fill = document.getElementById('loadingProgFill');
+  fill.style.width = progress !== null ? progress + '%' : '0%';
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function setLoaderProgress(pct, msg) {
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+  document.getElementById('loadingProgFill').style.width = pct + '%';
+}
+function hideLoader() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+// ─── Clear All Data ───────────────────────────────────────────────────────────
+function clearAllData() {
+  if (!confirm('Clear all loaded data and start fresh?')) return;
+  GLOBAL_MAP_DATA = {};
+  DELIVERY_PERSON_LIST = [];
+  LORRY_ASSIGNMENTS = {};
+  sessionStorage.removeItem('sarathchandra_lorry_assignments');
+  document.getElementById('excelFileInput').value = '';
+  const badge = document.getElementById('fileNameBadge');
+  if (badge) badge.style.display = 'none';
+  document.getElementById('controlPanel').style.display = 'none';
+  document.getElementById('sheets').innerHTML = '';
+  document.getElementById('summaryStatsBar').classList.remove('visible');
+  document.getElementById('clearDataBtn').style.display = 'none';
+  const guideEl = document.getElementById('emptyStateGuide');
+  if (guideEl) guideEl.style.display = '';
+  showToast('Data cleared. Upload a new file.', 'info');
+}
 
 function parseExcelDate(excelDate) {
   if (!excelDate) return '-';
@@ -803,7 +1318,7 @@ let SAVED_LORRY_NUMBERS = [];
 // ─── IndexedDB Storage Layer ──────────────────────────────────────────────────
 // Replaces localStorage for all persistent app data. Falls back gracefully.
 // ─── Firebase wrapper — idbSet/idbGet/idbRemove now use Firebase ─────────────
-// Firebase ready වෙන තෙක් wait කරන helper
+// Firebase until ready & helper
 function waitForFirebase() {
   return new Promise(resolve => {
     if (window._firebaseReady) return resolve();
@@ -817,6 +1332,7 @@ async function idbSet(key, value) {
     await window.fbSet(key, value);
   } catch(e) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch(_) {}
+    showToast('⚠️ Firebase offline — saved locally', 'warning', 4000);
   }
 }
 
@@ -858,6 +1374,8 @@ async function initializePolicyDatabase() {
   // Lorry assignments are SESSION-ONLY — reset every time browser/tab is closed
   const _sessionAssign = sessionStorage.getItem('sarathchandra_lorry_assignments');
   LORRY_ASSIGNMENTS = _sessionAssign ? JSON.parse(_sessionAssign) : {};
+
+  await initializeVanMapping();
 }
 
 let _modalScrollY = 0;
@@ -879,19 +1397,36 @@ function _unlockBodyScroll() {
 }
 
 // Track how many modals are open so unlock only fires when all are closed
+// ── Modal open / close with animation ─────────────────────────────────────
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'flex';
+  requestAnimationFrame(() => el.classList.add('open'));
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  // Wait for CSS transition before hiding
+  el.addEventListener('transitionend', () => { el.style.display = 'none'; }, { once: true });
+  // Fallback if no transition fires
+  setTimeout(() => { if (!el.classList.contains('open')) el.style.display = 'none'; }, 300);
+}
+
 let _openModalCount = 0;
 
 function openHighlightModal() {
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
-  document.getElementById('highlightModal').style.display = 'flex';
+  openModal('highlightModal');
   document.getElementById('modalSearchInput').value = '';
   restoreGSheetUI();
   renderModalTable();
 }
 
 function closeHighlightModal() {
-  document.getElementById('highlightModal').style.display = 'none';
+  closeModal('highlightModal');
   _openModalCount = Math.max(0, _openModalCount - 1);
   if (_openModalCount === 0) _unlockBodyScroll();
 }
@@ -900,11 +1435,11 @@ function openGSheetModal() {
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
   restoreGSheetUI();
-  document.getElementById('gsheetModal').style.display = 'flex';
+  openModal('gsheetModal');
 }
 
 function closeGSheetModal() {
-  document.getElementById('gsheetModal').style.display = 'none';
+  closeModal('gsheetModal');
   _openModalCount = Math.max(0, _openModalCount - 1);
   if (_openModalCount === 0) _unlockBodyScroll();
   // Reflect any changes made (e.g. fresh sync) back into the policy table
@@ -941,8 +1476,8 @@ function addPolicyItem() {
   const type = document.getElementById('addType').value;
   const days = parseInt(document.getElementById('addDays').value) || 0;
 
-  if(!tcode) { alert("Please enter a valid T-Code"); return; }
-  if(!name) { alert("Please enter Customer / Party Name"); return; }
+  if(!tcode) { showToast('Please enter a valid T-Code', 'error'); return; }
+  if(!name) { showToast('Please enter Customer / Party Name', 'error'); return; }
 
   POLICY_DATABASE[tcode] = { name: name, type: type, days: days };
   idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
@@ -951,6 +1486,7 @@ function addPolicyItem() {
   document.getElementById('addName').value = '';
   
   renderModalTable();
+  showToast(`✅ ${tcode} added to Credit Policy`, 'success');
   if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
 }
 
@@ -959,6 +1495,7 @@ function deletePolicyItem(tcode) {
     delete POLICY_DATABASE[tcode];
     idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
     renderModalTable();
+    showToast(`Removed ${tcode}`, 'info');
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
   }
 }
@@ -968,6 +1505,7 @@ function clearAllPolicyItems() {
     POLICY_DATABASE = {};
     idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
     renderModalTable();
+    showToast('Credit Policy cleared', 'info');
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
   }
 }
@@ -1124,6 +1662,13 @@ async function syncFromGoogleSheets() {
       }
       const dotEl = document.getElementById('gsheetSyncDot');
       if (dotEl) dotEl.style.display = 'inline-block';
+      // Update external sync badge
+      const badge = document.getElementById('gsyncBadge');
+      const badgeTxt = document.getElementById('gsyncBadgeText');
+      if (badge && badgeTxt) {
+        badge.classList.remove('no-sync', 'stale');
+        badgeTxt.textContent = `Synced ${now}`;
+      }
 
       renderModalTable();
       if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
@@ -1176,13 +1721,13 @@ async function restoreGSheetUI() {
 function openGeotagModal() {
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
-  document.getElementById('geotagModal').style.display = 'flex';
+  openModal('geotagModal');
   document.getElementById('geoModalSearchInput').value = '';
   renderGeotagTable();
 }
 
 function closeGeotagModal() {
-  document.getElementById('geotagModal').style.display = 'none';
+  closeModal('geotagModal');
   _openModalCount = Math.max(0, _openModalCount - 1);
   if (_openModalCount === 0) _unlockBodyScroll();
 }
@@ -1213,8 +1758,8 @@ function addGeotagItem() {
   const tcode = document.getElementById('addGeoTCode').value.trim().toUpperCase();
   const name = document.getElementById('addGeoName').value.trim();
 
-  if(!tcode) { alert("Please enter a valid T-Code"); return; }
-  if(!name) { alert("Please enter Customer / Party Name"); return; }
+  if(!tcode) { showToast('Please enter a valid T-Code', 'error'); return; }
+  if(!name) { showToast('Please enter Customer / Party Name', 'error'); return; }
 
   GEOTAG_DATABASE[tcode] = { name: name };
   idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
@@ -1223,6 +1768,7 @@ function addGeotagItem() {
   document.getElementById('addGeoName').value = '';
   
   renderGeotagTable();
+  showToast(`✅ ${tcode} added to Non-Geotag list`, 'success');
   if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
 }
 
@@ -1231,6 +1777,7 @@ function deleteGeotagItem(tcode) {
     delete GEOTAG_DATABASE[tcode];
     idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
     renderGeotagTable();
+    showToast(`Removed ${tcode}`, 'info');
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
   }
 }
@@ -1240,6 +1787,7 @@ function clearAllGeotagItems() {
     GEOTAG_DATABASE = {};
     idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
     renderGeotagTable();
+    showToast('Non-Geotag list cleared', 'info');
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
   }
 }
@@ -1294,7 +1842,7 @@ function importHighlightExcel(event) {
     const worksheet = workbook.Sheets[sheetName];
     const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
-    if (rawRows.length <= 1) { alert("The uploaded file has no data rows."); return; }
+    if (rawRows.length <= 1) { showToast('The uploaded file has no data rows.', 'error'); return; }
 
     for(let i = 1; i < rawRows.length; i++) {
       const row = rawRows[i];
@@ -1310,7 +1858,7 @@ function importHighlightExcel(event) {
     }
 
     idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
-    alert("✅ Credit Policy updated successfully from Excel file!");
+    showToast('✅ Credit Policy updated from Excel!', 'success');
     renderModalTable();
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
     document.getElementById('policyFileInput').value = "";
@@ -1330,7 +1878,7 @@ function importGeotagExcel(event) {
     const worksheet = workbook.Sheets[sheetName];
     const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
-    if (rawRows.length <= 1) { alert("The uploaded file has no data rows."); return; }
+    if (rawRows.length <= 1) { showToast('The uploaded file has no data rows.', 'error'); return; }
 
     for(let i = 1; i < rawRows.length; i++) {
       const row = rawRows[i];
@@ -1343,7 +1891,7 @@ function importGeotagExcel(event) {
     }
 
     idbSet('sarathchandra_geotag_db_matrix', GEOTAG_DATABASE);
-    alert("✅ Non-Geotag database updated successfully from Excel sheet!");
+    showToast('✅ Non-Geotag database updated from Excel!', 'success');
     renderGeotagTable();
     if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
     document.getElementById('geotagFileInput').value = "";
@@ -1354,7 +1902,7 @@ function importGeotagExcel(event) {
 async function openLorryModal() {
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
-  document.getElementById('lorryModal').style.display = 'flex';
+  openModal('lorryModal');
   const savedLorryData = await idbGet('sarathchandra_lorry_numbers');
   if(savedLorryData) {
     document.getElementById('lorryNumbersInput').value = savedLorryData;
@@ -1362,7 +1910,7 @@ async function openLorryModal() {
 }
 
 function closeLorryModal() {
-  document.getElementById('lorryModal').style.display = 'none';
+  closeModal('lorryModal');
   _openModalCount = Math.max(0, _openModalCount - 1);
   if (_openModalCount === 0) _unlockBodyScroll();
 }
@@ -1432,6 +1980,7 @@ async function saveLorryNumbers() {
   await idbSet('sarathchandra_lorry_numbers', rawText);
   closeLorryModal();
   loadLorryNumbersDropdown();
+  showToast('✅ Vehicle numbers saved!', 'success');
   if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
 }
 
@@ -1466,7 +2015,7 @@ function handleVehicleChange() {
 function checkVehicleSelected() {
   const vehicleNo = document.getElementById('vehicleSelect').value.trim();
   if (!vehicleNo) {
-    alert("⚠️ You cannot print or download the file without selecting a Lorry Number. Please select a Lorry Number and try again..");
+    showToast('⚠️ Select a Lorry Number before printing or downloading!', 'warning', 4000);
     const vSelect = document.getElementById('vehicleSelect');
     vSelect.classList.add('error-highlight');
     vSelect.focus();
@@ -1521,6 +2070,34 @@ async function elementToCanvas(el) {
 
   try {
     const renderWidthPx = wrapper.getBoundingClientRect().width;
+
+    // Record the bottom edge (in px, relative to the wrapper's top) of every
+    // table row inside this element. Used later so that if a page-break is
+    // needed, we cut between rows instead of straight through one.
+    //
+    // The "cashier calculation space" table is an exception: it must never
+    // be split across pages, so its individual row boundaries are excluded
+    // as cut points — only the block's own top/bottom edges are kept. That
+    // way the slicer can place a break right before or right after the
+    // whole calc-table, but never inside it.
+    const wrapperTop = wrapper.getBoundingClientRect().top;
+    const atomicBlocks = Array.from(clone.querySelectorAll('.cashier-calculation-space'));
+    const isInsideAtomicBlock = (node) => atomicBlocks.some(block => block.contains(node) && block !== node);
+
+    const rowBoundaries = Array.from(clone.querySelectorAll('tr'))
+      .filter(tr => !isInsideAtomicBlock(tr))
+      .map(tr => {
+        const r = tr.getBoundingClientRect();
+        return r.bottom - wrapperTop;
+      });
+
+    const atomicBlockEdges = atomicBlocks.flatMap(block => {
+      const r = block.getBoundingClientRect();
+      return [r.top - wrapperTop, r.bottom - wrapperTop];
+    });
+
+    const allBoundaries = rowBoundaries.concat(atomicBlockEdges);
+
     const opts = {
       scale: 2,
       useCORS: true,
@@ -1535,7 +2112,17 @@ async function elementToCanvas(el) {
     };
     // Capture the wrapper (white container) not the clone directly,
     // so html2canvas never looks at the body background.
-    return await html2canvas(wrapper, opts);
+    const canvas = await html2canvas(wrapper, opts);
+
+    // html2canvas renders at `scale: 2`, so convert the CSS-pixel row
+    // boundaries above into canvas-pixel boundaries.
+    const canvasScale = canvas.width / renderWidthPx;
+    canvas._rowBoundariesPx = allBoundaries
+      .map(b => Math.round(b * canvasScale))
+      .filter(b => b > 0 && b <= canvas.height)
+      .sort((a, b) => a - b);
+
+    return canvas;
   } finally {
     wrapper.remove();
   }
@@ -1573,12 +2160,28 @@ async function buildSlipPDF() {
       doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', marginX, marginY, imgW, fullH);
       firstPage = false;
     } else {
-      // Content is taller than one page — slice it into page-sized chunks
+      // Content is taller than one page — slice it into page-sized chunks.
+      // To avoid cutting a table row in half, each chunk's bottom edge is
+      // snapped back to the nearest row boundary that fits within it
+      // (falling back to the raw pixel height if no row boundary applies,
+      // e.g. for content with no <tr> rows).
       const pxPerMm = canvas.width / imgW;
-      const sliceHeightPx = Math.floor(availH * pxPerMm);
+      const maxSliceHeightPx = Math.floor(availH * pxPerMm);
+      const rowBoundaries = canvas._rowBoundariesPx || [];
       let yOffset = 0;
       while (yOffset < canvas.height) {
-        const sliceH = Math.min(sliceHeightPx, canvas.height - yOffset);
+        const maxY = Math.min(yOffset + maxSliceHeightPx, canvas.height);
+        let sliceEndPx = maxY;
+
+        // Find the last row boundary that is > yOffset and <= maxY
+        const fittingBoundaries = rowBoundaries.filter(b => b > yOffset && b <= maxY);
+        if (fittingBoundaries.length > 0 && maxY < canvas.height) {
+          sliceEndPx = fittingBoundaries[fittingBoundaries.length - 1];
+        }
+
+        const sliceH = sliceEndPx - yOffset;
+        if (sliceH <= 0) { yOffset = maxY; continue; } // safety guard
+
         const sliceCanvas = document.createElement('canvas');
         sliceCanvas.width = canvas.width;
         sliceCanvas.height = sliceH;
@@ -1607,46 +2210,50 @@ function buildSlipFilename() {
 async function downloadSlipPDF() {
   if (!checkVehicleSelected()) return;
   if (Object.keys(GLOBAL_MAP_DATA).length === 0) {
-    alert('⚠️ Please load the Excel data first.');
+    showToast('⚠️ Please load the Excel data first.', 'warning');
     return;
   }
   try {
+    showLoader('Generating PDF...', 10);
+    await new Promise(r => setTimeout(r, 60));
+    setLoaderProgress(40, 'Rendering pages...');
     const doc = await buildSlipPDF();
+    setLoaderProgress(90, 'Saving...');
     doc.save(buildSlipFilename());
+    hideLoader();
+    showToast('✅ PDF downloaded!', 'success');
   } catch (err) {
+    hideLoader();
     console.error('PDF generation error:', err);
-    alert('❌ PDF generation failed. Please try again.');
+    showToast('❌ PDF generation failed. Please try again.', 'error');
   }
 }
 
 async function shareSlipPDF() {
   if (!checkVehicleSelected()) return;
   if (Object.keys(GLOBAL_MAP_DATA).length === 0) {
-    alert('⚠️ Please load the Excel data first.');
+    showToast('⚠️ Please load the Excel data first.', 'warning');
     return;
   }
   try {
+    showLoader('Preparing share...', 20);
     const doc = await buildSlipPDF();
+    hideLoader();
     const blob = doc.output('blob');
     const filename = buildSlipFilename();
     const file = new File([blob], filename, { type: 'application/pdf' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: 'Cash Collection Slip',
-        text: filename
-      });
+      await navigator.share({ files: [file], title: 'Cash Collection Slip', text: filename });
     } else {
-      // Sharing files isn't supported on this device/browser — fall back to download
       doc.save(filename);
-      alert('Sharing isn\'t supported on this browser, so the PDF was downloaded instead. You can share it from your Files / Downloads app.');
+      showToast('Sharing not supported — PDF downloaded instead.', 'info', 4000);
     }
   } catch (err) {
-    // AbortError = user cancelled the share sheet — not a real error
+    hideLoader();
     if (err && err.name === 'AbortError') return;
     console.error('Share error:', err);
-    alert('❌ Sharing failed. Please try the Download PDF button instead.');
+    showToast('❌ Sharing failed. Use Download PDF instead.', 'error');
   }
 }
 
@@ -1655,7 +2262,7 @@ async function shareSlipPDF() {
 async function downloadAllPDFs() {
   const unassigned = DELIVERY_PERSON_LIST.filter(dp => !LORRY_ASSIGNMENTS[dp]);
   if (unassigned.length > 0) {
-    alert('⚠️ Not all delivery persons have a lorry assigned yet:\n' + unassigned.join(', '));
+    showToast('⚠️ Not all delivery persons have a lorry assigned yet!', 'warning', 4000);
     return;
   }
   if (!confirm(`Download PDFs for all ${DELIVERY_PERSON_LIST.length} delivery persons as one ZIP file?`)) return;
@@ -1663,22 +2270,26 @@ async function downloadAllPDFs() {
   const srSelect  = document.getElementById('srSelect');
   const vSelect   = document.getElementById('vehicleSelect');
   const statusEl  = document.getElementById('bulkDownloadStatus');
+  const progTrack = document.getElementById('bulkProgTrack');
+  const progFill  = document.getElementById('bulkProgFill');
   const originalDP = srSelect.value;
 
   const zip   = new JSZip();
   const today = new Date().toISOString().slice(0, 10);
+  const total = DELIVERY_PERSON_LIST.length;
+
+  progTrack.style.display = 'block';
+  progFill.style.width = '0%';
 
   try {
-    for (let i = 0; i < DELIVERY_PERSON_LIST.length; i++) {
+    for (let i = 0; i < total; i++) {
       const dp = DELIVERY_PERSON_LIST[i];
-      if (statusEl) statusEl.textContent = `Generating ${i + 1}/${DELIVERY_PERSON_LIST.length}: ${dp}...`;
+      const pct = Math.round(((i) / total) * 90);
+      if (statusEl) statusEl.textContent = `Generating ${i + 1}/${total}: ${dp}...`;
+      progFill.style.width = pct + '%';
 
-      // Switch to this DP — rebuilds beat checkboxes (all checked), restores
-      // their assigned lorry into vehicleSelect, and regenerates the slip
       srSelect.value = dp;
       handleSRChange();
-
-      // Let the DOM finish rendering before we capture it
       await new Promise(r => setTimeout(r, 60));
 
       const doc = await buildSlipPDF();
@@ -1689,7 +2300,9 @@ async function downloadAllPDFs() {
     }
 
     if (statusEl) statusEl.textContent = 'Packaging ZIP file…';
+    progFill.style.width = '95%';
     const zipBlob = await zip.generateAsync({ type: 'blob' });
+    progFill.style.width = '100%';
 
     const a = document.createElement('a');
     a.href = URL.createObjectURL(zipBlob);
@@ -1699,27 +2312,212 @@ async function downloadAllPDFs() {
     a.remove();
     URL.revokeObjectURL(a.href);
 
-    if (statusEl) statusEl.textContent = `✅ Downloaded ${DELIVERY_PERSON_LIST.length} PDFs as ZIP.`;
+    if (statusEl) statusEl.textContent = `✅ Downloaded ${total} PDFs as ZIP.`;
+    showToast(`✅ ${total} PDFs downloaded as ZIP!`, 'success');
+    setTimeout(() => { progTrack.style.display = 'none'; progFill.style.width = '0%'; }, 3000);
   } catch (err) {
     console.error('Bulk PDF error:', err);
     if (statusEl) statusEl.textContent = '❌ Failed to generate ZIP. Please try again.';
-    alert('❌ Failed to generate PDFs. Please try again.');
+    progTrack.style.display = 'none';
+    showToast('❌ Failed to generate ZIP. Please try again.', 'error');
   } finally {
-    // Restore the original delivery person view
     srSelect.value = originalDP;
     handleSRChange();
   }
 }
 
+// ─── VAN / DM Mapping Modal ───────────────────────────────────────────────────
+
+async function initializeVanMapping() {
+  const saved = await idbGet('sarathchandra_van_mapping');
+  if (saved && Object.keys(saved).length > 0) {
+    DYNAMIC_VAN_MAPPING = saved;
+  } else {
+    DYNAMIC_VAN_MAPPING = { ...DEFAULT_VAN_MAPPING };
+    await idbSet('sarathchandra_van_mapping', DYNAMIC_VAN_MAPPING);
+  }
+}
+
+function openVanModal() {
+  if (_openModalCount === 0) _lockBodyScroll();
+  _openModalCount++;
+  openModal('vanModal');
+  document.getElementById('vanModalSearchInput').value = '';
+  renderVanMappingTable();
+}
+
+function closeVanModal() {
+  closeModal('vanModal');
+  _openModalCount = Math.max(0, _openModalCount - 1);
+  if (_openModalCount === 0) _unlockBodyScroll();
+}
+
+function renderVanMappingTable() {
+  const tbody = document.getElementById('vanMappingTableBody');
+  tbody.innerHTML = '';
+  const filter = document.getElementById('vanModalSearchInput').value.trim().toUpperCase();
+  Object.keys(DYNAMIC_VAN_MAPPING).sort().forEach(dpName => {
+    const item = DYNAMIC_VAN_MAPPING[dpName];
+    if (filter && !dpName.includes(filter) && !item.van.toUpperCase().includes(filter) && !item.dmCode.toUpperCase().includes(filter)) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700; font-size:12px;">${dpName}</td>
+      <td style="font-weight:700; color:#1e3c72;">${item.van}</td>
+      <td>${item.dmCode}</td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteVanMappingItem('${dpName.replace(/'/g,"\\'")}')" title="Remove">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  if (tbody.children.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No entries found.</td></tr>';
+  }
+}
+
+function addVanMappingItem() {
+  const dpName = document.getElementById('addVanDPName').value.trim().toUpperCase();
+  const vanCode = document.getElementById('addVanCode').value.trim().toUpperCase();
+  const dmCode = document.getElementById('addVanDMCode').value.trim();
+  if (!dpName) { showToast('Enter a Delivery Person name', 'error'); return; }
+  if (!vanCode) { showToast('Enter a VAN code', 'error'); return; }
+  if (!dmCode) { showToast('Enter the full DM name', 'error'); return; }
+  DYNAMIC_VAN_MAPPING[dpName] = { van: vanCode, dmCode: dmCode };
+  idbSet('sarathchandra_van_mapping', DYNAMIC_VAN_MAPPING);
+  document.getElementById('addVanDPName').value = '';
+  document.getElementById('addVanCode').value = '';
+  document.getElementById('addVanDMCode').value = '';
+  renderVanMappingTable();
+  showToast(`✅ ${dpName} added to DM mapping`, 'success');
+  if (Object.keys(GLOBAL_MAP_DATA).length > 0) debouncedGenerateSheets();
+}
+
+function deleteVanMappingItem(dpName) {
+  if (confirm(`Remove "${dpName}" from DM mapping?`)) {
+    delete DYNAMIC_VAN_MAPPING[dpName];
+    idbSet('sarathchandra_van_mapping', DYNAMIC_VAN_MAPPING);
+    renderVanMappingTable();
+    showToast(`Removed ${dpName}`, 'info');
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) debouncedGenerateSheets();
+  }
+}
+
+function clearAllVanMapping() {
+  if (confirm('Reset VAN mapping to factory defaults?')) {
+    DYNAMIC_VAN_MAPPING = { ...DEFAULT_VAN_MAPPING };
+    idbSet('sarathchandra_van_mapping', DYNAMIC_VAN_MAPPING);
+    renderVanMappingTable();
+    showToast('DM mapping reset to defaults', 'info');
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) debouncedGenerateSheets();
+  }
+}
+
+function downloadVanMappingTemplate() {
+  const wb = XLSX.utils.book_new();
+  const rows = [['DP Name (UPPERCASE)', 'VAN Code', 'Full DM Name']];
+  Object.keys(DYNAMIC_VAN_MAPPING).sort().forEach(k => {
+    rows.push([k, DYNAMIC_VAN_MAPPING[k].van, DYNAMIC_VAN_MAPPING[k].dmCode]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 32 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'DM Mapping');
+  XLSX.writeFile(wb, 'DM_Mapping_Template.xlsx');
+}
+
+function importVanMappingExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+    const ws = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    if (rows.length <= 1) { showToast('No data rows in file.', 'error'); return; }
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || !row[0]) continue;
+      const dp = row[0].toString().trim().toUpperCase();
+      const van = row[1] ? row[1].toString().trim() : '';
+      const dm = row[2] ? row[2].toString().trim() : '';
+      if (dp && van) DYNAMIC_VAN_MAPPING[dp] = { van, dmCode: dm };
+    }
+    idbSet('sarathchandra_van_mapping', DYNAMIC_VAN_MAPPING);
+    renderVanMappingTable();
+    showToast('✅ DM mapping imported!', 'success');
+    document.getElementById('vanFileInput').value = '';
+    if (Object.keys(GLOBAL_MAP_DATA).length > 0) debouncedGenerateSheets();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 window.addEventListener('DOMContentLoaded', async () => {
   await initializePolicyDatabase();
   loadLorryNumbersDropdown();
 
-  // If auto-sync was previously enabled, start syncing immediately on page load
   if (await idbGet('sarathchandra_autosync')) {
     syncFromGoogleSheets();
     autoSyncInterval = setInterval(syncFromGoogleSheets, 60 * 60 * 1000);
   }
+
+  // ── Restore sync badge from IDB ───────────────────────────
+  const lastSync = await idbGet('sarathchandra_gsheet_last_sync');
+  const badge = document.getElementById('gsyncBadge');
+  const badgeTxt = document.getElementById('gsyncBadgeText');
+  if (badge && badgeTxt && lastSync) {
+    const d = new Date(lastSync);
+    const diffH = (Date.now() - d.getTime()) / 3600000;
+    const timeStr = d.toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
+    badge.classList.remove('no-sync');
+    if (diffH > 2) { badge.classList.add('stale'); badgeTxt.textContent = `Synced ${timeStr} ⚠️`; }
+    else { badgeTxt.textContent = `Synced ${timeStr}`; }
+  }
+
+  // ── Drag-drop on upload zone ───────────────────────────────
+  const uploadZone = document.querySelector('.upload-zone');
+  if (uploadZone) {
+    uploadZone.addEventListener('dragover', e => {
+      e.preventDefault(); uploadZone.classList.add('drag-over');
+    });
+    uploadZone.addEventListener('dragleave', e => {
+      if (!uploadZone.contains(e.relatedTarget)) uploadZone.classList.remove('drag-over');
+    });
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault(); uploadZone.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (!files.length) return;
+      const f = files[0];
+      if (f.name.endsWith('.xlsx') || f.name.endsWith('.xls')) {
+        const dt = new DataTransfer();
+        dt.items.add(f);
+        const inp = document.getElementById('excelFileInput');
+        inp.files = dt.files;
+        inp.dispatchEvent(new Event('change'));
+      } else {
+        showToast('⚠️ Please drop an Excel (.xlsx / .xls) file', 'warning');
+      }
+    });
+  }
+
+  // ── Keyboard DP navigation (Ctrl+← / Ctrl+→) ─────────────
+  document.addEventListener('keydown', e => {
+    if (!e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    const sel = document.getElementById('srSelect');
+    if (!sel || sel.options.length < 2) return;
+    e.preventDefault();
+    const cur = sel.selectedIndex;
+    if (e.key === 'ArrowRight') sel.selectedIndex = Math.min(cur + 1, sel.options.length - 1);
+    else                        sel.selectedIndex = Math.max(cur - 1, 0);
+    sel.dispatchEvent(new Event('change'));
+    showToast(`👤 ${sel.options[sel.selectedIndex].text}`, 'info');
+  });
+
+  // Warn before tab close if lorry assignments exist (session data would be lost)
+  window.addEventListener('beforeunload', function(e) {
+    if (Object.keys(LORRY_ASSIGNMENTS).length > 0 && Object.keys(GLOBAL_MAP_DATA).length > 0) {
+      e.preventDefault();
+      e.returnValue = 'Lorry assignments will be lost if you close this tab. Are you sure?';
+    }
+  });
 });
 
 // ─── Block ALL print attempts unless a lorry number is selected ───────────────
@@ -1763,8 +2561,16 @@ document.getElementById('excelFileInput').addEventListener('change', function(e)
   const file = e.target.files[0];
   if (!file) return;
 
+  // Show file name badge
+  const badge = document.getElementById('fileNameBadge');
+  const nameEl = document.getElementById('fileNameText');
+  if (badge && nameEl) { nameEl.textContent = file.name; badge.style.display = 'flex'; }
+
+  showLoader('Reading Excel file...', 10);
+
   const reader = new FileReader();
   reader.onload = function(e) {
+    setLoaderProgress(30, 'Parsing data...');
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: 'array' });
     GLOBAL_MAP_DATA = {};
@@ -1822,7 +2628,11 @@ document.getElementById('excelFileInput').addEventListener('change', function(e)
       }
     });
 
-    initFiltersAndInterface();
+    setLoaderProgress(80, 'Building interface...');
+    setTimeout(() => {
+      initFiltersAndInterface();
+      hideLoader();
+    }, 80);
   };
   reader.readAsArrayBuffer(file);
 });
@@ -1835,8 +2645,37 @@ function initFiltersAndInterface() {
   Object.values(GLOBAL_MAP_DATA).forEach(item => { uniqueDPs[item.name] = true; });
   DELIVERY_PERSON_LIST = Object.keys(uniqueDPs).sort();
 
-  if (DELIVERY_PERSON_LIST.length === 0) { alert("Could not recognize Delivery Person Name in the file."); return; }
+  if (DELIVERY_PERSON_LIST.length === 0) { showToast('⚠️ Could not recognize Delivery Person Name in the file.', 'error', 5000); return; }
   controlPanel.style.display = 'flex';
+
+  // Summary stats
+  const allBeats = new Set(Object.values(GLOBAL_MAP_DATA).map(i => i.beat));
+  const allBills = new Set();
+  let totalVal = 0;
+  Object.values(GLOBAL_MAP_DATA).forEach(item => {
+    item.uniqueBillList.forEach(b => { allBills.add(b); totalVal += item.bills[b].pre_value; });
+  });
+  document.getElementById('statDPs').textContent = DELIVERY_PERSON_LIST.length;
+  document.getElementById('statBeats').textContent = allBeats.size;
+  document.getElementById('statBills').textContent = allBills.size;
+  document.getElementById('statValue').textContent = fmt(totalVal);
+  document.getElementById('summaryStatsBar').classList.add('visible');
+  document.getElementById('clearDataBtn').style.display = 'inline-flex';
+
+  // Hide empty state guide, slide in control panel
+  const guideEl = document.getElementById('emptyStateGuide');
+  if (guideEl) guideEl.style.display = 'none';
+  controlPanel.classList.remove('anim-in');
+  void controlPanel.offsetWidth; // reflow to restart animation
+  controlPanel.classList.add('anim-in');
+
+  // Count-up animation on stats
+  requestAnimationFrame(() => {
+    animateCount(document.getElementById('statDPs'),   DELIVERY_PERSON_LIST.length);
+    animateCount(document.getElementById('statBeats'), allBeats.size);
+    animateCount(document.getElementById('statBills'), allBills.size);
+    animateCount(document.getElementById('statValue'), totalVal, true);
+  });
 
   DELIVERY_PERSON_LIST.forEach(name => {
     const opt = document.createElement('option');
@@ -1847,6 +2686,7 @@ function initFiltersAndInterface() {
   srSelect.addEventListener('change', handleSRChange);
   handleSRChange();
   updateBulkDownloadStatus();
+  showToast(`✅ File loaded — ${DELIVERY_PERSON_LIST.length} delivery persons`, 'success');
 }
 
 function handleSRChange() {
@@ -1854,12 +2694,12 @@ function handleSRChange() {
   const checkboxGrid = document.getElementById('beatCheckboxGrid');
   checkboxGrid.innerHTML = '';
 
-  // Refresh vehicle dropdown for the newly selected delivery person
-  // (restores their saved assignment, disables lorries locked to others)
   updateVehicleDropdownForDP(selectedDP);
 
   const relatedBeats = Object.values(GLOBAL_MAP_DATA).filter(item => item.name === selectedDP);
   relatedBeats.forEach(item => {
+    const billCount = item.uniqueBillList.length;
+    const beatVal = item.bills ? Object.values(item.bills).reduce((a,b) => a + b.pre_value, 0) : 0;
     const label = document.createElement('label');
     label.className = 'checkbox-item';
     const cb = document.createElement('input');
@@ -1867,8 +2707,15 @@ function handleSRChange() {
     cb.addEventListener('change', debouncedGenerateSheets);
     label.appendChild(cb);
     label.appendChild(document.createTextNode(item.beat));
+    const badge = document.createElement('span');
+    badge.className = 'beat-count-badge';
+    badge.textContent = `${billCount} bills · ${fmt(beatVal)}`;
+    label.appendChild(badge);
     checkboxGrid.appendChild(label);
   });
+  // Mark beat container as having live data
+  const beatContainer = document.querySelector('.beat-checkbox-container');
+  if (beatContainer && relatedBeats.length > 0) beatContainer.classList.add('has-data');
   generateCombinedSheets();
   updateBulkDownloadStatus();
 }
@@ -2014,6 +2861,11 @@ function generateCombinedSheets() {
   p2RowsHtml += `<tr class="table-total-row" style="height:22px;"><td colspan="4" style="text-align: center; font-weight: 700;">Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`;
 
   sheetsContainer.innerHTML = `
+  <div class="preview-label">
+    <span class="preview-label-line"></span>
+    <span class="preview-label-text">Preview &nbsp;·&nbsp; ${dpName} &nbsp;·&nbsp; ${checkedBoxes.length} Beat${checkedBoxes.length > 1 ? 's' : ''} &nbsp;·&nbsp; ${billsArray.length} Bills</span>
+    <span class="preview-label-line"></span>
+  </div>
   <div class="sheet active">
     <div class="slip">
       <div class="slip-header">
@@ -2143,7 +2995,7 @@ function downloadStyled12VanExcel() {
   Object.values(GLOBAL_MAP_DATA).forEach(item => { dps[item.name] = true; });
   const sortedDPNames = Object.keys(dps).sort();
 
-  if (sortedDPNames.length === 0) { alert("Please upload a file first!"); return; }
+  if (sortedDPNames.length === 0) { showToast('Please upload a file first!', 'warning'); return; }
   let finalDeliveryDate = "";
 
   const activeVehicleNo = document.getElementById('vehicleSelect').value.trim();
