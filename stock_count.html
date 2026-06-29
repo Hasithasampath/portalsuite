@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,6 +31,7 @@
             --danger: #b91c1c;
             --danger-soft: #ef4444;
             --danger-bg: #fdeceb;
+            --flow-gradient: linear-gradient(100deg, #eef2ff 0%, #eef2ff 45%, #fdf0df 100%);
             --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
         }
@@ -50,6 +53,7 @@
             --danger: #f87171;
             --danger-soft: #ef4444;
             --danger-bg: #3a1717;
+            --flow-gradient: linear-gradient(100deg, #16203a 0%, #16203a 45%, #2a2118 100%);
         }
 
         * { box-sizing: border-box; }
@@ -87,19 +91,25 @@
         }
 
         .brand { display: flex; align-items: center; gap: 14px; }
-        .brand-mark {
-            width: 42px; height: 42px;
-            border-radius: 10px;
+        .brand-pill {
+            display: flex; align-items: center; gap: 10px;
             background: linear-gradient(155deg, var(--navy), var(--navy-deep));
+            border-radius: 12px;
+            padding: 7px 14px 7px 8px;
+            box-shadow: 0 6px 14px -6px rgba(30,58,138,0.5);
+            flex-shrink: 0;
+        }
+        .brand-mark {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.16);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 6px 14px -6px rgba(30,58,138,0.5);
         }
-        .brand-mark svg { width: 22px; height: 22px; }
-        .eyebrow {
-            font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--muted); margin-bottom: 2px;
-        }
+        .brand-mark svg { width: 18px; height: 18px; }
+        .brand-pill-text { line-height: 1.15; }
+        .brand-pill-line1 { font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.01em; }
+        .brand-pill-line2 { font-size: 10.5px; font-weight: 500; color: rgba(255,255,255,0.72); letter-spacing: 0.04em; }
 
         h2 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
         .header-right { display: flex; align-items: center; gap: 10px; }
@@ -107,7 +117,27 @@
             background: var(--navy-tint); color: var(--navy); font-weight: 600;
             padding: 7px 14px; border-radius: 100px; font-size: 12px;
             letter-spacing: 0.02em; border: 1px solid var(--line);
+            display: flex; align-items: center; gap: 6px;
         }
+        .location-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+        .history-btn {
+            width: auto;
+            background: var(--navy-tint);
+            color: var(--navy);
+            border: 1px solid var(--line);
+            padding: 9px 14px;
+            border-radius: 9px;
+            box-shadow: none;
+            flex-shrink: 0;
+            font-size: 12.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .history-btn:hover { background: var(--paper); }
+        .history-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+        .history-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
         .theme-toggle {
             width: auto;
             background: var(--navy-tint);
@@ -119,86 +149,273 @@
             flex-shrink: 0;
         }
         .theme-toggle:hover { background: var(--paper); }
-        .theme-toggle svg { width: 16px; height: 16px; }
-
-        /* Step Navigation Layout across the top row */
-        .top-flow-row { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 18px; 
-            margin-bottom: 26px;
+        .theme-toggle:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+        .theme-toggle svg { width: 16px; height: 16px; transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.2s ease; }
+        .theme-toggle.spinning svg { transform: rotate(180deg); opacity: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            .theme-toggle svg { transition: none; }
+            .theme-toggle.spinning svg { transform: none; opacity: 1; }
         }
 
-        .step-box { 
-            background: var(--surface); 
-            border: 1px solid var(--line); 
-            padding: 18px; 
-            border-radius: 14px; 
+        /* ══════════════════════════════════════════
+           COMPACT STEP STRIP
+        ══════════════════════════════════════════ */
+        .compact-step-strip {
+            display: flex;
+            align-items: stretch;
+            flex-wrap: wrap;
+            background: var(--flow-gradient);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+        .cstep-card {
+            flex: 1;
+            min-width: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            background: var(--surface);
+            border-right: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            position: relative;
+            transition: background .2s ease;
+        }
+        .cstep-card:last-child { border-right: none; }
+        .cstep-disabled {
+            pointer-events: none;
+            background: var(--paper);
+            opacity: 0.72;
+            filter: saturate(0.5);
+        }
+        .cstep-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .cstep-node {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 12px; font-weight: 700;
+            background: var(--paper);
+            border: 2px solid var(--line);
+            color: var(--muted);
+            flex-shrink: 0;
+            transition: background .25s, border-color .25s, color .25s;
+        }
+        .cstep-node svg { width: 13px; height: 13px; display: none; }
+        .cstep-icon {
+            width: 34px; height: 34px;
+            border-radius: 9px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .cstep-icon svg { width: 16px; height: 16px; }
+        .cstep-text { min-width: 0; }
+        .cstep-title {
+            font-size: 13px; font-weight: 700;
+            color: var(--ink);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cstep-desc {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .cstep-right {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            box-shadow: 0 1px 2px rgba(15,23,42,0.03);
-            transition: border-color .25s ease, box-shadow .25s ease;
+            align-items: flex-end;
+            gap: 6px;
+            flex-shrink: 0;
         }
-        .step-box:not(.disabled):hover {
-            border-color: #c7d2e8;
-            box-shadow: 0 14px 28px -20px rgba(15,23,42,0.28);
+        .cstep-file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            white-space: nowrap;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background .15s, border-color .15s;
         }
-
-        .step-box.disabled { 
-            pointer-events: none; 
-            background: var(--paper); 
+        .cstep-file-label:hover { background: var(--navy-tint); border-color: var(--navy); color: var(--navy); }
+        .cstep-file-label span { overflow: hidden; text-overflow: ellipsis; max-width: 120px; display: inline-block; vertical-align: middle; }
+        .cstep-right button {
+            width: auto;
+            padding: 8px 14px;
+            font-size: 12px;
+            white-space: nowrap;
         }
-        .step-box.disabled .step-body { opacity: 0.32; filter: saturate(0.6); }
-
-        .lock-badge {
-            display: none;
-            position: absolute; top: 14px; right: 14px;
-            align-items: center; gap: 5px;
+        .approve-reject-row {
+            grid-column: span 3;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .cstep-ar-btn {
+            width: auto;
+            padding: 7px 20px;
+            font-size: 12.5px;
+            white-space: nowrap;
+        }
+        @media (max-width: 560px) {
+            .approve-reject-row { justify-content: stretch; }
+            .approve-reject-row .cstep-ar-btn { flex: 1; }
+        }
+        .floating-ar-popup {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 2500;
+            display: flex;
+            gap: 10px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 100px;
+            padding: 8px 10px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.14);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+        }
+        .floating-ar-popup.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        @media (max-width: 560px) {
+            .floating-ar-popup { left: 12px; right: 12px; justify-content: stretch; }
+            .floating-ar-popup .cstep-ar-btn { flex: 1; }
+        }
+        .cstep-lock-badge {
+            position: absolute; top: 8px; right: 10px;
+            display: inline-flex; align-items: center; gap: 4px;
             background: var(--ink); color: #fff;
-            font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
-            padding: 5px 10px 5px 8px; border-radius: 100px;
+            font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em;
+            padding: 3px 8px 3px 6px; border-radius: 100px;
             z-index: 2;
         }
-        .lock-badge svg { width: 11px; height: 11px; }
-        .step-box.disabled .lock-badge { display: inline-flex; }
-
-        .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .step-icon {
-            width: 34px; height: 34px; flex-shrink: 0;
-            border-radius: 10px;
-            background: var(--navy-tint); color: var(--navy);
-            display: flex; align-items: center; justify-content: center;
+        .cstep-card:not(.cstep-disabled) .cstep-lock-badge { display: none; }
+        .cstep-divider {
+            width: 2px;
+            background: var(--line);
+            flex-shrink: 0;
+            transition: background .3s;
         }
-        .step-icon svg { width: 18px; height: 18px; }
+        /* Step state colours carried over from original */
+        .cstep-card.done .cstep-node,
+        #stepperStep1.done .cstep-node,
+        #stepperStep2.done .cstep-node,
+        #stepperStep3.done .cstep-node {
+            background: var(--success); border-color: var(--success); color: #fff;
+        }
+        .cstep-card.done .cstep-node .stepper-node-num { display: none; }
+        .cstep-card.done .cstep-node svg { display: block; }
+        .cstep-card.active .cstep-node,
+        #stepperStep1.active .cstep-node,
+        #stepperStep2.active .cstep-node {
+            background: var(--navy); border-color: var(--navy); color: #fff;
+        }
+        #stepperLine1.done, #stepperLine2.done { background: var(--success); }
 
-        .step-num {
-            font-size: 10.5px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            color: var(--muted);
-            margin-bottom: 2px;
+        @media (max-width: 1100px) {
+            .compact-step-strip { flex-direction: column; }
+            .cstep-card { border-right: none; min-width: 0; }
+            .cstep-card:last-child { border-bottom: none; }
+            .cstep-divider { display: none; }
+        }
+        @media (max-width: 560px) {
+            .cstep-right { flex-direction: row; align-items: center; flex-wrap: wrap; }
+            .cstep-desc { display: none; }
+            .cstep-icon { display: none; }
         }
 
-        .step-box h3 { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--ink); }
-        
-        label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 12px; color: var(--muted); }
-        
-        input[type="file"] { 
-            display: block; 
-            margin-bottom: 12px; 
-            border: 1px dashed #cdd5e3; 
-            padding: 9px; 
-            width: 100%; 
-            background: var(--paper); 
-            border-radius: 8px; 
-            box-sizing: border-box;
-            font-size: 12px;
-            font-family: var(--font-sans);
-            color: var(--ink);
+        /* ══════════════════════════════════════════
+           DASHBOARD OUTER LAYOUT (single full-width column)
+        ══════════════════════════════════════════ */
+        .review-dashboard {
+            display: none;
+            flex-direction: row;
+            gap: 16px;
+            margin-top: 5px;
+            animation: fadeIn 0.4s ease-in-out;
         }
+        .dash-main {
+            flex: 1;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .valuation-cards-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .pieces-and-top10-row {
+            grid-column: span 3;
+            display: flex;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .pieces-and-details-col {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .top10-panel {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        @media (max-width: 900px) {
+            .valuation-cards-row { grid-template-columns: 1fr; }
+            .pieces-and-top10-row { flex-direction: column; }
+            .top10-panel { width: 100%; }
+        }
+        @media (max-width: 640px) {
+            .dash-main { grid-template-columns: 1fr; }
+            .stat-mini-row { grid-column: span 1; grid-template-columns: repeat(2, 1fr); }
+            .stat-mini-row-3 { grid-template-columns: 1fr; }
+        }
+
+        /* Existing grid span helpers re-mapped for 3-col dash-main */
+        .dash-main .stat-mini-row  { grid-column: span 3; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+        .stat-mini-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+
 
         button { 
             background: var(--navy); 
@@ -221,55 +438,356 @@
         }
         button:hover { background: var(--navy-deep); }
         button:active { transform: translateY(1px); }
+        button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
         .btn-success { background: var(--success); }
         .btn-success:hover { background: #03634f; }
+        .btn-success:focus-visible { outline-color: var(--success); }
         .btn-danger { background: var(--danger); }
         .btn-danger:hover { background: #95180f; }
+        .btn-danger:focus-visible { outline-color: var(--danger); }
 
         .status-msg { 
             margin-top: 10px; 
-            padding: 8px 10px; 
+            padding: 8px 10px 8px 9px; 
             border-radius: 8px; 
             font-size: 12px; 
             font-weight: 500; 
-            display: none; 
+            display: none;
+            align-items: flex-start;
+            gap: 7px;
             background: var(--success-bg); 
             color: var(--success); 
             border: 1px solid #b7e4cf; 
+            border-left: 3px solid var(--success);
         }
+        .status-msg-icon { flex-shrink: 0; width: 14px; height: 14px; margin-top: 1px; }
+        .status-msg-icon svg { width: 14px; height: 14px; display: block; }
+        .status-msg-text { flex: 1; line-height: 1.4; }
+        .status-msg.show { display: flex; animation: fadeIn 0.3s ease; }
+        .status-msg.fade-out { animation: statusFadeOut 0.4s ease forwards; }
+        @keyframes statusFadeOut { to { opacity: 0; transform: translateY(-4px); } }
         .status-msg.error {
             background: var(--danger-bg);
             color: var(--danger);
             border: 1px solid #f3c2bd;
+            border-left: 3px solid var(--danger);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .status-msg.fade-out { animation: none; opacity: 0; }
         }
 
-        /* Review Section Dashboard Panels */
-        .review-dashboard { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 14px; 
-            margin-top: 5px; 
+        /* --- FEATURE: Manual "Not In System" Item Entry Modal --- */
+        .manual-modal-overlay {
             display: none;
-            animation: fadeIn 0.4s ease-in-out;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(2px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-
-        .card {
+        .manual-modal-overlay.open { display: flex; }
+        .manual-modal-box {
+            background: var(--surface);
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            width: 100%;
+            max-width: 980px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 70px -20px rgba(15,23,42,0.5);
+            overflow: hidden;
+        }
+        .manual-modal-head {
+            padding: 22px 26px 18px;
+            background: linear-gradient(120deg, var(--navy-deep), var(--navy) 85%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            position: relative;
+        }
+        .manual-modal-head::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 140px;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.12), transparent 70%);
+            pointer-events: none;
+        }
+        .manual-modal-head-icon {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            background: rgba(255,255,255,0.16);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            color: #fff;
+        }
+        .manual-modal-head-icon svg { width: 19px; height: 19px; }
+        .manual-modal-head-titlewrap { display: flex; align-items: flex-start; gap: 14px; }
+        .manual-modal-head h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; flex-wrap: wrap; }
+        .manual-modal-head p { margin: 0; font-size: 12.5px; color: rgba(255,255,255,0.78); }
+        .queue-progress-track {
+            margin-top: 10px;
+            height: 5px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.18);
+            overflow: hidden;
+        }
+        .queue-progress-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--amber), #fbbf6b);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .manual-modal-close {
+            width: 32px; height: 32px;
+            border-radius: 9px;
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: none;
+            position: relative;
+            z-index: 1;
+        }
+        .manual-modal-close:hover { background: rgba(255,255,255,0.26); }
+        .manual-modal-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .manual-modal-body { padding: 22px 26px; overflow-y: auto; flex: 1; background: var(--paper); }
+        .manual-entry-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .manual-entry-card {
             background: var(--surface);
             border: 1px solid var(--line);
-            border-left: 3px solid var(--line);
-            border-radius: 12px;
-            padding: 16px 18px;
-            box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
         }
-        .card-short { border-left-color: var(--danger); }
-        .card-excess { border-left-color: var(--success); }
-        .card-net { border-left-color: var(--ink); }
+        .manual-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+        .manual-entry-field label {
+            margin-bottom: 5px;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .manual-entry-field input {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1.5px solid var(--line);
+            border-radius: 9px;
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            background: var(--surface);
+            color: var(--ink);
+            box-sizing: border-box;
+            transition: border-color 0.15s ease;
+        }
+        .manual-entry-field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-tint); }
+        .manual-entry-field select {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1.5px solid var(--line);
+            border-radius: 9px;
+            font-family: var(--font-sans);
+            font-size: 12.5px;
+            background: var(--surface);
+            color: var(--ink);
+            box-sizing: border-box;
+            transition: border-color 0.15s ease;
+        }
+        .manual-entry-field select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-tint); }
+        .manual-entry-field input.locked-field {
+            background: var(--navy-tint);
+            color: var(--navy);
+            font-weight: 600;
+            border-color: var(--navy-tint);
+            cursor: not-allowed;
+        }
+        .manual-add-row-btn {
+            width: auto;
+            background: linear-gradient(120deg, var(--amber), #c2660f);
+            margin-bottom: 18px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px -4px rgba(180,83,9,0.5);
+        }
+        .manual-add-row-btn:hover { background: linear-gradient(120deg, #92400a, #92400a); }
+        .manual-items-table-wrap {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+        }
+        .manual-items-table-wrap table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .manual-items-table-wrap th, .manual-items-table-wrap td {
+            padding: 9px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+            font-family: var(--font-mono);
+            white-space: nowrap;
+        }
+        .manual-items-table-wrap th {
+            background: var(--navy-deep);
+            color: #fff;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .manual-items-table-wrap tbody tr { background: var(--surface); transition: background 0.15s ease; }
+        .manual-items-table-wrap tbody tr:nth-child(even) { background: var(--paper); }
+        .manual-items-table-wrap tbody tr:hover { background: var(--navy-tint); }
+        .manual-items-table-wrap tbody tr:last-child td { border-bottom: none; }
+        .manual-row-remove {
+            width: auto;
+            background: var(--danger-bg);
+            color: var(--danger);
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: none;
+            border-radius: 7px;
+        }
+        .manual-row-remove:hover { background: var(--danger); color: #fff; }
+        .manual-row-remove:focus-visible { outline: 2px solid var(--danger); outline-offset: 1px; }
+        .manual-empty-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12.5px;
+            padding: 22px;
+            background: var(--surface);
+            border: 1.5px dashed var(--line);
+            border-radius: 12px;
+        }
+        .manual-modal-foot {
+            padding: 16px 26px;
+            border-top: 1px solid var(--line);
+            background: var(--surface);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .manual-modal-foot button { width: auto; }
+        .manual-count-pill {
+            display: inline-flex;
+            align-items: center;
+            background: var(--amber);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 100px;
+            margin-left: 10px;
+            box-shadow: 0 2px 6px -2px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 720px) {
+            .manual-entry-grid { grid-template-columns: repeat(2, 1fr); }
 
-        .card-title { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+            body { padding: 16px 10px; }
+            .container { padding: 22px 18px 24px; border-radius: 12px; }
+
+            header { flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+            .header-right { width: 100%; justify-content: space-between; }
+
+            .review-dashboard { flex-direction: column; }
+            .dash-sidebar { width: 100%; }
+
+            .panel-header { flex-direction: column; align-items: stretch; gap: 12px; }
+            .panel-title-group { flex-wrap: wrap; gap: 8px; }
+            .action-bar { width: 100%; }
+
+            .table-controls { flex-direction: column; align-items: stretch; }
+            .search-input-wrap { min-width: 0; }
+            .filter-group { width: 100%; }
+            .filter-btn { flex: 1; text-align: center; }
+
+            .table-container table { font-size: 11.5px; }
+            th, td { padding: 8px 8px; }
+
+            .top10-row { flex-wrap: wrap; }
+            .top10-name { flex-basis: 100%; margin: 4px 0 0 29px; white-space: normal; }
+
+            .manual-modal-box { max-width: 100%; max-height: 94vh; }
+        }
+
+        @media (max-width: 480px) {
+            .manual-entry-grid { grid-template-columns: 1fr; }
+            .stat-mini-row { grid-template-columns: 1fr 1fr; }
+            h2 { font-size: 17px; }
+            .brand-pill-line2 { font-size: 9.5px; }
+            .location-badge { font-size: 11px; padding: 6px 11px; }
+            .card-value { font-size: 18px; }
+            .manual-modal-foot { flex-direction: column; }
+            .manual-modal-foot button { width: 100%; }
+        }
+
+        .review-dashboard-old-removed { display: none; }
+
+        .card-title { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .card-short, .card-excess, .card-net { position: relative; }
+        .card-left { min-width: 0; }
+        .card-right {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        .card-sparkline {
+            width: 78px;
+            height: 28px;
+            overflow: visible;
+        }
+        .card-shift {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .card-shift-arrow { width: 13px; height: 13px; color: #fff; flex-shrink: 0; }
+        .card-shift-pct {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .card-shift-label {
+            font-size: 9.5px;
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap;
+        }
+        .card-right-gauge {
+            align-items: center;
+            justify-content: center;
+        }
+        .card-gauge { width: 60px; height: 36px; overflow: visible; }
+        #netGaugeNeedle { transition: transform 0.6s ease; transform-origin: 30px 33px; }
         .card-value { font-family: var(--font-mono); font-size: 21px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-        .card-short .card-value { color: var(--danger); }
-        .card-excess .card-value { color: var(--success); }
         .card-sub { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+
+        .card-short .card-title, .card-short .card-sub,
+        .card-excess .card-title, .card-excess .card-sub,
+        .card-net .card-title, .card-net .card-sub { color: rgba(255,255,255,0.75); }
+        .card-short .card-value, .card-excess .card-value { color: #fff; }
 
         .stat-mini-row {
             grid-column: span 3;
@@ -278,13 +796,11 @@
             gap: 10px;
         }
         .stat-mini-row-3 {
-            grid-column: span 3;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
         .top10-panel {
-            grid-column: span 3;
             background: var(--surface);
             border: 1px solid var(--line);
             border-radius: 12px;
@@ -293,6 +809,14 @@
         .top10-header { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
         .top10-list { display: flex; flex-direction: column; gap: 6px; }
         .top10-row { display: flex; align-items: center; padding: 7px 10px; border-radius: 8px; background: var(--paper); font-size: 12px; }
+        .top10-icon {
+            width: 22px; height: 22px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-right: 8px;
+        }
+        .top10-icon svg { width: 11px; height: 11px; }
+        .top10-icon.icon-short { background: var(--danger); }
+        .top10-icon.icon-excess { background: var(--success); }
         .top10-rank {
             width: 20px; height: 20px; border-radius: 6px;
             background: var(--navy-tint); color: var(--navy);
@@ -301,33 +825,62 @@
             flex-shrink: 0; margin-right: 9px;
         }
         .top10-sku { font-family: var(--font-mono); font-weight: 600; color: var(--ink); margin-right: 9px; flex-shrink: 0; }
-        .top10-name { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 9px; }
+        .top10-name {
+            color: var(--muted);
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 9px;
+        }
         .top10-value { font-family: var(--font-mono); font-weight: 700; flex-shrink: 0; }
         .stat-mini {
             background: var(--paper);
             border: 1px solid var(--line);
             border-radius: 10px;
             padding: 12px 14px;
+            position: relative;
         }
+        .stat-mini-icon {
+            position: absolute;
+            top: 12px; right: 12px;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--navy-tint);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stat-mini-icon svg { width: 11px; height: 11px; }
         .stat-mini-label { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
         .stat-mini-value { font-family: var(--font-mono); font-size: 17px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
-        .accuracy-bar-track {
+        .stat-mini-ring-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .accuracy-meter-track {
             margin-top: 8px;
+            width: 100%;
             height: 6px;
             border-radius: 100px;
             background: var(--line);
             overflow: hidden;
         }
-        .accuracy-bar-fill {
+        .accuracy-meter-fill {
             height: 100%;
             border-radius: 100px;
-            background: var(--success);
-            width: 0%;
-            transition: width .5s ease, background-color .3s ease;
+            background: var(--danger);
+            transition: width 0.6s ease, background 0.3s ease;
         }
+        .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ring-svg { width: 38px; height: 38px; transform: rotate(-90deg); }
+        .ring-svg-sm { width: 28px; height: 28px; }
+        .ring-track { fill: none; stroke: var(--line); stroke-width: 3; }
+        .ring-fill {
+            fill: none; stroke: var(--success); stroke-width: 3; stroke-linecap: round;
+            stroke-dasharray: 97.39 97.39; stroke-dashoffset: 97.39;
+            transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+        }
+        .ring-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 8.5px; font-weight: 700; color: var(--ink); font-family: var(--font-mono); }
 
         .details-panel { 
-            grid-column: span 3; 
             background: var(--paper); 
             border: 1px solid var(--line);
             padding: 16px; 
@@ -335,10 +888,20 @@
         }
         
         .panel-header { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .panel-title-group { display: flex; align-items: center; gap: 12px; }
+        .panel-title-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .panel-title-group .step-progress { flex: 1 0 100%; margin-top: 8px; }
 
-        /* Action bar routing */
-        .action-bar { display: flex; gap: 10px; width: 240px; }
+        .action-bar { display: flex; gap: 10px; width: auto; flex-shrink: 0; }
+        .action-bar button {
+            width: auto;
+            padding: 7px 14px;
+            font-size: 12px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .action-bar button svg { width: 13px; height: 13px; }
         .btn-ghost {
             width: auto;
             background: transparent;
@@ -349,21 +912,41 @@
             box-shadow: none;
         }
         .btn-ghost:hover { background: var(--navy-tint); }
+        .btn-ghost:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
         .btn-ghost svg { width: 13px; height: 13px; }
 
-        /* Preview Table Design Formatting */
         .table-controls { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+        .search-input-wrap { position: relative; flex: 1; min-width: 180px; }
         .search-input {
-            flex: 1; min-width: 180px;
-            padding: 9px 12px;
+            width: 100%;
+            padding: 9px 30px 9px 12px;
             border: 1px solid var(--line);
             border-radius: 8px;
             font-family: var(--font-sans);
             font-size: 12.5px;
             background: var(--surface);
             color: var(--ink);
+            box-sizing: border-box;
         }
-        .search-input:focus { outline: none; border-color: var(--navy); }
+        .search-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-tint); }
+        .search-clear-btn {
+            display: none;
+            position: absolute;
+            right: 6px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            border-radius: 5px;
+            align-items: center; justify-content: center;
+            background: transparent;
+            color: var(--muted);
+            box-shadow: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .search-clear-btn.visible { display: flex; }
+        .search-clear-btn:hover { background: var(--paper); color: var(--ink); }
+        .search-clear-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
+        .search-clear-btn svg { width: 11px; height: 11px; }
         .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
         .filter-btn {
             width: auto;
@@ -376,6 +959,7 @@
         }
         .filter-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
         .filter-btn:hover { background: var(--navy-tint); color: var(--navy); }
+        .filter-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
         .filter-btn.active:hover { background: var(--navy-deep); color: #fff; }
 
         .table-container { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
@@ -405,6 +989,64 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes rowFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #varianceTableBody tr {
+            animation: rowFadeIn .35s ease both;
+        }
+        #varianceTableBody tr.virtual-spacer {
+            animation: none;
+        }
+
+        @keyframes unlockPop {
+            0% { transform: scale(0.985); box-shadow: 0 0 0 0 rgba(4,120,87,0); }
+            45% { transform: scale(1.012); box-shadow: 0 0 0 6px rgba(4,120,87,0.12); }
+            100% { transform: scale(1); box-shadow: 0 1px 2px rgba(15,23,42,0.03); }
+        }
+        .cstep-card.just-unlocked {
+            animation: unlockPop .55s cubic-bezier(.22,1,.36,1);
+        }
+
+        @keyframes badgePulse {
+            0% { box-shadow: 0 0 0 0 rgba(185,28,28,0.18); }
+            70% { box-shadow: 0 0 0 5px rgba(185,28,28,0); }
+            100% { box-shadow: 0 0 0 0 rgba(185,28,28,0); }
+        }
+        @keyframes badgePulseExcess {
+            0% { box-shadow: 0 0 0 0 rgba(4,120,87,0.18); }
+            70% { box-shadow: 0 0 0 5px rgba(4,120,87,0); }
+            100% { box-shadow: 0 0 0 0 rgba(4,120,87,0); }
+        }
+        .txt-short { animation: badgePulse 1.1s ease-out; }
+        .txt-excess { animation: badgePulseExcess 1.1s ease-out; }
+
+        .top10-row {
+            transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+        }
+        .top10-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px -8px rgba(15,23,42,0.18);
+            background: var(--surface);
+        }
+
+        .card-value, .stat-mini-value {
+            transition: color .3s ease;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #varianceTableBody tr,
+            .cstep-card.just-unlocked,
+            .txt-short,
+            .txt-excess {
+                animation: none !important;
+            }
+            .top10-row {
+                transition: none !important;
+            }
+        }
+
         .spinner {
             display: inline-block;
             width: 13px; height: 13px;
@@ -417,6 +1059,40 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* --- FEATURE: Inline Step Progress Bar (download/processing feedback) --- */
+        .step-progress { display: none; margin-top: 10px; }
+        .step-progress.active { display: block; }
+        .step-progress-track {
+            height: 4px;
+            border-radius: 100px;
+            background: var(--line);
+            overflow: hidden;
+            position: relative;
+        }
+        .step-progress-fill {
+            position: absolute;
+            top: 0; left: -40%;
+            height: 100%;
+            width: 40%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--navy), var(--amber));
+            animation: stepProgressSweep 1.15s ease-in-out infinite;
+        }
+        @keyframes stepProgressSweep {
+            0% { left: -40%; }
+            100% { left: 100%; }
+        }
+        .step-progress-label {
+            margin-top: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--muted);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .step-progress-fill { animation: none; left: 0; width: 100%; opacity: 0.45; }
+        }
+
         @media print {
             :root, [data-theme="dark"] {
                 --ink: #0f1726; --paper: #ffffff; --surface: #ffffff;
@@ -425,220 +1101,1061 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: #fff !important; padding: 0; }
             .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
-            .top-flow-row, .table-controls, .action-bar, .theme-toggle, .panel-title-group .btn-ghost { display: none !important; }
+            .compact-step-strip, .table-controls, .action-bar, .theme-toggle, .history-btn, .panel-title-group .btn-ghost, .toast-container { display: none !important; }
             .table-container { max-height: none; overflow: visible; border: none; }
             .card, .stat-mini, .top10-panel, .details-panel { break-inside: avoid; }
             th { position: static; }
         }
+
+        /* --- FEATURE: Toast Notifications (non-blocking, replaces alert() for FYI messages) --- */
+        /* ── Toast notifications ── */
+        .toast-container {
+            position: fixed;
+            top: 20px; right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+        }
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px -8px rgba(15,23,42,0.22), 0 2px 8px -2px rgba(15,23,42,0.1);
+            font-size: 12.5px;
+            color: var(--ink);
+            animation: toastIn 0.35s cubic-bezier(.22,1,.36,1);
+            position: relative;
+        }
+        .toast-inner {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 12px 10px 14px;
+        }
+        .toast-icon-wrap {
+            flex-shrink: 0;
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 0;
+        }
+        .toast-icon-wrap svg { width: 14px; height: 14px; display: block; }
+
+        /* Type variants */
+        .toast-success { border-left: 3.5px solid #10b981; }
+        .toast-success .toast-icon-wrap { background: #dcfce7; color: #047857; }
+        .toast-success .toast-progress-fill { background: #10b981; }
+
+        .toast-error { border-left: 3.5px solid #ef4444; }
+        .toast-error .toast-icon-wrap { background: #fee2e2; color: #b91c1c; }
+        .toast-error .toast-progress-fill { background: #ef4444; }
+
+        .toast-warn { border-left: 3.5px solid #f59e0b; }
+        .toast-warn .toast-icon-wrap { background: #fef3c7; color: #b45309; }
+        .toast-warn .toast-progress-fill { background: #f59e0b; }
+
+        .toast-info { border-left: 3.5px solid var(--navy); }
+        .toast-info .toast-icon-wrap { background: var(--navy-tint); color: var(--navy); }
+        .toast-info .toast-progress-fill { background: var(--navy); }
+
+        .toast-body-wrap { flex: 1; min-width: 0; }
+        .toast-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 2px; opacity: 0.65; }
+        .toast-body { line-height: 1.5; white-space: pre-line; font-size: 12.5px; }
+        .toast-close {
+            flex-shrink: 0;
+            width: 20px; height: 20px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--muted);
+            cursor: pointer;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            margin-top: 1px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .toast-close:hover { background: var(--paper); color: var(--ink); }
+        .toast-close svg { width: 11px; height: 11px; }
+        .toast-progress {
+            height: 3px;
+            background: var(--line);
+            overflow: hidden;
+        }
+        .toast-progress-fill {
+            height: 100%;
+            background: var(--navy);
+            animation: toastProgress var(--toast-duration, 6s) linear forwards;
+            transform-origin: left;
+        }
+        @keyframes toastProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(28px) scale(0.97); }
+            to   { opacity: 1; transform: translateX(0)   scale(1); }
+        }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(28px) scale(0.97); } }
+        .toast.toast-out { animation: toastOut 0.28s ease forwards; }
+        @media (prefers-reduced-motion: reduce) {
+            .toast { animation: none; }
+            .toast.toast-out { animation: none; opacity: 0; }
+            .toast-progress-fill { animation: none; }
+        }
+        @media (max-width: 480px) {
+            .toast-container { left: 12px; right: 12px; top: 12px; max-width: none; }
+        }
+
+        /* ── Card hover effects ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--line);
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            transition: transform 0.22s cubic-bezier(.22,1,.36,1), box-shadow 0.22s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px -8px rgba(15,23,42,0.18), 0 2px 6px -2px rgba(15,23,42,0.08);
+        }
+        .card-short:hover  { box-shadow: 0 10px 28px -8px rgba(139,32,32,0.45); }
+        .card-excess:hover { box-shadow: 0 10px 28px -8px rgba(14,122,79,0.4); }
+        .card-net:hover    { box-shadow: 0 10px 28px -8px rgba(30,58,138,0.4); }
+        .card-short  { background: linear-gradient(135deg, #8b2020, #641414); border: none; }
+        .card-excess { background: linear-gradient(135deg, #0e7a4f, #075c3a); border: none; }
+        .card-net    { background: linear-gradient(135deg, var(--navy-deep), #0c1730); border: none; }
+        .card-sparkline polyline {
+            fill: none;
+            stroke: rgba(255,255,255,0.85);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke-width 0.2s ease, stroke 0.2s ease;
+        }
+        .card:hover .card-sparkline polyline {
+            stroke: rgba(255,255,255,1);
+            stroke-width: 2.6;
+        }
+
+        /* ── Skeleton loading screens ── */
+        @keyframes skeletonShimmer {
+            0%   { background-position: -400px 0; }
+            100% { background-position:  400px 0; }
+        }
+        .skel {
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--line) 25%, var(--paper) 50%, var(--line) 75%);
+            background-size: 800px 100%;
+            animation: skeletonShimmer 1.4s ease-in-out infinite;
+        }
+        [data-theme="dark"] .skel {
+            background: linear-gradient(90deg, #1e2d4a 25%, #253352 50%, #1e2d4a 75%);
+            background-size: 800px 100%;
+        }
+        .skel-card {
+            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .skel-card-inner { display: flex; justify-content: space-between; gap: 14px; }
+        .skel-card-left  { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .skel-card-right { width: 72px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        #dashSkeleton {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            padding-top: 4px;
+        }
+        #dashSkeleton.visible { display: flex; }
+        .skel-cards-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+        .skel-stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+        .skel-stat { border-radius: 10px; padding: 12px 14px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+        .skel-table { border-radius: 10px; border: 1px solid var(--line); overflow: hidden; }
+        .skel-table-header { height: 38px; background: var(--navy-tint); }
+        .skel-table-rows { display: flex; flex-direction: column; }
+        .skel-table-row { height: 36px; border-top: 1px solid var(--line); display: flex; align-items: center; padding: 0 14px; gap: 12px; }
+        .skel-table-row:nth-child(even) { background: var(--paper); }
+
+        /* ── AI Suggestions Panel ── */
+        .suggestions-panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px 10px;
+            margin-bottom: 16px;
+            animation: fadeIn 0.35s ease;
+        }
+        .suggestions-header {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .suggestions-header svg { flex-shrink: 0; color: var(--navy); }
+        .suggestions-list {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--line) transparent;
+        }
+        .suggestions-list::-webkit-scrollbar { height: 7px; }
+        .suggestions-list::-webkit-scrollbar-track { background: transparent; }
+        .suggestions-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 100px; }
+        .suggestions-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            border-left: 3px solid transparent;
+            transition: background 0.15s;
+            animation: sgItemIn 0.28s ease both;
+            flex: 0 0 260px;
+            width: 260px;
+        }
+        .suggestion-item:nth-child(1) { animation-delay: 0.04s; }
+        .suggestion-item:nth-child(2) { animation-delay: 0.09s; }
+        .suggestion-item:nth-child(3) { animation-delay: 0.14s; }
+        .suggestion-item:nth-child(4) { animation-delay: 0.19s; }
+        .suggestion-item:nth-child(5) { animation-delay: 0.24s; }
+        .suggestion-item:nth-child(6) { animation-delay: 0.29s; }
+        @keyframes sgItemIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .suggestion-critical { border-color: #ef4444; background: rgba(239,68,68,0.06); }
+        .suggestion-warn     { border-color: #f59e0b; background: rgba(245,158,11,0.06); }
+        .suggestion-info     { border-color: var(--navy); background: var(--navy-tint); }
+        .suggestion-success  { border-color: #10b981; background: rgba(16,185,129,0.06); }
+        [data-theme="dark"] .suggestion-critical { background: rgba(239,68,68,0.1); }
+        [data-theme="dark"] .suggestion-warn     { background: rgba(245,158,11,0.1); }
+        [data-theme="dark"] .suggestion-info     { background: rgba(59,95,201,0.1); }
+        [data-theme="dark"] .suggestion-success  { background: rgba(16,185,129,0.1); }
+        .suggestion-icon {
+            flex-shrink: 0;
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .suggestion-critical .suggestion-icon { background: #fee2e2; color: #b91c1c; }
+        .suggestion-warn     .suggestion-icon { background: #fef3c7; color: #b45309; }
+        .suggestion-info     .suggestion-icon { background: var(--navy-tint); color: var(--navy); }
+        .suggestion-success  .suggestion-icon { background: #dcfce7; color: #047857; }
+        .suggestion-icon svg { width: 13px; height: 13px; display: block; }
+        .suggestion-content { flex: 1; min-width: 0; }
+        .suggestion-title  { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+        .suggestion-detail { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-top: 1px; }
+        .suggestion-action {
+            flex-shrink: 0;
+            font-size: 11px; font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: var(--navy);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .suggestion-action:hover { background: var(--navy-tint); border-color: var(--navy); box-shadow: none; }
+        .suggestion-badge {
+            background: #fee2e2; color: #b91c1c;
+            font-size: 9.5px; font-weight: 700;
+            padding: 2px 8px; border-radius: 100px;
+            letter-spacing: 0.04em;
+        }
+        .suggestion-badge-ok {
+            background: #dcfce7; color: #047857;
+            font-size: 9.5px; font-weight: 700;
+            padding: 2px 8px; border-radius: 100px;
+            letter-spacing: 0.04em;
+        }
+        .suggestions-meta { margin-left: auto; font-size: 10.5px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+        .sg-collapse-btn {
+            margin-left: auto;
+            width: 26px; height: 26px;
+            border-radius: 7px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0; padding: 0;
+            box-shadow: none;
+            transition: background 0.15s, transform 0.22s ease;
+        }
+        .sg-collapse-btn:hover { background: var(--navy-tint); }
+        .sg-collapse-btn svg { width: 13px; height: 13px; color: var(--muted); transition: transform 0.22s ease; }
+        .suggestions-panel.collapsed .sg-collapse-btn svg { transform: rotate(180deg); }
+        .suggestions-panel.collapsed .suggestions-list { display: none; }
+        .sg-header-badges { display: flex; gap: 5px; align-items: center; }
+        .sg-badge {
+            font-size: 9.5px; font-weight: 700;
+            padding: 2px 8px; border-radius: 100px;
+            letter-spacing: 0.04em; white-space: nowrap;
+        }
+        .sg-badge-critical { background: #fee2e2; color: #b91c1c; }
+        .sg-badge-warn     { background: #fef3c7; color: #b45309; }
+        .sg-badge-success  { background: #dcfce7; color: #047857; }
+        .sg-badge-info     { background: var(--navy-tint); color: var(--navy); }
+        .sg-robot-icon { width: 15px; height: 15px; color: var(--navy); flex-shrink: 0; }
+        .suggestion-item.sg-clickable { cursor: pointer; }
+        .suggestion-item.sg-clickable:hover { filter: brightness(0.97); }
+        [data-theme="dark"] .suggestion-item.sg-clickable:hover { filter: brightness(1.06); }
     </style>
 </head>
 <body>
 
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="floating-ar-popup" id="floatingApproveRejectRow">
+    <button class="btn-success cstep-ar-btn" onclick="approveCountSheet()">Confirm &amp; Approve</button>
+    <button class="btn-danger cstep-ar-btn" onclick="rejectCountSheet()">Reject &amp; Reset</button>
+</div>
+
+
 <div class="container">
     <header>
         <div class="brand">
-            <span class="brand-mark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/><path d="M12 14v7"/></svg>
-            </span>
-            <div>
-                <div class="eyebrow">Sarathchandra Agencies</div>
-                <h2>Stock Processing Controller Engine</h2>
+            <div class="brand-pill">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/><path d="M12 14v7"/></svg>
+                </span>
+                <div class="brand-pill-text">
+                    <div class="brand-pill-line1">Sarathchandra</div>
+                    <div class="brand-pill-line2">Agencies</div>
+                </div>
             </div>
+            <h2>Stock Processing Controller Engine</h2>
         </div>
         <div class="header-right">
-            <div class="location-badge">Balangoda Agency</div>
+            <div class="location-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Balangoda Agency
+            </div>
+            <button class="history-btn" id="historyBtn" onclick="openHistoryModal()" title="View monthly stock count history">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-8"/></svg>
+                History
+            </button>
             <button class="theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()" title="Toggle dark mode">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
         </div>
     </header>
 
-    <div class="top-flow-row">
-        <div class="step-box" id="boxStep1">
-            <div class="step-body">
-                <div class="step-head">
-                    <span class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                    </span>
-                    <div>
-                        <div class="step-num">Step 01</div>
-                        <h3>Generate Template</h3>
-                    </div>
+    <!-- Compact Step Strip -->
+    <div class="compact-step-strip">
+
+        <!-- Step 1 -->
+        <div class="cstep-card" id="stepperStep1">
+            <div class="cstep-left">
+                <div class="cstep-node">
+                    <span class="stepper-node-num">1</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </div>
-                <label>Upload Current Stock File (LeverEDGE):</label>
-                <input type="file" id="currentStockFile" accept=".xlsx, .xls">
+                <div class="cstep-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                </div>
+                <div class="cstep-text">
+                    <div class="cstep-title">Generate Template</div>
+                    <div class="cstep-desc">Generate template to upload and download template.</div>
+                </div>
             </div>
-            <div>
+            <div class="cstep-right">
+                <label class="cstep-file-label" for="currentStockFile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="cstepFile1Label">Choose File</span>
+                </label>
+                <input type="file" id="currentStockFile" accept=".xlsx, .xls" style="display:none" onchange="document.getElementById('cstepFile1Label').textContent=this.files[0]?this.files[0].name:'Choose File'">
                 <button onclick="generateCountSheet(this)">Download Template</button>
-                <div id="status1" class="status-msg"></div>
+                <div id="status1" class="status-msg" style="margin-top:6px;"></div>
             </div>
         </div>
 
-        <div class="step-box" id="boxStep2">
-            <div class="step-body">
-                <div class="step-head">
-                    <span class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                    </span>
-                    <div>
-                        <div class="step-num">Step 02</div>
-                        <h3>Upload & Analyze</h3>
-                    </div>
+        <div class="cstep-divider" id="stepperLine1"></div>
+
+        <!-- Step 2 -->
+        <div class="cstep-card" id="stepperStep2">
+            <div class="cstep-left">
+                <div class="cstep-node">
+                    <span class="stepper-node-num">2</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </div>
-                <label>Upload Filled Count Sheet:</label>
-                <input type="file" id="filledCountFile" accept=".xlsx, .xls">
+                <div class="cstep-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                </div>
+                <div class="cstep-text">
+                    <div class="cstep-title">Upload &amp; Analyze</div>
+                    <div class="cstep-desc">Start process template for upload &amp; Analyze.</div>
+                </div>
             </div>
-            <div>
-                <button class="btn-success" onclick="loadCountSheetPreview(this)">Scan Variance Data</button>
+            <div class="cstep-right">
+                <label class="cstep-file-label" for="filledCountFile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="cstepFile2Label">Choose File</span>
+                </label>
+                <input type="file" id="filledCountFile" accept=".xlsx, .xls" style="display:none" onchange="document.getElementById('cstepFile2Label').textContent=this.files[0]?this.files[0].name:'Choose File'">
+                <button class="btn-success" onclick="loadCountSheetPreview(this)">Scan Variance</button>
             </div>
         </div>
 
-        <div class="step-box disabled" id="correctionSection">
-            <span class="lock-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <div class="cstep-divider" id="stepperLine2"></div>
+
+        <!-- Step 3 -->
+        <div class="cstep-card cstep-disabled" id="correctionSection">
+            <span class="cstep-lock-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
                 Locked
             </span>
-            <div class="step-body">
-                <div class="step-head">
-                    <span class="step-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                    </span>
+            <div class="cstep-left">
+                <div class="cstep-node" id="stepperStep3">
+                    <span class="stepper-node-num">3</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+                <div class="cstep-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                </div>
+                <div class="cstep-text">
+                    <div class="cstep-title">Process &amp; Export</div>
+                    <div class="cstep-desc">Locked-state processing in export &amp; stock count and excel counts.</div>
+                </div>
+            </div>
+            <div class="cstep-right">
+                <label class="cstep-file-label" for="liveCorrectionFile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span id="cstepFile3Label">Choose File</span>
+                </label>
+                <input type="file" id="liveCorrectionFile" accept=".xlsx, .xls" style="display:none" onchange="document.getElementById('cstepFile3Label').textContent=this.files[0]?this.files[0].name:'Choose File'">
+                <button class="btn-success" onclick="openManualEntryModal(this)">Final Download</button>
+                <div id="status2" class="status-msg" style="margin-top:6px;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FEATURE: Manual "Not In System" Item Entry Modal -->
+    <div class="manual-modal-overlay" id="manualEntryOverlay">
+        <div class="manual-modal-box">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                    </div>
                     <div>
-                        <div class="step-num">Step 03</div>
-                        <h3>Process & Export</h3>
+                        <h3>Add Items Not In System<span class="manual-count-pill" id="manualCountPill">0 Added</span></h3>
+                        <p id="manualQueueProgress">A physically counted item with zero system stock was found.</p>
+                        <div class="queue-progress-track" id="queueProgressTrack" style="display:none;">
+                            <div class="queue-progress-fill" id="queueProgressFill"></div>
+                        </div>
                     </div>
                 </div>
-                <label>Upload Live System Correction Sheet:</label>
-                <input type="file" id="liveCorrectionFile" accept=".xlsx, .xls">
+                <div class="manual-modal-close" onclick="closeManualEntryModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
             </div>
-            <div>
-                <button class="btn-success" onclick="processStockCorrection(this)">Download Final Upload Sheet</button>
-                <div id="status2" class="status-msg"></div>
+            <div class="manual-modal-body">
+                <div class="manual-entry-card">
+                    <div class="manual-entry-section-label">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M4 12h16"/></svg>
+                        Item Details
+                    </div>
+                    <div class="manual-entry-grid">
+                        <div class="manual-entry-field"><label>Sr No</label><input type="text" id="manSrNo" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>BASEPACK CODE</label><input type="text" id="manBasepackCode"></div>
+                        <div class="manual-entry-field" style="grid-column: span 2;"><label>BASEPACK DESCRIPTION</label><input type="text" id="manBasepackDesc"></div>
+                        <div class="manual-entry-field"><label>SKU7 CODE</label><input type="text" id="manSku7" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>MRP</label><input type="number" step="any" id="manMrp" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>PKM</label><input type="text" id="manPkm" oninput="syncBatchCodeFromPkm()"></div>
+                        <div class="manual-entry-field"><label>Batch Code</label><input type="text" id="manBatchCode" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>Location</label>
+                            <select id="manLocation">
+                                <option value="">-- Select Location --</option>
+                                <option value="MAIN GODOWN">MAIN GODOWN</option>
+                                <option value="FROZEN">FROZEN</option>
+                            </select>
+                        </div>
+                        <div class="manual-entry-field"><label>UPC</label><input type="number" step="any" id="manUpc" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>Current Stock Qty in Units</label><input type="number" step="any" id="manCurrentQty" value="0" class="locked-field" readonly></div>
+                        <div class="manual-entry-field"><label>Physical Stock Qty in Units</label><input type="number" step="any" id="manPhysicalQty" class="locked-field" readonly></div>
+                    </div>
+                    <button class="manual-add-row-btn" id="manualAddRowBtn" onclick="addManualEntryRow()">+ Add Item to List</button>
+                </div>
+
+                <div class="manual-items-table-wrap" id="manualItemsTableWrap">
+                    <div class="manual-empty-note" id="manualEmptyNote">No items added yet.</div>
+                </div>
+            </div>
+            <div class="manual-modal-foot">
+                <button class="btn-danger" onclick="closeManualEntryModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Monthly Stock Count History (Firestore) -->
+    <div class="manual-modal-overlay" id="historyOverlay">
+        <div class="manual-modal-box" style="max-width: 760px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-8"/></svg>
+                    </div>
+                    <div>
+                        <h3>Monthly Stock Count History</h3>
+                        <p>Shortage, Excess, Net Gap and Accuracy by month — saved when a count is approved.</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="closeHistoryModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <div id="historyLoading" style="text-align:center; padding: 30px; color: var(--muted); font-size: 13px;">Loading history…</div>
+                <div id="historyChartWrap" style="display:none;">
+                    <svg id="historyChartSvg" viewBox="0 0 700 320" style="width:100%; height:auto; overflow: visible;"></svg>
+                </div>
+                <div id="historyEmptyNote" class="manual-empty-note" style="display:none;">No approved stock counts saved yet. Approve a count to start building monthly history.</div>
+                <div id="historyTableWrap" class="manual-items-table-wrap" style="margin-top:18px; display:none;"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content: space-between;">
+                <button class="manual-row-remove" id="deleteAllHistoryBtn" style="display:none; padding: 9px 16px; font-size: 12.5px;" onclick="deleteAllHistory()">Delete All History</button>
+                <button class="btn-danger" onclick="closeHistoryModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Full Count Archive Detail Modal -->
+    <div class="manual-modal-overlay" id="fullCountDetailOverlay">
+        <div class="manual-modal-box" style="max-width: 900px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                    <div>
+                        <h3>Full Count Archive — <span id="fullCountDetailMonth">—</span></h3>
+                        <p id="fullCountDetailSubtitle">Complete SKU-level data saved at approval time.</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="closeFullCountDetailModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <!-- Filter bar -->
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+                    <input type="text" id="archiveSearchInput" class="search-input" placeholder="Search SKU or Product Name…" style="flex:1; min-width:180px; max-width:300px;" oninput="filterArchiveTable()">
+                    <div class="filter-group" style="flex-shrink:0;">
+                        <button class="filter-btn active" data-afilter="all"    onclick="setArchiveFilter('all')">All</button>
+                        <button class="filter-btn"        data-afilter="short"  onclick="setArchiveFilter('short')">Shortage</button>
+                        <button class="filter-btn"        data-afilter="excess" onclick="setArchiveFilter('excess')">Excess</button>
+                        <button class="filter-btn"        data-afilter="match"  onclick="setArchiveFilter('match')">Matched</button>
+                        <button class="filter-btn"        data-afilter="nc"     onclick="setArchiveFilter('nc')">Not Counted</button>
+                    </div>
+                </div>
+                <div id="fullCountDetailLoading" style="text-align:center; padding:30px; color:var(--muted); font-size:13px; display:none;">Loading archived data…</div>
+                <div class="manual-items-table-wrap" id="fullCountDetailTableWrap" style="max-height:420px; overflow-y:auto;"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content:space-between;">
+                <button class="btn-success" id="archiveExcelBtn" onclick="redownloadExcelFromArchive()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                    Re-download Excel Report
+                </button>
+                <button class="btn-danger" onclick="closeFullCountDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Dashboard skeleton loading screen -->
+    <div id="dashSkeleton">
+        <div class="skel-cards-row">
+            <div class="skel-card">
+                <div class="skel-card-inner">
+                    <div class="skel-card-left">
+                        <div class="skel" style="height:10px;width:55%;border-radius:5px;"></div>
+                        <div class="skel" style="height:22px;width:80%;border-radius:6px;"></div>
+                        <div class="skel" style="height:9px;width:45%;border-radius:5px;"></div>
+                    </div>
+                    <div class="skel-card-right">
+                        <div class="skel" style="height:28px;width:72px;border-radius:6px;"></div>
+                        <div class="skel" style="height:14px;width:40px;border-radius:5px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="skel-card">
+                <div class="skel-card-inner">
+                    <div class="skel-card-left">
+                        <div class="skel" style="height:10px;width:55%;border-radius:5px;"></div>
+                        <div class="skel" style="height:22px;width:80%;border-radius:6px;"></div>
+                        <div class="skel" style="height:9px;width:45%;border-radius:5px;"></div>
+                    </div>
+                    <div class="skel-card-right">
+                        <div class="skel" style="height:28px;width:72px;border-radius:6px;"></div>
+                        <div class="skel" style="height:14px;width:40px;border-radius:5px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="skel-card">
+                <div class="skel-card-inner">
+                    <div class="skel-card-left">
+                        <div class="skel" style="height:10px;width:55%;border-radius:5px;"></div>
+                        <div class="skel" style="height:22px;width:80%;border-radius:6px;"></div>
+                        <div class="skel" style="height:9px;width:45%;border-radius:5px;"></div>
+                    </div>
+                    <div class="skel-card-right">
+                        <div class="skel" style="height:36px;width:60px;border-radius:50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="skel-stats-row">
+            <div class="skel-stat"><div class="skel" style="height:9px;width:70%;border-radius:5px;"></div><div class="skel" style="height:20px;width:55%;border-radius:6px;"></div></div>
+            <div class="skel-stat"><div class="skel" style="height:9px;width:70%;border-radius:5px;"></div><div class="skel" style="height:20px;width:55%;border-radius:6px;"></div></div>
+            <div class="skel-stat"><div class="skel" style="height:9px;width:70%;border-radius:5px;"></div><div class="skel" style="height:20px;width:55%;border-radius:6px;"></div></div>
+            <div class="skel-stat"><div class="skel" style="height:9px;width:70%;border-radius:5px;"></div><div class="skel" style="height:6px;width:100%;border-radius:3px;margin-top:12px;"></div></div>
+        </div>
+        <div class="skel-table">
+            <div class="skel-table-header"></div>
+            <div class="skel-table-rows">
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:38%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div></div>
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:42%;border-radius:4px;"></div><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div></div>
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:35%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div></div>
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:40%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div></div>
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:44%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div></div>
+                <div class="skel-table-row"><div class="skel" style="height:12px;width:12%;border-radius:4px;"></div><div class="skel" style="height:12px;width:32%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div><div class="skel" style="height:12px;width:10%;border-radius:4px;"></div><div class="skel" style="height:12px;width:14%;border-radius:4px;"></div></div>
             </div>
         </div>
     </div>
 
     <div class="review-dashboard" id="reviewDashboard">
+
+        <!-- ── Main column ── -->
+        <div class="dash-main">
+
+        <div class="approve-reject-row" id="approveRejectRow">
+            <button class="btn-success cstep-ar-btn" onclick="approveCountSheet()">Confirm &amp; Approve</button>
+            <button class="btn-danger cstep-ar-btn" onclick="rejectCountSheet()">Reject &amp; Reset</button>
+        </div>
+
+        <!-- AI Suggestions Panel — populated by buildAISuggestions() after scan -->
+        <div class="suggestions-panel" id="suggestionsPanel" style="display:none;"></div>
+
+        <div class="valuation-cards-row">
         <div class="card card-short">
-            <div class="card-title">Total Shortage Metrics</div>
-            <div class="card-value" id="valShortValue">Rs. 0.00</div>
-            <div class="card-sub" id="valShortDetails">0 Units Affected</div>
+            <div class="card-left">
+                <div class="card-title">Shortage Metrics</div>
+                <div class="card-value" id="valShortValue">Rs. 0.00</div>
+                <div class="card-sub" id="valShortDetails">0 Units Affected</div>
+            </div>
+            <div class="card-right">
+                <svg class="card-sparkline" viewBox="0 0 90 34" preserveAspectRatio="none">
+                    <polyline points="0,22 10,16 20,24 30,10 40,18 50,8 60,20 70,6 80,14 90,4"/>
+                </svg>
+                <div class="card-shift">
+                    <svg class="card-shift-arrow" id="valShortArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12l-7 7-7-7"/><path d="M12 19V5"/></svg>
+                    <span class="card-shift-pct" id="valShortPct">0%</span>
+                </div>
+                <div class="card-shift-label">Valuation Shift</div>
+            </div>
         </div>
         
         <div class="card card-excess">
-            <div class="card-title">Total Excess Metrics</div>
-            <div class="card-value" id="valExcessValue">Rs. 0.00</div>
-            <div class="card-sub" id="valExcessDetails">0 Units Affected</div>
+            <div class="card-left">
+                <div class="card-title">Excess Metrics</div>
+                <div class="card-value" id="valExcessValue">Rs. 0.00</div>
+                <div class="card-sub" id="valExcessDetails">0 Units Affected</div>
+            </div>
+            <div class="card-right">
+                <svg class="card-sparkline" viewBox="0 0 90 34" preserveAspectRatio="none">
+                    <polyline points="0,26 10,20 20,22 30,14 40,16 50,8 60,12 70,4 80,8 90,2"/>
+                </svg>
+                <div class="card-shift">
+                    <svg class="card-shift-arrow" id="valExcessArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-7 7 7"/><path d="M12 5v14"/></svg>
+                    <span class="card-shift-pct" id="valExcessPct">0%</span>
+                </div>
+                <div class="card-shift-label">Valuation Shift</div>
+            </div>
         </div>
         
         <div class="card card-net">
-            <div class="card-title">Net Valuation Balance</div>
-            <div class="card-value" id="valNetGap">Rs. 0.00</div>
-            <div class="card-sub">Stock Value Variance Gap</div>
+            <div class="card-left">
+                <div class="card-title">Net Valuation Balance</div>
+                <div class="card-value" id="valNetGap">Rs. 0.00</div>
+                <div class="card-sub">Stock Value Variance Gap</div>
+            </div>
+            <div class="card-right card-right-gauge">
+                <svg class="card-gauge" viewBox="0 0 60 36">
+                    <path d="M5 33 A 25 25 0 0 1 22.5 11" stroke="#ef4444" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M22.5 11 A 25 25 0 0 1 37.5 11" stroke="#f59e0b" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M37.5 11 A 25 25 0 0 1 55 33" stroke="#10b981" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <line id="netGaugeNeedle" x1="30" y1="33" x2="30" y2="13" stroke="#fff" stroke-width="2.4" stroke-linecap="round" transform="rotate(0 30 33)"/>
+                    <circle cx="30" cy="33" r="2.6" fill="#fff"/>
+                </svg>
+            </div>
+        </div>
         </div>
 
         <div class="stat-mini-row">
             <div class="stat-mini">
+                <div class="stat-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
                 <div class="stat-mini-label">Total SKU Count</div>
                 <div class="stat-mini-value" id="statTotalSku">0</div>
             </div>
             <div class="stat-mini">
+                <div class="stat-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
                 <div class="stat-mini-label">Counted SKU Count</div>
                 <div class="stat-mini-value" id="statCountedSku">0</div>
             </div>
             <div class="stat-mini">
+                <div class="stat-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg></div>
                 <div class="stat-mini-label">Uncounted SKU Count</div>
                 <div class="stat-mini-value" id="statUncountedSku">0</div>
             </div>
             <div class="stat-mini">
                 <div class="stat-mini-label">Accuracy %</div>
-                <div class="stat-mini-value" id="statAccuracy">0.0%</div>
-                <div class="accuracy-bar-track">
-                    <div class="accuracy-bar-fill" id="accuracyBarFill"></div>
+                <div class="stat-mini-ring-row">
+                    <div class="stat-mini-value" id="statAccuracy">0.0%</div>
+                </div>
+                <div class="accuracy-meter-track">
+                    <div class="accuracy-meter-fill" id="accuracyMeterFill" style="width:0%"></div>
                 </div>
             </div>
         </div>
 
-        <div class="stat-mini-row-3">
-            <div class="stat-mini">
-                <div class="stat-mini-label">Total System Pieces</div>
-                <div class="stat-mini-value" id="statTotalSystemUnits">0</div>
-            </div>
-            <div class="stat-mini">
-                <div class="stat-mini-label">Total Counted Pieces</div>
-                <div class="stat-mini-value" id="statTotalCountedUnits">0</div>
-            </div>
-            <div class="stat-mini">
-                <div class="stat-mini-label">Total Variance (Pieces)</div>
-                <div class="stat-mini-value" id="statTotalVarianceUnits">0</div>
-            </div>
-        </div>
+        <div class="pieces-and-top10-row">
+            <div class="pieces-and-details-col">
+                <div class="stat-mini-row-3">
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Total System Pieces</div>
+                        <div class="stat-mini-ring-row">
+                            <div class="stat-mini-value" id="statTotalSystemUnits">0</div>
+                            <div class="ring-wrap">
+                                <svg class="ring-svg ring-svg-sm" viewBox="0 0 36 36">
+                                    <circle class="ring-track" cx="18" cy="18" r="15.5"></circle>
+                                    <circle class="ring-fill" id="systemUnitsRingFill" cx="18" cy="18" r="15.5"></circle>
+                                </svg>
+                                <span class="ring-label" id="systemUnitsRingLabel">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Total Counted Pieces</div>
+                        <div class="stat-mini-ring-row">
+                            <div class="stat-mini-value" id="statTotalCountedUnits">0</div>
+                            <div class="ring-wrap">
+                                <svg class="ring-svg ring-svg-sm" viewBox="0 0 36 36">
+                                    <circle class="ring-track" cx="18" cy="18" r="15.5"></circle>
+                                    <circle class="ring-fill" id="countedUnitsRingFill" cx="18" cy="18" r="15.5"></circle>
+                                </svg>
+                                <span class="ring-label" id="countedUnitsRingLabel">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-label">Total Variance (Pieces)</div>
+                        <div class="stat-mini-value" id="statTotalVarianceUnits">0</div>
+                    </div>
+                </div>
 
-        <div class="top10-panel">
-            <div class="top10-header">Top 10 Highest-Value Variances</div>
-            <div id="top10List" class="top10-list"></div>
-        </div>
+                <div class="details-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-group">
+                            <span>Captured Variance Summary Breakdown</span>
+                        </div>
+                        <div class="action-bar">
+                            <button class="btn-success" onclick="exportVariancePDF(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                                Export PDF
+                            </button>
+                            <button class="btn-danger" onclick="exportVarianceReport(this)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                                Export Full Stock Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-controls">
+                        <div class="search-input-wrap">
+                            <input type="text" id="varianceSearch" class="search-input" placeholder="Search by SKU or Product Name...">
+                            <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearVarianceSearch()" aria-label="Clear search">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div class="filter-group">
+                            <button class="filter-btn active" data-filter="all" onclick="setVarianceFilter('all')">All</button>
+                            <button class="filter-btn" data-filter="short" onclick="setVarianceFilter('short')">Shortages Only</button>
+                            <button class="filter-btn" data-filter="excess" onclick="setVarianceFilter('excess')">Excess Only</button>
+                            <button class="filter-btn" data-filter="uncounted" onclick="setVarianceFilter('uncounted')">Not Counted Only</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SKU7 Code</th>
+                                    <th>Product Name</th>
+                                    <th>Status Tracking</th>
+                                    <th>Variance Size</th>
+                                    <th>AIP Discrepancy Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="varianceTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!-- end .details-panel -->
+            </div><!-- end .pieces-and-details-col -->
 
-        <div class="details-panel">
-            <div class="panel-header">
-                <div class="panel-title-group">
-                    <span>Captured Variance Summary Breakdown</span>
-                    <button class="btn-ghost" onclick="exportVariancePDF()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                        Export PDF
-                    </button>
-                    <button class="btn-ghost" onclick="exportVarianceReport()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                        Export Full Stock Report
-                    </button>
-                </div>
-                <div class="action-bar">
-                    <button class="btn-success" onclick="approveCountSheet()">Confirm & Approve</button>
-                    <button class="btn-danger" onclick="rejectCountSheet()">Reject & Reset</button>
-                </div>
+            <div class="top10-panel">
+                <div class="top10-header">Top 10 Highest-Value Variances</div>
+                <div id="top10List" class="top10-list"></div>
             </div>
-            <div class="table-controls">
-                <input type="text" id="varianceSearch" class="search-input" placeholder="Search by SKU or Product Name...">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all" onclick="setVarianceFilter('all')">All</button>
-                    <button class="filter-btn" data-filter="short" onclick="setVarianceFilter('short')">Shortages Only</button>
-                    <button class="filter-btn" data-filter="excess" onclick="setVarianceFilter('excess')">Excess Only</button>
-                    <button class="filter-btn" data-filter="uncounted" onclick="setVarianceFilter('uncounted')">Not Counted Only</button>
-                </div>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>SKU7 Code</th>
-                            <th>Product Name</th>
-                            <th>Status Tracking</th>
-                            <th>Variance Size</th>
-                            <th>AIP Discrepancy Value</th>
-                        </tr>
-                    </thead>
-                    <tbody id="varianceTableBody">
-                        </tbody>
-                </table>
-            </div>
-        </div>
+        </div><!-- end .pieces-and-top10-row -->
+
+        </div><!-- end .dash-main -->
+
     </div>
 </div>
 
 <script>
     let globalPhyCasesMap = {}, globalPhyPiecesMap = {}, globalAipValueMap = {};
     let globalExportRows = [];
+    let globalManualItems = [];
+    let globalMrpMap = {};
+    let manualEntryQueue = [];
+    let manualEntryQueueIndex = 0;
+    let manualNextSrNo = 1;
     let isCountApproved = false;
     let isScanned = false;
+    let isStep3Done = false;
     let currentFilter = 'all';
     let currentSearch = '';
+    let lastDashboardSummary = null; // populated by finalizeDashboard(), used when saving to Firestore on approve
+
+    // --- FEATURE: Firebase (Firestore) Cloud Save for Monthly Stock Count History ---
+    const COMPANY_ID = "SARATHCHANDRA_BALANGODA";
+    const firebaseConfig = {
+        apiKey: "AIzaSyDkz-cL-TidV-jMqkQ1pG_APH3KvScxEB4",
+        authDomain: "stock-verification-ad618.firebaseapp.com",
+        projectId: "stock-verification-ad618",
+        storageBucket: "stock-verification-ad618.firebasestorage.app",
+        messagingSenderId: "1033918906913",
+        appId: "1:1033918906913:web:62bc1f0ce641c80d5a9960"
+    };
+    let firestoreDb = null;
+    try {
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            firestoreDb = firebase.firestore();
+        }
+    } catch (e) {
+        console.error("Firebase init failed:", e);
+    }
+
+    function getCurrentMonthId() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        return yyyy + "-" + mm;
+    }
+
+    // --- FEATURE: Data Loss Prevention (BeforeUnload Alert) ---
+    window.addEventListener('beforeunload', function (e) {
+        if (isScanned && !isCountApproved) {
+            e.preventDefault();
+            e.returnValue = 'Unsaved variance data will be lost. Are you sure you want to leave?';
+        }
+    });
+
+    const statusMsgIconOk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    const statusMsgIconErr = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-5 5M9.5 9.5l5 5"/></svg>';
+    const statusMsgTimers = {};
 
     function showStatus(boxId, message, isError) {
         const box = document.getElementById(boxId);
         if (!box) { alert(message); return; }
-        box.innerText = message;
+
+        if (statusMsgTimers[boxId]) { clearTimeout(statusMsgTimers[boxId]); delete statusMsgTimers[boxId]; }
+
+        box.innerHTML = '<span class="status-msg-icon">' + (isError ? statusMsgIconErr : statusMsgIconOk) + '</span><span class="status-msg-text"></span>';
+        box.querySelector('.status-msg-text').textContent = message;
         box.classList.toggle('error', !!isError);
-        box.style.display = "block";
+        box.classList.remove('show', 'fade-out');
+        box.style.display = "flex";
+        void box.offsetWidth;
+        box.classList.add('show');
+
+        if (!isError) {
+            statusMsgTimers[boxId] = setTimeout(function() {
+                box.classList.add('fade-out');
+                statusMsgTimers[boxId] = setTimeout(function() {
+                    box.style.display = "none";
+                    box.classList.remove('show', 'fade-out');
+                }, 400);
+            }, 4500);
+        }
+    }
+
+    // --- FEATURE: Toast Notifications (typed: success / error / warn / info) ---
+    const _toastIcons = {
+        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+        error:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
+        warn:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+        info:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>'
+    };
+    const _toastLabels = { success: 'Success', error: 'Error', warn: 'Warning', info: 'Notice' };
+
+    function showToast(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (!container) { alert(message); return; }
+
+        // Auto-detect type from message content if not supplied
+        if (!type) {
+            const m = message.toLowerCase();
+            if (m.startsWith('error') || m.includes('failed') || m.includes('fail'))  type = 'error';
+            else if (m.includes('warning') || m.includes('caution'))                  type = 'warn';
+            else if (m.includes('success') || m.includes('saved') || m.includes('downloaded') || m.includes('approved') || m.includes('generated') || m.includes('deleted') || m.includes('confirmed') || m.includes('unlocked')) type = 'success';
+            else type = 'info';
+        }
+
+        const duration = type === 'error' ? 9000 : 6000;
+        const icon  = _toastIcons[type]  || _toastIcons.info;
+        const label = _toastLabels[type] || 'Notice';
+
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+        toast.style.setProperty('--toast-duration', duration + 'ms');
+        toast.innerHTML =
+            '<div class="toast-inner">' +
+                '<div class="toast-icon-wrap">' + icon + '</div>' +
+                '<div class="toast-body-wrap">' +
+                    '<div class="toast-label">' + label + '</div>' +
+                    '<div class="toast-body"></div>' +
+                '</div>' +
+                '<span class="toast-close" role="button" tabindex="0" aria-label="Dismiss">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+                '</span>' +
+            '</div>' +
+            '<div class="toast-progress"><div class="toast-progress-fill"></div></div>';
+        toast.querySelector('.toast-body').textContent = message;
+
+        let dismissTimer;
+        const dismiss = function() {
+            clearTimeout(dismissTimer);
+            toast.classList.add('toast-out');
+            setTimeout(function() { toast.remove(); }, 280);
+        };
+        toast.querySelector('.toast-close').addEventListener('click', dismiss);
+        container.appendChild(toast);
+        dismissTimer = setTimeout(dismiss, duration);
+    }
+
+    // --- FEATURE: Circular Ring Progress Indicator ---
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 15.5;
+    function setRing(fillId, percent, colorThresholds) {
+        const el = document.getElementById(fillId);
+        if (!el) return;
+        const pct = Math.min(Math.max(percent, 0), 100);
+        const offset = RING_CIRCUMFERENCE - (RING_CIRCUMFERENCE * pct / 100);
+        el.style.strokeDasharray = RING_CIRCUMFERENCE + " " + RING_CIRCUMFERENCE;
+        el.style.strokeDashoffset = offset;
+        if (colorThresholds) {
+            el.style.stroke = pct >= colorThresholds.good ? "var(--success)" : (pct >= colorThresholds.warn ? "var(--amber)" : "var(--danger)");
+        }
+    }
+
+    // --- FEATURE: Linear Meter Gauge (used for Accuracy %) ---
+    function setMeter(fillId, percent, colorThresholds) {
+        const el = document.getElementById(fillId);
+        if (!el) return;
+        const pct = Math.min(Math.max(percent, 0), 100);
+        el.style.width = pct + "%";
+        if (colorThresholds) {
+            el.style.background = pct >= colorThresholds.good ? "var(--success)" : (pct >= colorThresholds.warn ? "var(--amber)" : "var(--danger)");
+        }
+    }
+
+    function updateProgressIndicator() {
+        // Step 1 card = #stepperStep1 (cstep-card), Step 2 card = #stepperStep2 (cstep-card)
+        // Step 3 lock wrapper = #correctionSection (cstep-card), Step 3 node = #stepperStep3
+        const card1 = document.getElementById('stepperStep1');
+        const card2 = document.getElementById('stepperStep2');
+        const card3 = document.getElementById('correctionSection');
+        const node3 = document.getElementById('stepperStep3');
+        const l1    = document.getElementById('stepperLine1');
+        const l2    = document.getElementById('stepperLine2');
+        if (!card1 || !card2 || !card3) return;
+
+        // Card 1
+        card1.classList.toggle('done',   isScanned);
+        card1.classList.toggle('active', !isScanned);
+
+        // Card 2
+        card2.classList.toggle('done',   isCountApproved);
+        card2.classList.toggle('active', isScanned && !isCountApproved);
+
+        // Card 3 (unlock/lock)
+        if (isCountApproved) {
+            card3.classList.remove('cstep-disabled');
+        } else {
+            card3.classList.add('cstep-disabled');
+        }
+        if (node3) {
+            node3.classList.toggle('done',   isStep3Done);
+            node3.classList.toggle('active', isCountApproved && !isStep3Done);
+        }
+
+        if (l1) l1.classList.toggle('done', isScanned);
+        if (l2) l2.classList.toggle('done', isCountApproved);
+    }
+
+    function animateValueTo(el, finalValue, opts) {
+        if (!el) return;
+        opts = opts || {};
+        const prefix = opts.prefix || "";
+        const suffix = opts.suffix || "";
+        const decimals = opts.decimals != null ? opts.decimals : 0;
+        const duration = opts.duration || 600;
+        const signed = !!opts.signed;
+
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) {
+            const sign = signed && finalValue > 0 ? "+" : "";
+            el.innerText = prefix + sign + Math.abs(finalValue).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+            return;
+        }
+
+        const startValue = 0;
+        const startTime = performance.now();
+
+        function frame(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = startValue + (finalValue - startValue) * eased;
+            const sign = signed && current > 0 ? "+" : (signed && current < 0 ? "-" : "");
+            el.innerText = prefix + sign + Math.abs(current).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+            if (progress < 1) {
+                requestAnimationFrame(frame);
+            }
+        }
+        requestAnimationFrame(frame);
     }
 
     function setButtonLoading(button, loading, loadingText) {
@@ -648,14 +2165,41 @@
             button.disabled = true;
             button.dataset.loading = "true";
             button.innerHTML = '<span class="spinner"></span>' + (loadingText || 'Processing...');
+            if (!button.classList.contains('btn-ghost')) {
+                showStepProgress(button, loadingText || 'Processing...');
+            }
         } else {
             button.disabled = false;
             button.dataset.loading = "false";
             if (button.dataset.originalHtml) { button.innerHTML = button.dataset.originalHtml; }
+            if (!button.classList.contains('btn-ghost')) {
+                hideStepProgress(button);
+            }
         }
     }
     function resetAllLoadingButtons() {
         document.querySelectorAll('button[data-loading="true"]').forEach(b => setButtonLoading(b, false));
+    }
+
+    function showStepProgress(button, label) {
+        if (!button || !button.parentElement) return;
+        let bar = button.nextElementSibling;
+        if (!bar || !bar.classList || !bar.classList.contains('step-progress')) {
+            bar = document.createElement('div');
+            bar.className = 'step-progress';
+            bar.innerHTML = '<div class="step-progress-track"><div class="step-progress-fill"></div></div><div class="step-progress-label"></div>';
+            button.insertAdjacentElement('afterend', bar);
+        }
+        bar.querySelector('.step-progress-label').textContent = label;
+        bar.classList.add('active');
+    }
+
+    function hideStepProgress(button) {
+        if (!button) return;
+        const bar = button.nextElementSibling;
+        if (bar && bar.classList && bar.classList.contains('step-progress')) {
+            bar.classList.remove('active');
+        }
     }
 
     function readFileAsArrayBuffer(fileInput, callback) {
@@ -670,20 +2214,37 @@
     document.getElementById('filledCountFile').addEventListener('change', function() {
         isScanned = false;
         isCountApproved = false;
+        isStep3Done = false;
         globalPhyCasesMap = {}; globalPhyPiecesMap = {}; globalAipValueMap = {}; globalExportRows = [];
+        globalManualItems = [];
+        globalMrpMap = {};
         currentFilter = 'all'; currentSearch = '';
         document.getElementById('varianceSearch').value = '';
+        document.getElementById('searchClearBtn').classList.remove('visible');
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === 'all'));
         document.getElementById('varianceTableBody').innerHTML = "";
         document.getElementById('reviewDashboard').style.display = "none";
-        document.getElementById('correctionSection').classList.add('disabled');
-        try { sessionStorage.removeItem('stockCountState'); } catch (e) {}
+        document.getElementById('correctionSection').classList.add('cstep-disabled');
+        updateProgressIndicator();
     });
 
+    let varianceSearchDebounceTimer = null;
     document.getElementById('varianceSearch').addEventListener('input', function(e) {
         currentSearch = e.target.value;
-        renderVarianceTable();
+        document.getElementById('searchClearBtn').classList.toggle('visible', currentSearch.length > 0);
+        clearTimeout(varianceSearchDebounceTimer);
+        varianceSearchDebounceTimer = setTimeout(renderVarianceTable, 200);
     });
+
+    function clearVarianceSearch() {
+        const input = document.getElementById('varianceSearch');
+        input.value = '';
+        currentSearch = '';
+        document.getElementById('searchClearBtn').classList.remove('visible');
+        clearTimeout(varianceSearchDebounceTimer);
+        renderVarianceTable();
+        input.focus();
+    }
 
     function setVarianceFilter(filter) {
         currentFilter = filter;
@@ -702,41 +2263,122 @@
         });
     }
 
+    function buildVarianceRowHtml(item, rowIdx) {
+        let statusCell, varCell, valCell;
+        if (!item.counted) {
+            statusCell = `<td class="txt-na">NOT COUNTED</td>`;
+            varCell = `<td class="txt-na">—</td>`;
+            valCell = `<td class="txt-na">—</td>`;
+        } else if (item.diff === 0) {
+            statusCell = `<td class="txt-matched">MATCHED</td>`;
+            varCell = `<td class="txt-matched">0 Pcs</td>`;
+            valCell = `<td>Rs. 0.00</td>`;
+        } else if (item.diff < 0) {
+            statusCell = `<td class="txt-short">SHORTAGE</td>`;
+            varCell = `<td class="txt-short">-${Math.abs(item.diff)} Pcs</td>`;
+            valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
+        } else {
+            let isUnknownSku = (item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0);
+            let unknownTag = isUnknownSku ? '<br><span class="tag-unknown">NOT IN SYSTEM</span>' : '';
+            statusCell = `<td class="txt-excess">EXCESS${unknownTag}</td>`;
+            varCell = `<td class="txt-excess">+${item.diff} Pcs</td>`;
+            valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
+        }
+        const delay = Math.min(rowIdx, 25) * 18;
+        return `<tr style="animation-delay:${delay}ms"><td><strong>${item.sku}</strong></td><td>${item.name}</td>${statusCell}${varCell}${valCell}</tr>`;
+    }
+
+    // --- FEATURE: Virtual scrolling for the variance table ---
+    // Only the rows visible in the scroll viewport (plus a small buffer) are kept in the DOM.
+    // Above/below that window, two spacer rows reserve the correct scroll height so the
+    // scrollbar size/position stays accurate. Falls back to rendering every row when the
+    // dataset is small (no benefit to virtualizing a short list) or while printing.
+    const VIRTUAL_SCROLL_THRESHOLD = 300; // below this row count, just render everything
+    const VIRTUAL_SCROLL_BUFFER = 8;      // extra rows rendered above/below the visible window
+    let virtualRowHeight = 38;            // measured from the first real render; this is a fallback
+    let virtualScrollRows = [];
+    let virtualScrollActive = false;
+    let varianceScrollHandlerAttached = false;
+
     function renderVarianceTable() {
         const tableBody = document.getElementById('varianceTableBody');
         const rows = getFilteredExportRows();
 
         if (rows.length === 0) {
+            virtualScrollActive = false;
             tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted); font-weight:600; padding:20px;">No items match the current filter or search.</td></tr>`;
             return;
         }
 
-        let html = "";
-        rows.forEach(item => {
-            let statusCell, varCell, valCell;
-            if (!item.counted) {
-                statusCell = `<td class="txt-na">NOT COUNTED</td>`;
-                varCell = `<td class="txt-na">—</td>`;
-                valCell = `<td class="txt-na">—</td>`;
-            } else if (item.diff === 0) {
-                statusCell = `<td class="txt-matched">MATCHED</td>`;
-                varCell = `<td class="txt-matched">0 Pcs</td>`;
-                valCell = `<td>Rs. 0.00</td>`;
-            } else if (item.diff < 0) {
-                statusCell = `<td class="txt-short">SHORTAGE</td>`;
-                varCell = `<td class="txt-short">-${Math.abs(item.diff)} Pcs</td>`;
-                valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
-            } else {
-                let isUnknownSku = (item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0);
-                let unknownTag = isUnknownSku ? '<br><span class="tag-unknown">NOT IN SYSTEM</span>' : '';
-                statusCell = `<td class="txt-excess">EXCESS${unknownTag}</td>`;
-                varCell = `<td class="txt-excess">+${item.diff} Pcs</td>`;
-                valCell = `<td>Rs. ${Math.abs(item.valGap).toFixed(2)}</td>`;
-            }
-            html += `<tr><td><strong>${item.sku}</strong></td><td>${item.name}</td>${statusCell}${varCell}${valCell}</tr>`;
-        });
-        tableBody.innerHTML = html;
+        if (rows.length <= VIRTUAL_SCROLL_THRESHOLD) {
+            virtualScrollActive = false;
+            tableBody.innerHTML = rows.map((item, idx) => buildVarianceRowHtml(item, idx)).join('');
+            return;
+        }
+
+        // Large dataset: switch on virtual scrolling.
+        virtualScrollActive = true;
+        virtualScrollRows = rows;
+        const container = document.querySelector('.table-container');
+
+        if (!varianceScrollHandlerAttached) {
+            container.addEventListener('scroll', function() {
+                if (virtualScrollActive) renderVirtualWindow();
+            }, { passive: true });
+            varianceScrollHandlerAttached = true;
+        }
+
+        renderVirtualWindow(true);
     }
+
+    function renderVirtualWindow(isFirstRenderForThisDataset) {
+        const tableBody = document.getElementById('varianceTableBody');
+        const container = document.querySelector('.table-container');
+        const rows = virtualScrollRows;
+        const total = rows.length;
+
+        const scrollTop = container.scrollTop;
+        const viewportHeight = container.clientHeight || 320;
+
+        const firstVisible = Math.max(0, Math.floor(scrollTop / virtualRowHeight) - VIRTUAL_SCROLL_BUFFER);
+        const visibleCount = Math.ceil(viewportHeight / virtualRowHeight) + VIRTUAL_SCROLL_BUFFER * 2;
+        const lastVisible = Math.min(total, firstVisible + visibleCount);
+
+        const topSpacerHeight = firstVisible * virtualRowHeight;
+        const bottomSpacerHeight = (total - lastVisible) * virtualRowHeight;
+
+        let html = `<tr class="virtual-spacer" style="height:${topSpacerHeight}px; padding:0; border:none;"><td colspan="5" style="padding:0; border:none;"></td></tr>`;
+        for (let i = firstVisible; i < lastVisible; i++) {
+            html += buildVarianceRowHtml(rows[i], i - firstVisible);
+        }
+        html += `<tr class="virtual-spacer" style="height:${bottomSpacerHeight}px; padding:0; border:none;"><td colspan="5" style="padding:0; border:none;"></td></tr>`;
+
+        tableBody.innerHTML = html;
+
+        // Measure the real row height once real rows exist, so the spacers stay accurate
+        // even if font size/zoom differs from our 38px fallback estimate.
+        if (isFirstRenderForThisDataset) {
+            const sampleRow = tableBody.querySelector('tr:not(.virtual-spacer)');
+            if (sampleRow) {
+                const measured = sampleRow.getBoundingClientRect().height;
+                if (measured > 4 && Math.abs(measured - virtualRowHeight) > 1) {
+                    virtualRowHeight = measured;
+                    renderVirtualWindow(false); // re-render once with the corrected height
+                }
+            }
+        }
+    }
+
+    // Printing (Ctrl+P) needs every row in the DOM, not just the virtualized window.
+    window.addEventListener('beforeprint', function() {
+        if (virtualScrollActive) {
+            document.getElementById('varianceTableBody').innerHTML =
+                virtualScrollRows.map((item, idx) => buildVarianceRowHtml(item, idx)).join('');
+        }
+    });
+    window.addEventListener('afterprint', function() {
+        if (virtualScrollActive) renderVirtualWindow(true);
+    });
 
     function renderTopVariance() {
         const container = document.getElementById('top10List');
@@ -753,7 +2395,11 @@
         container.innerHTML = top10.map((item, idx) => {
             const isShort = item.diff < 0;
             const colorClass = isShort ? 'txt-short' : 'txt-excess';
+            const iconSvg = isShort
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9l-7 7-7-7"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>';
             return `<div class="top10-row">
+                <span class="top10-icon ${isShort ? 'icon-short' : 'icon-excess'}">${iconSvg}</span>
                 <span class="top10-rank">${idx + 1}</span>
                 <span class="top10-sku">${item.sku}</span>
                 <span class="top10-name">${item.name}</span>
@@ -762,12 +2408,13 @@
         }).join('');
     }
 
-    async function exportVariancePDF() {
+    async function exportVariancePDF(btn) {
         const rows = getFilteredExportRows();
         if (rows.length === 0) {
             alert("No data to export. Please check your filter or search settings.");
             return;
         }
+        setButtonLoading(btn, true, 'Exporting...');
         try {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -840,21 +2487,32 @@
             doc.save("Stock_Variance_Report_" + dateStr + ".pdf");
         } catch (err) {
             alert("Failed to generate PDF: " + err.message);
+        } finally {
+            setButtonLoading(btn, false);
         }
     }
 
     const themeIconMoon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     const themeIconSun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 
-    function applyTheme(theme) {
+    function applyTheme(theme, animate) {
         document.documentElement.setAttribute('data-theme', theme);
-        document.getElementById('themeToggleBtn').innerHTML = theme === 'dark' ? themeIconSun : themeIconMoon;
+        const btn = document.getElementById('themeToggleBtn');
+        if (animate) {
+            btn.classList.add('spinning');
+            setTimeout(function() {
+                btn.innerHTML = theme === 'dark' ? themeIconSun : themeIconMoon;
+                btn.classList.remove('spinning');
+            }, 200);
+        } else {
+            btn.innerHTML = theme === 'dark' ? themeIconSun : themeIconMoon;
+        }
         try { localStorage.setItem('stockToolTheme', theme); } catch (e) {}
     }
 
     function toggleDarkMode() {
         const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-        applyTheme(current === 'dark' ? 'light' : 'dark');
+        applyTheme(current === 'dark' ? 'light' : 'dark', true);
     }
 
     (function initTheme() {
@@ -863,7 +2521,47 @@
         applyTheme(saved);
     })();
 
-    restoreFromSession();
+    // --- FEATURE: Floating Approve/Reject popup when the original row scrolls out of view ---
+    (function initFloatingApproveReject() {
+        const originalRow = document.getElementById('approveRejectRow');
+        const floatingPopup = document.getElementById('floatingApproveRejectRow');
+        const modalOverlay = document.getElementById('manualEntryOverlay');
+        if (!originalRow || !floatingPopup || !('IntersectionObserver' in window)) return;
+
+        let rowIntersecting = true;
+
+        function refreshFloatingState() {
+            const dashboardVisible = document.getElementById('reviewDashboard').style.display === 'flex';
+            const modalOpen = modalOverlay && modalOverlay.classList.contains('open');
+            const shouldFloat = dashboardVisible && !rowIntersecting && !modalOpen;
+            floatingPopup.classList.toggle('visible', shouldFloat);
+        }
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                rowIntersecting = entry.isIntersecting;
+            });
+            refreshFloatingState();
+        }, { threshold: 0 });
+
+        observer.observe(originalRow);
+
+        // Re-check whenever the dashboard or modal visibility could have changed
+        // (these don't always change scroll position, so the observer alone won't refire).
+        if (modalOverlay) {
+            const modalObserver = new MutationObserver(refreshFloatingState);
+            modalObserver.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
+        }
+        const dashboardEl = document.getElementById('reviewDashboard');
+        if (dashboardEl) {
+            const dashboardObserver = new MutationObserver(refreshFloatingState);
+            dashboardObserver.observe(dashboardEl, { attributes: true, attributeFilter: ['style'] });
+        }
+
+        refreshFloatingState();
+    })();
+
+    updateProgressIndicator();
 
     function generateCountSheet(btn) {
         const fileIn = document.getElementById('currentStockFile');
@@ -892,7 +2590,6 @@
                     return [item.SKU7, item["Product Name"], item.MRP, item["AIP Value"], u, Math.floor(item.total_units / u), item.total_units % u, "", ""];
                 });
 
-                // --- Styled, premium .xlsx export (presentation only — outputRows data above is unchanged) ---
                 const headerLabels = ["SKU7 Code", "Product Name", "MRP (Rs.)", "AIP Value", "UPC", "System Cases", "System Pieces", "Physical Cases", "Physical Pieces"];
                 const wb = new ExcelJS.Workbook();
                 const ws = wb.addWorksheet("Count Sheet", { views: [{ state: 'frozen', ySplit: 1 }] });
@@ -932,7 +2629,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "LeverEDGE_Count_Sheet_Designed.xlsx";
+                a.download = "LeverEDGE_Count_Sheet.xlsx";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -953,6 +2650,13 @@
         const tableBody = document.getElementById('varianceTableBody');
         if (!countIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
         setButtonLoading(btn, true, 'Scanning...');
+
+        // Show skeleton while processing
+        const skel = document.getElementById('dashSkeleton');
+        if (skel) { skel.classList.add('visible'); dashboard.style.display = 'none'; }
+        // Scroll skeleton into view smoothly
+        if (skel) setTimeout(() => skel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+
         readFileAsArrayBuffer(countIn, function(countBuffer) {
             try {
                 const wbCount = XLSX.read(countBuffer, {type: 'array'});
@@ -967,7 +2671,6 @@
 
                 let totalShortValue = 0, totalShortUnits = 0;
                 let totalExcessValue = 0, totalExcessUnits = 0;
-                let varianceDetected = false;
 
                 countData.forEach(row => {
                     let sku = row["SKU7 Code"] ? String(row["SKU7 Code"]).trim() : "";
@@ -983,6 +2686,7 @@
                         globalPhyCasesMap[sku] = pCases;
                         globalPhyPiecesMap[sku] = pPieces;
                         globalAipValueMap[sku] = aipPrice;
+                        globalMrpMap[sku] = parseFloat(row["MRP (Rs.)"]) || 0;
 
                         let expTotalSysUnits = (sysCases * upc) + sysPieces;
                         let expCounted = (pCases !== null || pPieces !== null);
@@ -990,18 +2694,15 @@
                         let expDiff = expCounted ? (expTotalPhyUnits - expTotalSysUnits) : null;
                         let expValGap = expCounted ? (expDiff * aipPrice) : null;
                         globalExportRows.push({
-                            sku, name, sysCases, sysPieces, pCases, pPieces, aipPrice,
+                            sku, name, sysCases, sysPieces, pCases, pPieces, aipPrice, upc,
                             totalSysUnits: expTotalSysUnits, totalPhyUnits: expTotalPhyUnits,
                             diff: expDiff, valGap: expValGap, counted: expCounted
                         });
 
                         if (pCases !== null || pPieces !== null) {
-                            let totalSysUnits = (sysCases * upc) + sysPieces;
-                            let totalPhyUnits = ((pCases || 0) * upc) + (pPieces || 0);
-                            let diff = totalPhyUnits - totalSysUnits;
+                            let diff = expTotalPhyUnits - expTotalSysUnits;
 
                             if (diff !== 0) {
-                                varianceDetected = true;
                                 let valGap = Math.abs(diff) * aipPrice;
 
                                 if (diff < 0) {
@@ -1018,6 +2719,8 @@
 
                 finalizeDashboard(totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits);
             } catch (err) {
+                const skel = document.getElementById('dashSkeleton');
+                if (skel) skel.classList.remove('visible');
                 dashboard.style.display = "none";
                 alert("Error: " + err.message);
             } finally {
@@ -1038,84 +2741,97 @@
         document.getElementById('statTotalSku').innerText = totalSkuCount;
         document.getElementById('statCountedSku').innerText = countedSkuCount;
         document.getElementById('statUncountedSku').innerText = uncountedSkuCount;
-        document.getElementById('statAccuracy').innerText = accuracyPct.toFixed(1) + "%";
-        const accBar = document.getElementById('accuracyBarFill');
-        accBar.style.width = Math.min(Math.max(accuracyPct, 0), 100) + "%";
-        accBar.style.background = accuracyPct >= 95 ? "var(--success)" : (accuracyPct >= 85 ? "var(--amber)" : "var(--danger)");
+        animateValueTo(document.getElementById('statAccuracy'), accuracyPct, { suffix: "%", decimals: 1 });
+        setMeter('accuracyMeterFill', accuracyPct, { good: 95, warn: 85 });
 
         const totalSystemUnitsSum = globalExportRows.reduce((s, i) => s + i.totalSysUnits, 0);
         const totalCountedUnitsSum = globalExportRows.filter(i => i.counted).reduce((s, i) => s + i.totalPhyUnits, 0);
         const totalVarianceUnitsSum = globalExportRows.filter(i => i.counted).reduce((s, i) => s + i.diff, 0);
+        const coveragePct = totalSystemUnitsSum > 0 ? Math.min((totalCountedUnitsSum / totalSystemUnitsSum) * 100, 100) : 0;
 
         document.getElementById('statTotalSystemUnits').innerText = totalSystemUnitsSum.toLocaleString('en-US');
         document.getElementById('statTotalCountedUnits').innerText = totalCountedUnitsSum.toLocaleString('en-US');
+        setRing('systemUnitsRingFill', coveragePct, { good: 95, warn: 85 });
+        setRing('countedUnitsRingFill', coveragePct, { good: 95, warn: 85 });
+        document.getElementById('systemUnitsRingLabel').innerText = coveragePct.toFixed(0) + "%";
+        document.getElementById('countedUnitsRingLabel').innerText = coveragePct.toFixed(0) + "%";
         const varianceEl = document.getElementById('statTotalVarianceUnits');
-        varianceEl.innerText = (totalVarianceUnitsSum >= 0 ? "+" : "") + totalVarianceUnitsSum.toLocaleString('en-US');
+        animateValueTo(varianceEl, totalVarianceUnitsSum, { signed: true });
         varianceEl.style.color = totalVarianceUnitsSum > 0 ? "#047857" : (totalVarianceUnitsSum < 0 ? "#b91c1c" : "var(--ink)");
 
         currentFilter = 'all'; currentSearch = '';
         document.getElementById('varianceSearch').value = '';
+        document.getElementById('searchClearBtn').classList.remove('visible');
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === 'all'));
         renderVarianceTable();
         renderTopVariance();
 
-        document.getElementById('valShortValue').innerText = "Rs. " + totalShortValue.toLocaleString('en-US', {minimumFractionDigits: 2});
+        animateValueTo(document.getElementById('valShortValue'), totalShortValue, { prefix: "Rs. ", decimals: 2 });
         document.getElementById('valShortDetails').innerText = totalShortUnits + " Units Checked";
-        document.getElementById('valExcessValue').innerText = "Rs. " + totalExcessValue.toLocaleString('en-US', {minimumFractionDigits: 2});
+        animateValueTo(document.getElementById('valExcessValue'), totalExcessValue, { prefix: "Rs. ", decimals: 2 });
         document.getElementById('valExcessDetails').innerText = totalExcessUnits + " Units Checked";
 
         let netGap = totalExcessValue - totalShortValue;
-        document.getElementById('valNetGap').innerText = (netGap >= 0 ? "+" : "") + "Rs. " + netGap.toLocaleString('en-US', {minimumFractionDigits: 2});
-        document.getElementById('valNetGap').style.color = netGap >= 0 ? "#047857" : "#b91c1c";
+        const netGapEl = document.getElementById('valNetGap');
+        animateValueTo(netGapEl, netGap, { prefix: "Rs. ", decimals: 2, signed: true });
+        netGapEl.style.color = netGap >= 0 ? "#6ee7b7" : "#fca5a5";
 
-        dashboard.style.display = "grid";
+        // Total System Stock Value (AIP-based) — used as the base for the "Valuation Shift" %
+        const totalSystemValueSum = globalExportRows.reduce((s, i) => s + (i.totalSysUnits * i.aipPrice), 0);
+        const shortPctOfSystem = totalSystemValueSum > 0 ? (totalShortValue / totalSystemValueSum * 100) : 0;
+        const excessPctOfSystem = totalSystemValueSum > 0 ? (totalExcessValue / totalSystemValueSum * 100) : 0;
+        const netPctOfSystem = totalSystemValueSum > 0 ? (netGap / totalSystemValueSum * 100) : 0;
+
+        // Shortage card: shown as a negative shift (value lost vs system value)
+        document.getElementById('valShortPct').innerText = (shortPctOfSystem > 0 ? "-" : "") + shortPctOfSystem.toFixed(0) + "%";
+        const shortArrow = document.getElementById('valShortArrow');
+        shortArrow.innerHTML = shortPctOfSystem > 0
+            ? '<path d="M19 12l-7 7-7-7"/><path d="M12 19V5"/>'
+            : '<path d="M5 12l7-7 7 7"/><path d="M12 5v14"/>';
+
+        // Excess card: shown as a positive shift (extra value vs system value)
+        document.getElementById('valExcessPct').innerText = (excessPctOfSystem > 0 ? "+" : "") + excessPctOfSystem.toFixed(0) + "%";
+        const excessArrow = document.getElementById('valExcessArrow');
+        excessArrow.innerHTML = excessPctOfSystem >= 0
+            ? '<path d="M5 12l7-7 7 7"/><path d="M12 5v14"/>'
+            : '<path d="M19 12l-7 7-7-7"/><path d="M12 19V5"/>';
+
+        // Net Valuation Balance gauge needle: -100%..+100% maps across the semicircle (-90deg..+90deg)
+        const clampedNetPct = Math.max(-100, Math.min(100, netPctOfSystem));
+        const needleAngle = (clampedNetPct / 100) * 90;
+        document.getElementById('netGaugeNeedle').setAttribute('transform', 'rotate(' + needleAngle + ' 30 33)');
+
+        dashboard.style.display = "flex";
+        // Hide skeleton now that real data is rendered
+        const skel = document.getElementById('dashSkeleton');
+        if (skel) skel.classList.remove('visible');
         isScanned = true;
+        updateProgressIndicator();
 
-        try {
-            sessionStorage.setItem('stockCountState', JSON.stringify({
-                globalPhyCasesMap, globalPhyPiecesMap, globalAipValueMap, globalExportRows,
-                isCountApproved, isScanned,
-                totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits
-            }));
-        } catch (e) { /* sessionStorage unavailable/full - non-critical, scan still works */ }
+        // Capture summary in memory (used by approveCountSheet() + AI suggestions).
+        lastDashboardSummary = {
+            totalSkuCount, countedSkuCount, uncountedSkuCount, accuracyPct,
+            totalSystemUnitsSum, totalCountedUnitsSum, totalVarianceUnitsSum,
+            totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits,
+            netGap, totalSystemValueSum
+        };
+
+        // Build AI suggestions after summary is ready
+        buildAISuggestions(lastDashboardSummary);
     }
 
-    function restoreFromSession() {
-        try {
-            const saved = sessionStorage.getItem('stockCountState');
-            if (!saved) return;
-            const state = JSON.parse(saved);
-            if (!state || !state.isScanned || !Array.isArray(state.globalExportRows) || state.globalExportRows.length === 0) return;
-
-            globalPhyCasesMap = state.globalPhyCasesMap || {};
-            globalPhyPiecesMap = state.globalPhyPiecesMap || {};
-            globalAipValueMap = state.globalAipValueMap || {};
-            globalExportRows = state.globalExportRows;
-            isCountApproved = !!state.isCountApproved;
-
-            finalizeDashboard(state.totalShortValue || 0, state.totalShortUnits || 0, state.totalExcessValue || 0, state.totalExcessUnits || 0);
-
-            if (isCountApproved) {
-                document.getElementById('correctionSection').classList.remove('disabled');
-            }
-            alert("Previous scan session restored (" + globalExportRows.length + " SKUs). Upload a new file and re-scan to replace this data.");
-        } catch (e) {
-            try { sessionStorage.removeItem('stockCountState'); } catch (e2) {}
-        }
-    }
-
-    async function exportVarianceReport() {
+    async function exportVarianceReport(btn) {
         if (globalExportRows.length === 0) {
             alert("Please run 'Scan Variance Data' before exporting.");
             return;
         }
+        setButtonLoading(btn, true, 'Generating...');
         try {
             const wb = new ExcelJS.Workbook();
             const ws = wb.addWorksheet("Full Stock Report");
             const headerLabels = ["SKU7 Code", "Product Name", "System Units", "Physical Units", "Variance (Units)", "Variance Value (Rs.)", "Status", "Remarks"];
             ws.columns = [{width:14},{width:38},{width:14},{width:14},{width:16},{width:18},{width:14},{width:18}];
 
-            // --- Summary block (mirrors the web dashboard's stat cards) ---
             const totalSkuCount = globalExportRows.length;
             const countedSkuCount = globalExportRows.filter(i => i.counted).length;
             const uncountedSkuCount = totalSkuCount - countedSkuCount;
@@ -1218,34 +2934,453 @@
             URL.revokeObjectURL(url);
         } catch (err) {
             alert("Failed to generate report: " + err.message);
+        } finally {
+            setButtonLoading(btn, false);
         }
     }
 
     function approveCountSheet() {
         if (!isScanned) { alert("Please scan the count sheet first before approving."); return; }
         isCountApproved = true;
-        document.getElementById('correctionSection').classList.remove('disabled');
+        const correctionBox = document.getElementById('correctionSection');
+        correctionBox.classList.remove('cstep-disabled');
+        correctionBox.classList.add('just-unlocked');
+        setTimeout(() => correctionBox.classList.remove('just-unlocked'), 600);
+        updateProgressIndicator();
+        showToast("Count Summary Confirmed! Step 3 has now unlocked successfully.");
+        saveMonthlyStockCountToFirestore();
+    }
+
+    // --- FEATURE: Save the approved monthly stock count snapshot to Firestore ---
+    // One document per calendar month (YYYY-MM). Approving again in the same month overwrites
+    // that month's document; a new month automatically creates a new document, building history.
+    async function saveMonthlyStockCountToFirestore() {
+        if (!firestoreDb) {
+            showToast("Cloud save skipped: Firebase is not connected.");
+            return;
+        }
+        const monthId = getCurrentMonthId();
+        const payload = {
+            month: monthId,
+            savedAt: new Date().toISOString(),
+            totalSkuCount: lastDashboardSummary ? lastDashboardSummary.totalSkuCount : globalExportRows.length,
+            countedSkuCount: lastDashboardSummary ? lastDashboardSummary.countedSkuCount : null,
+            uncountedSkuCount: lastDashboardSummary ? lastDashboardSummary.uncountedSkuCount : null,
+            accuracyPct: lastDashboardSummary ? lastDashboardSummary.accuracyPct : null,
+            totalSystemUnitsSum: lastDashboardSummary ? lastDashboardSummary.totalSystemUnitsSum : null,
+            totalCountedUnitsSum: lastDashboardSummary ? lastDashboardSummary.totalCountedUnitsSum : null,
+            totalVarianceUnitsSum: lastDashboardSummary ? lastDashboardSummary.totalVarianceUnitsSum : null,
+            totalShortValue: lastDashboardSummary ? lastDashboardSummary.totalShortValue : null,
+            totalShortUnits: lastDashboardSummary ? lastDashboardSummary.totalShortUnits : null,
+            totalExcessValue: lastDashboardSummary ? lastDashboardSummary.totalExcessValue : null,
+            totalExcessUnits: lastDashboardSummary ? lastDashboardSummary.totalExcessUnits : null,
+            netGap: lastDashboardSummary ? lastDashboardSummary.netGap : null,
+            totalSystemValueSum: lastDashboardSummary ? lastDashboardSummary.totalSystemValueSum : null,
+            // --- FULL LINE-ITEM SNAPSHOT (enables historical drill-down & Excel re-generation) ---
+            items: globalExportRows.map(r => ({
+                sku: r.sku,
+                name: r.name,
+                sysCases: r.sysCases,
+                sysPieces: r.sysPieces,
+                pCases: r.pCases !== undefined ? r.pCases : null,
+                pPieces: r.pPieces !== undefined ? r.pPieces : null,
+                aipPrice: r.aipPrice,
+                upc: r.upc,
+                totalSysUnits: r.totalSysUnits,
+                totalPhyUnits: r.totalPhyUnits !== null ? r.totalPhyUnits : null,
+                diff: r.diff !== null ? r.diff : null,
+                valGap: r.valGap !== null ? r.valGap : null,
+                counted: r.counted
+            }))
+        };
         try {
-            const saved = sessionStorage.getItem('stockCountState');
-            if (saved) {
-                const state = JSON.parse(saved);
-                state.isCountApproved = true;
-                sessionStorage.setItem('stockCountState', JSON.stringify(state));
-            }
-        } catch (e) {}
-        alert("Count Summary Confirmed! Step 3 has now unlocked successfully.");
+            await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts').doc(monthId)
+                .set(payload, { merge: true });
+            showToast("Saved to cloud history for " + monthId + ".");
+        } catch (e) {
+            console.error("Firestore save failed:", e);
+            showToast("Cloud save failed: " + (e && e.message ? e.message : "unknown error"));
+        }
     }
 
     function rejectCountSheet() {
+        if (!confirm("This will clear all scanned variance data and lock Step 3 again. Are you sure you want to reject and reset?")) return;
         isCountApproved = false;
         isScanned = false;
+        isStep3Done = false;
+        globalManualItems = [];
         document.getElementById('filledCountFile').value = "";
         document.getElementById('reviewDashboard').style.display = "none";
-        document.getElementById('correctionSection').classList.add('disabled');
-        try { sessionStorage.removeItem('stockCountState'); } catch (e) {}
+        document.getElementById('correctionSection').classList.add('cstep-disabled');
+        updateProgressIndicator();
         alert("Count data cleared. Please re-upload and re-scan.");
     }
 
+    // --- FEATURE: Manual "Not In System" Item Entry Modal ---
+    function getZeroSystemStockQueue() {
+        return globalExportRows.filter(item => item.counted && item.sysCases === 0 && item.sysPieces === 0);
+    }
+
+    function openManualEntryModal(btn) {
+        if(!isCountApproved) { alert("Action Locked. Prior verification required."); return; }
+        const correctionIn = document.getElementById('liveCorrectionFile');
+        if (!correctionIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
+        window._manualEntryTriggerBtn = btn;
+
+        manualEntryQueue = getZeroSystemStockQueue();
+        manualEntryQueueIndex = 0;
+        globalManualItems = [];
+
+        if (manualEntryQueue.length === 0) {
+            processStockCorrection(btn);
+            return;
+        }
+
+        setButtonLoading(btn, true, 'Checking...');
+        readFileAsArrayBuffer(correctionIn, function(buf) {
+            setButtonLoading(btn, false);
+            manualNextSrNo = 1;
+            try {
+                const wbPeek = XLSX.read(buf, {type: 'array'});
+                const wsPeek = wbPeek.Sheets[wbPeek.SheetNames[0]];
+                const peekData = XLSX.utils.sheet_to_json(wsPeek, {defval: ""});
+                let lastSrNo = 0;
+                peekData.forEach(r => {
+                    let v = parseFloat(r["Sr No"]);
+                    if (!isNaN(v) && v > lastSrNo) lastSrNo = v;
+                });
+                manualNextSrNo = lastSrNo + 1;
+            } catch (e) {}
+
+            renderManualItemsTable();
+            loadQueueItemIntoForm();
+            document.getElementById('manualEntryOverlay').classList.add('open');
+        });
+    }
+
+    function loadQueueItemIntoForm() {
+        const item = manualEntryQueue[manualEntryQueueIndex];
+        const total = manualEntryQueue.length;
+        document.getElementById('manualQueueProgress').innerText =
+            "Item " + (manualEntryQueueIndex + 1) + " / " + total + " — System Stock 0 (Not In System). Fill the remaining fields and Add.";
+
+        const progressTrack = document.getElementById('queueProgressTrack');
+        const progressFill = document.getElementById('queueProgressFill');
+        if (total > 1) {
+            progressTrack.style.display = "block";
+            progressFill.style.width = (((manualEntryQueueIndex + 1) / total) * 100) + "%";
+        } else {
+            progressTrack.style.display = "none";
+        }
+
+        document.getElementById('manSrNo').value = manualNextSrNo;
+        document.getElementById('manBasepackCode').value = "";
+        document.getElementById('manBasepackDesc').value = "";
+        document.getElementById('manSku7').value = item.sku;
+        document.getElementById('manMrp').value = (parseFloat(globalMrpMap[item.sku]) || 0).toFixed(2);
+        document.getElementById('manPkm').value = "";
+        document.getElementById('manUpc').value = item.upc;
+        document.getElementById('manCurrentQty').value = "0";
+        document.getElementById('manPhysicalQty').value = item.totalPhyUnits;
+        document.getElementById('manLocation').value = "";
+        syncBatchCodeFromPkm();
+
+        const isLast = (manualEntryQueueIndex === total - 1);
+        document.getElementById('manualAddRowBtn').innerText = isLast ? "Add & Finish (Auto Download)" : "Add & Next Item";
+    }
+
+    function syncBatchCodeFromPkm() {
+        const pkmVal = document.getElementById('manPkm').value.trim();
+        document.getElementById('manBatchCode').value = pkmVal ? ("NA" + pkmVal) : "";
+    }
+
+    function closeManualEntryModal() {
+        document.getElementById('manualEntryOverlay').classList.remove('open');
+    }
+
+    // --- FEATURE: Monthly Stock Count History (Firestore) ---
+    async function openHistoryModal() {
+        document.getElementById('historyOverlay').classList.add('open');
+        const loadingEl = document.getElementById('historyLoading');
+        const chartWrap = document.getElementById('historyChartWrap');
+        const emptyNote = document.getElementById('historyEmptyNote');
+        const tableWrap = document.getElementById('historyTableWrap');
+        const deleteAllBtn = document.getElementById('deleteAllHistoryBtn');
+
+        loadingEl.style.display = 'block';
+        chartWrap.style.display = 'none';
+        emptyNote.style.display = 'none';
+        tableWrap.style.display = 'none';
+        deleteAllBtn.style.display = 'none';
+
+        if (!firestoreDb) {
+            loadingEl.style.display = 'none';
+            emptyNote.style.display = 'block';
+            emptyNote.innerText = "Cloud history is unavailable: Firebase is not connected.";
+            return;
+        }
+
+        try {
+            const snapshot = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts')
+                .orderBy('month', 'asc')
+                .get();
+
+            const months = [];
+            snapshot.forEach(doc => months.push(doc.data()));
+
+            loadingEl.style.display = 'none';
+
+            if (months.length === 0) {
+                emptyNote.style.display = 'block';
+                emptyNote.innerText = "No approved stock counts saved yet. Approve a count to start building monthly history.";
+                return;
+            }
+
+            renderHistoryChart(months);
+            renderHistoryTable(months);
+            chartWrap.style.display = 'block';
+            tableWrap.style.display = 'block';
+            deleteAllBtn.style.display = 'inline-flex';
+        } catch (e) {
+            console.error("Failed to load history:", e);
+            loadingEl.style.display = 'none';
+            emptyNote.style.display = 'block';
+            emptyNote.innerText = "Failed to load history: " + (e && e.message ? e.message : "unknown error");
+        }
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyOverlay').classList.remove('open');
+    }
+
+    // --- FEATURE: Delete every saved month from Firestore history ---
+    async function deleteAllHistory() {
+        if (!firestoreDb) return;
+        if (!confirm("Delete ALL saved stock count history for every month/year? This cannot be undone.")) return;
+        try {
+            const snapshot = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts')
+                .get();
+            const batch = firestoreDb.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            showToast("All stock count history deleted.");
+            openHistoryModal(); // refresh the (now empty) list
+        } catch (e) {
+            console.error("Failed to delete all history:", e);
+            showToast("Failed to delete history: " + (e && e.message ? e.message : "unknown error"));
+        }
+    }
+
+    function renderHistoryChart(months) {
+        const svg = document.getElementById('historyChartSvg');
+        const W = 700, H = 320;
+        const padLeft = 60, padRight = 50, padTop = 26, padBottom = 50;
+        const chartW = W - padLeft - padRight;
+        const chartH = H - padTop - padBottom;
+
+        const maxAbsValue = Math.max(
+            1,
+            ...months.map(m => Math.max(Math.abs(m.totalShortValue || 0), Math.abs(m.totalExcessValue || 0), Math.abs(m.netGap || 0)))
+        );
+        const zeroY = padTop + chartH / 2;
+        const valueScale = (chartH / 2) / maxAbsValue;
+        function yForValue(val) { return zeroY - (val * valueScale); }
+        function yForPct(pct) { return padTop + chartH - (pct / 100) * chartH; }
+
+        const slotW = months.length > 1 ? chartW / (months.length - 1) : 0;
+        function xFor(idx) { return months.length > 1 ? padLeft + slotW * idx : padLeft + chartW / 2; }
+
+        let axisLabels = '';
+        const shortPoints = [], excessPoints = [], netPoints = [], accuracyPoints = [];
+        const shortValues = [], excessValues = [], netValues = [], accuracyValues = [];
+
+        months.forEach((m, idx) => {
+            const cx = xFor(idx);
+            const shortVal = -Math.abs(m.totalShortValue || 0);
+            const excessVal = Math.abs(m.totalExcessValue || 0);
+            const netVal = m.netGap || 0;
+            const accVal = m.accuracyPct || 0;
+
+            shortPoints.push(cx + ',' + yForValue(shortVal));
+            excessPoints.push(cx + ',' + yForValue(excessVal));
+            netPoints.push(cx + ',' + yForValue(netVal));
+            accuracyPoints.push(cx + ',' + yForPct(accVal));
+
+            shortValues.push(shortVal);
+            excessValues.push(excessVal);
+            netValues.push(netVal);
+            accuracyValues.push(accVal);
+
+            axisLabels += `<text x="${cx}" y="${H - padBottom + 18}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${m.month}</text>`;
+        });
+
+        function lineAndDots(points, color) {
+            const line = points.length > 1
+                ? `<polyline points="${points.join(' ')}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></polyline>`
+                : '';
+            const dots = points.map(p => {
+                const [x, y] = p.split(',');
+                return `<circle cx="${x}" cy="${y}" r="3.2" fill="${color}"></circle>`;
+            }).join('');
+            return line + dots;
+        }
+
+        // --- Linear regression (least-squares fit) trend line for a data series ---
+        function trendLineSvg(values, yMapFn, color) {
+            const n = values.length;
+            if (n < 2) return '';
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += i; sumY += values[i]; sumXY += i * values[i]; sumXX += i * i;
+            }
+            const denom = (n * sumXX - sumX * sumX);
+            if (denom === 0) return '';
+            const slope = (n * sumXY - sumX * sumY) / denom;
+            const intercept = (sumY - slope * sumX) / n;
+
+            const x1 = xFor(0), y1 = yMapFn(intercept);
+            const x2 = xFor(n - 1), y2 = yMapFn(slope * (n - 1) + intercept);
+            return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="1.6" stroke-dasharray="5,4" opacity="0.65"></line>`;
+        }
+
+        const trendLines =
+            trendLineSvg(shortValues, yForValue, '#dc2626') +
+            trendLineSvg(excessValues, yForValue, '#059669') +
+            trendLineSvg(netValues, yForValue, '#1e3a8a') +
+            trendLineSvg(accuracyValues, yForPct, '#f59e0b');
+
+        svg.innerHTML = `
+            <line x1="${padLeft}" y1="${zeroY}" x2="${W - padRight}" y2="${zeroY}" stroke="var(--line)" stroke-width="1"></line>
+            ${trendLines}
+            ${lineAndDots(shortPoints, '#dc2626')}
+            ${lineAndDots(excessPoints, '#059669')}
+            ${lineAndDots(netPoints, '#1e3a8a')}
+            ${lineAndDots(accuracyPoints, '#f59e0b')}
+            ${axisLabels}
+            <text x="${padLeft}" y="14" font-size="10.5" fill="var(--muted)">Rs. value (left) · Accuracy % (right, amber) · dashed = trend</text>
+            <g font-size="10.5">
+                <circle cx="${W - 175}" cy="${H - 12}" r="3.5" fill="#dc2626"></circle><text x="${W - 167}" y="${H - 8}" fill="var(--muted)">Shortage</text>
+                <circle cx="${W - 110}" cy="${H - 12}" r="3.5" fill="#059669"></circle><text x="${W - 102}" y="${H - 8}" fill="var(--muted)">Excess</text>
+                <circle cx="${W - 55}" cy="${H - 12}" r="3.5" fill="#1e3a8a"></circle><text x="${W - 47}" y="${H - 8}" fill="var(--muted)">Net</text>
+            </g>
+        `;
+    }
+
+    function renderHistoryTable(months) {
+        const wrap = document.getElementById('historyTableWrap');
+        const rowsHtml = months.slice().reverse().map(m => `
+            <tr>
+                <td>${m.month}</td>
+                <td class="txt-short">Rs. ${(m.totalShortValue || 0).toFixed(2)}</td>
+                <td class="txt-excess">Rs. ${(m.totalExcessValue || 0).toFixed(2)}</td>
+                <td>Rs. ${(m.netGap || 0).toFixed(2)}</td>
+                <td>${(m.accuracyPct || 0).toFixed(1)}%</td>
+                <td>
+                    ${m.items && m.items.length > 0
+                        ? `<button class="btn-ghost" style="font-size:11.5px;padding:5px 10px;" onclick="openFullCountDetail('${m.month}')">📋 Detail</button>`
+                        : `<span style="color:var(--muted);font-size:11px;">No data</span>`}
+                </td>
+                <td><button class="manual-row-remove" onclick="deleteHistoryMonth('${m.month}')">Delete</button></td>
+            </tr>
+        `).join('');
+        wrap.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>Month</th><th>Shortage</th><th>Excess</th><th>Net Gap</th><th>Accuracy</th><th>Full Data</th><th></th></tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        `;
+    }
+
+    // --- FEATURE: Delete a saved month from Firestore history ---
+    async function deleteHistoryMonth(monthId) {
+        if (!firestoreDb) return;
+        if (!confirm("Delete the saved stock count history for " + monthId + "? This cannot be undone.")) return;
+        try {
+            await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts').doc(monthId)
+                .delete();
+            showToast(monthId + " deleted from history.");
+            openHistoryModal(); // refresh the list
+        } catch (e) {
+            console.error("Failed to delete history month:", e);
+            showToast("Failed to delete " + monthId + ": " + (e && e.message ? e.message : "unknown error"));
+        }
+    }
+
+    function addManualEntryRow() {
+        const sku = document.getElementById('manSku7').value.trim();
+        const phyQty = document.getElementById('manPhysicalQty').value;
+        const location = document.getElementById('manLocation').value.trim();
+        const pkm = document.getElementById('manPkm').value.trim();
+        if (!sku) { alert("SKU7 CODE is required."); return; }
+        if (phyQty === "" || isNaN(parseFloat(phyQty))) { alert("Physical Stock Qty in Units is required."); return; }
+        if (!location) { alert("Please select a Location."); return; }
+        if (!pkm) { alert("PKM is required. Please enter the correct PKM code for this item."); return; }
+        if (globalManualItems.some(m => m["SKU7 CODE"] === sku)) {
+            alert("This SKU (" + sku + ") has already been added to the list. Remove it first if you need to change it.");
+            return;
+        }
+
+        globalManualItems.push({
+            "Sr No": document.getElementById('manSrNo').value,
+            "BASEPACK CODE": document.getElementById('manBasepackCode').value.trim(),
+            "BASEPACK DESCRIPTION": document.getElementById('manBasepackDesc').value.trim(),
+            "SKU7 CODE": sku,
+            "MRP": document.getElementById('manMrp').value,
+            "PKM": document.getElementById('manPkm').value.trim(),
+            "Batch Code": document.getElementById('manBatchCode').value.trim(),
+            "Location": location,
+            "UPC": document.getElementById('manUpc').value,
+            "Current Stock Qty in Units": document.getElementById('manCurrentQty').value || "0",
+            "Physical Stock Qty in Units": phyQty
+        });
+
+        manualNextSrNo++;
+        manualEntryQueueIndex++;
+        renderManualItemsTable();
+
+        if (manualEntryQueueIndex < manualEntryQueue.length) {
+            loadQueueItemIntoForm();
+        } else {
+            closeManualEntryModal();
+            processStockCorrection(window._manualEntryTriggerBtn);
+        }
+    }
+
+    function removeManualEntryRow(idx) {
+        globalManualItems.splice(idx, 1);
+        renderManualItemsTable();
+    }
+
+    function renderManualItemsTable() {
+        const wrap = document.getElementById('manualItemsTableWrap');
+        document.getElementById('manualCountPill').innerText = globalManualItems.length + " Added";
+
+        if (globalManualItems.length === 0) {
+            wrap.innerHTML = `<div class="manual-empty-note" id="manualEmptyNote">No items added yet.</div>`;
+            return;
+        }
+
+        const headers = ["Sr No","BASEPACK CODE","BASEPACK DESCRIPTION","SKU7 CODE","MRP","PKM","Batch Code","Location","UPC","Current Stock Qty in Units","Physical Stock Qty in Units"];
+        let html = "<table><thead><tr>" + headers.map(h => `<th>${h}</th>`).join('') + "<th></th></tr></thead><tbody>";
+        globalManualItems.forEach((item, idx) => {
+            html += "<tr>" + headers.map(h => `<td>${item[h] !== undefined && item[h] !== "" ? item[h] : "—"}</td>`).join('') +
+                `<td><button class="manual-row-remove" onclick="removeManualEntryRow(${idx})">Remove</button></td></tr>`;
+        });
+        html += "</tbody></table>";
+        wrap.innerHTML = html;
+    }
+
+    // --- FEATURE: Missing SKU Auto-Insertion Logic during Step 3 ---
     function processStockCorrection(btn) {
         if(!isCountApproved) { alert("Action Locked. Prior verification required."); return; }
         const correctionIn = document.getElementById('liveCorrectionFile');
@@ -1256,8 +3391,9 @@
         readFileAsArrayBuffer(correctionIn, function(correctionBuffer) {
             try {
                 const wbCorrection = XLSX.read(correctionBuffer, {type: 'array', cellStyles: true});
-                const wsCorrection = wbCorrection.Sheets[wbCorrection.SheetNames[0]];
-                const correctionData = XLSX.utils.sheet_to_json(wsCorrection, { range: 0, defval: "" });
+                const sheetName = wbCorrection.SheetNames[0];
+                const wsCorrection = wbCorrection.Sheets[sheetName];
+                let correctionData = XLSX.utils.sheet_to_json(wsCorrection, { range: 0, defval: "" });
 
                 if (correctionData.length === 0 || !("SKU7 CODE" in correctionData[0]) || !("Current Stock Qty in Units" in correctionData[0])) {
                     throw new Error("'SKU7 CODE' or 'Current Stock Qty in Units' column not found. Please verify this is the correct Live System Correction sheet.");
@@ -1323,27 +3459,396 @@
                     }
                 }
 
-                let skippedSkus = [];
-                for (let sku in globalPhyCasesMap) {
-                    let pCases = globalPhyCasesMap[sku];
-                    let pPieces = globalPhyPiecesMap[sku];
-                    if ((pCases !== null || pPieces !== null) && !skuGroups[sku]) {
-                        skippedSkus.push(sku);
-                    }
+                let lastRowIndex = correctionData.length + 1;
+                let baseTemplateKeys = Object.keys(correctionData[0] || {});
+
+                // --- FEATURE: Append Manually-Added "Not In System" Items ---
+                let manualInsertedCount = 0;
+                if (globalManualItems.length > 0) {
+                    const manualNumericCols = ["MRP", "UPC", "Current Stock Qty in Units", "Physical Stock Qty in Units", "Sr No"];
+                    globalManualItems.forEach(manItem => {
+                        let targetCellIndex = lastRowIndex;
+                        baseTemplateKeys.forEach((key, colIdx) => {
+                            let cellRef = XLSX.utils.encode_cell({c: colIdx, r: targetCellIndex});
+                            let cellValue = manItem.hasOwnProperty(key) ? manItem[key] : "";
+                            if (manualNumericCols.includes(key)) {
+                                wsCorrection[cellRef] = { t: 'n', v: parseFloat(cellValue) || 0 };
+                                if (key === "MRP") wsCorrection[cellRef].z = '0.00';
+                            } else {
+                                wsCorrection[cellRef] = { t: 's', v: String(cellValue) };
+                            }
+                        });
+                        lastRowIndex++;
+                        manualInsertedCount++;
+                    });
                 }
+
+                // Sheet values changed, so recalculate the range
+                let finalRange = XLSX.utils.decode_range(wsCorrection['!ref']);
+                finalRange.e.r = lastRowIndex - 1;
+                wsCorrection['!ref'] = XLSX.utils.encode_range(finalRange);
 
                 XLSX.writeFile(wbCorrection, "Stock_Correction_Final_Upload.xlsx");
-                showStatus('status2', "Export File Downloaded!", false);
+                showStatus('status2', "Export File Downloaded Successfully!", false);
+                isStep3Done = true;
+                updateProgressIndicator();
 
-                if (skippedSkus.length > 0) {
-                    alert("Warning: " + skippedSkus.length + " counted SKU(s) were not found in the Live System Correction Sheet (no system record exists — cannot be added to the final file):\n\n" + skippedSkus.join(", ") + "\n\nThese items must be added manually via stock-in / GRN in the live system.");
+                let noticeMsg = "";
+                if (manualInsertedCount > 0) {
+                    noticeMsg += manualInsertedCount + " manually-added item(s) (not in system) were appended to the final export sheet.";
                 }
+                if (noticeMsg) { showToast("Notice: " + noticeMsg); }
+                globalManualItems = [];
+                renderManualItemsTable();
             } catch (err) {
                 showStatus('status2', "Error: " + err.message, true);
             } finally {
                 setButtonLoading(btn, false);
             }
         });
+    }
+    // ─── FEATURE: AI Suggestions Panel (rule-based analysis of scan data) ───
+    let _sgCollapsed = false;
+
+    function buildAISuggestions(summary) {
+        const panel = document.getElementById('suggestionsPanel');
+        if (!panel) return;
+
+        // Guard — wait for real summary data
+        if (!summary || typeof summary.accuracyPct === 'undefined') {
+            console.warn('[AI Suggestions] summary not ready:', summary);
+            return;
+        }
+
+        try {
+        const chips = [];
+
+        // Rule 1 — Accuracy threshold
+        if (summary.accuracyPct < 85) {
+            chips.push({ level: 'critical', title: 'Accuracy Critical — ' + summary.accuracyPct.toFixed(1) + '%', detail: 'Below 85% threshold. Full recount strongly recommended before approving this count.', filter: null });
+        } else if (summary.accuracyPct < 95) {
+            chips.push({ level: 'warn', title: 'Accuracy Below 95% Target — ' + summary.accuracyPct.toFixed(1) + '%', detail: 'Unilever target is 95%. Review variance items and recount flagged SKUs before approving.', filter: null });
+        }
+
+        // Rule 2 — Uncounted SKUs
+        if (summary.uncountedSkuCount > 0) {
+            chips.push({ level: 'warn', title: summary.uncountedSkuCount + ' SKU' + (summary.uncountedSkuCount > 1 ? 's' : '') + ' Not Counted', detail: 'These items exist in system stock but were not physically counted. Count all before approving.', filter: 'uncounted' });
+        }
+
+        // Rule 3 — High-value shortages (each item Rs. 5,000+)
+        const highShortage = globalExportRows.filter(function(r) { return r.counted && r.diff < 0 && Math.abs(r.valGap) >= 5000; });
+        if (highShortage.length > 0) {
+            const hsTotalVal = highShortage.reduce(function(s, r) { return s + Math.abs(r.valGap); }, 0);
+            chips.push({ level: 'critical', title: highShortage.length + ' High-Value Shortage' + (highShortage.length > 1 ? 's' : '') + ' Detected', detail: 'Combined Rs. ' + hsTotalVal.toFixed(2) + ' missing. Each item > Rs. 5,000 shortage — recount before approving.', filter: 'short' });
+        }
+
+        // Rule 4 — Large % variance items (>20% off system, value > Rs. 1,000)
+        const recountItems = globalExportRows.filter(function(r) { return r.counted && r.diff !== 0 && r.totalSysUnits > 0 && (Math.abs(r.diff) / r.totalSysUnits) > 0.2 && Math.abs(r.valGap) > 1000; });
+        if (recountItems.length > 0) {
+            chips.push({ level: 'warn', title: recountItems.length + ' Item' + (recountItems.length > 1 ? 's' : '') + ' Need Recount', detail: 'Variance exceeds 20% of system stock with Rs. 1,000+ value impact. Likely counting error.', filter: recountItems.filter(function(r) { return r.diff < 0; }).length > recountItems.filter(function(r) { return r.diff > 0; }).length ? 'short' : 'excess' });
+        }
+
+        // Rule 5 — Not In System (physically found, zero system record)
+        const notInSystem = globalExportRows.filter(function(r) { return r.counted && r.sysCases === 0 && r.sysPieces === 0 && r.aipPrice === 0; });
+        if (notInSystem.length > 0) {
+            chips.push({ level: 'info', title: notInSystem.length + ' Item' + (notInSystem.length > 1 ? 's' : '') + ' Not In System', detail: 'Found physically but no system record exists. Register with Unilever before closing count.', filter: 'excess' });
+        }
+
+        // Rule 6 — Single SKU dominates shortage (≥35% of total)
+        if (summary.totalShortValue > 0) {
+            const topShort = globalExportRows.filter(function(r) { return r.counted && r.diff < 0; }).sort(function(a, b) { return a.valGap - b.valGap; })[0];
+            if (topShort) {
+                const pct = Math.abs(topShort.valGap) / summary.totalShortValue * 100;
+                if (pct >= 35) {
+                    const shortName = topShort.name.length > 42 ? topShort.name.substring(0, 42) + '…' : topShort.name;
+                    chips.push({ level: 'info', title: 'Shortage Concentrated in 1 SKU (' + pct.toFixed(0) + '%)', detail: '"' + shortName + '" — Rs. ' + Math.abs(topShort.valGap).toFixed(2) + ' missing. Investigate before approving.', filter: null });
+                }
+            }
+        }
+
+        // Rule 7 — Excess dominance (excess > 2× shortage and > Rs. 10,000)
+        if (summary.totalExcessValue > summary.totalShortValue * 2 && summary.totalExcessValue > 10000) {
+            chips.push({ level: 'info', title: 'Excess Stock Unusually High', detail: 'Excess value (Rs. ' + summary.totalExcessValue.toFixed(2) + ') is more than 2× shortage. Possible data or batch mismatch in system.', filter: 'excess' });
+        }
+
+        // Rule 8 — All clear
+        if (chips.length === 0) {
+            chips.push({ level: 'success', title: 'All Clear — Ready to Approve', detail: summary.accuracyPct.toFixed(1) + '% accuracy with no critical issues detected. Safe to approve this count.', filter: null });
+        }
+
+        // ── Render ─────────────────────────────────────────────────────
+        const critCount = chips.filter(function(c) { return c.level === 'critical'; }).length;
+        const warnCount = chips.filter(function(c) { return c.level === 'warn'; }).length;
+
+        const levelSvg = {
+            critical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
+            warn:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+            info:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>',
+            success:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+        };
+
+        let badgesHtml = '<div class="sg-header-badges">';
+        if (critCount > 0) badgesHtml += '<span class="sg-badge sg-badge-critical">' + critCount + ' Critical</span>';
+        if (warnCount > 0) badgesHtml += '<span class="sg-badge sg-badge-warn">' + warnCount + ' Warning</span>';
+        if (critCount === 0 && warnCount === 0) badgesHtml += '<span class="sg-badge sg-badge-success">All Clear</span>';
+        badgesHtml += '</div>';
+
+        const robotSvg = '<svg class="sg-robot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 11V7"/><circle cx="12" cy="5" r="2"/><path d="M8 11V9a4 4 0 0 1 8 0v2"/><circle cx="9" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/></svg>';
+        const collapseSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>';
+
+        const itemsHtml = chips.map(function(chip) {
+            const actionBtn = chip.filter
+                ? '<div class="suggestion-action"><button class="suggestion-action" onclick="applySuggestionFilter(\'' + chip.filter + '\')" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--navy);cursor:pointer;white-space:nowrap;box-shadow:none;">View Items →</button></div>'
+                : '';
+            return '<div class="suggestion-item suggestion-' + chip.level + (chip.filter ? ' sg-clickable' : '') + '"' +
+                (chip.filter ? ' onclick="applySuggestionFilter(\'' + chip.filter + '\')" title="Click to filter variance table"' : '') + '>' +
+                '<div class="suggestion-icon">' + (levelSvg[chip.level] || levelSvg.info) + '</div>' +
+                '<div class="suggestion-content">' +
+                    '<div class="suggestion-title">' + chip.title + '</div>' +
+                    '<div class="suggestion-detail">' + chip.detail + '</div>' +
+                '</div>' +
+                (chip.filter ? '<div style="flex-shrink:0;font-size:11px;font-weight:600;color:var(--navy);white-space:nowrap;padding-left:8px;">View →</div>' : '') +
+            '</div>';
+        }).join('');
+
+        panel.innerHTML =
+            '<div class="suggestions-header" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+                robotSvg +
+                '<span>AI Suggestions</span>' +
+                badgesHtml +
+                '<button class="sg-collapse-btn" id="sgCollapseBtn" onclick="toggleSuggestions()" aria-label="Collapse">' + collapseSvg + '</button>' +
+            '</div>' +
+            '<div class="suggestions-list" id="sgList">' + itemsHtml + '</div>';
+
+        panel.style.display = 'block';
+        panel.classList.remove('collapsed');
+        _sgCollapsed = false;
+
+        } catch(err) {
+            console.error('[AI Suggestions] Error:', err);
+            panel.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--muted);">⚠ Suggestions unavailable. Check console for details.</div>';
+            panel.style.display = 'block';
+        }
+    }
+
+    function toggleSuggestions() {
+        const panel = document.getElementById('suggestionsPanel');
+        if (!panel) return;
+        _sgCollapsed = !_sgCollapsed;
+        panel.classList.toggle('collapsed', _sgCollapsed);
+    }
+
+    function applySuggestionFilter(filter) {
+        // Set the variance table filter and scroll into view
+        setVarianceFilter(filter);
+        const tableEl = document.querySelector('.details-panel');
+        if (tableEl) setTimeout(function() { tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+        showToast('Filtered to ' + filter + ' items.', 'info');
+    }
+
+
+    // Stores the currently-loaded archived items for filtering & re-download
+    let _archiveItems = [];
+    let _archiveMonth = '';
+    let _archiveFilter = 'all';
+
+    async function openFullCountDetail(monthId) {
+        if (!firestoreDb) { showToast("Firebase is not connected."); return; }
+        _archiveMonth = monthId;
+        _archiveItems = [];
+        _archiveFilter = 'all';
+
+        document.getElementById('fullCountDetailMonth').textContent = monthId;
+        document.getElementById('fullCountDetailSubtitle').textContent = 'Loading…';
+        document.getElementById('fullCountDetailTableWrap').innerHTML = '';
+        document.getElementById('fullCountDetailLoading').style.display = 'block';
+        document.getElementById('archiveSearchInput').value = '';
+        document.querySelectorAll('[data-afilter]').forEach(b => b.classList.toggle('active', b.dataset.afilter === 'all'));
+
+        document.getElementById('fullCountDetailOverlay').classList.add('open');
+
+        try {
+            const doc = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts').doc(monthId)
+                .get();
+
+            document.getElementById('fullCountDetailLoading').style.display = 'none';
+
+            if (!doc.exists || !doc.data().items || doc.data().items.length === 0) {
+                document.getElementById('fullCountDetailTableWrap').innerHTML =
+                    '<div class="manual-empty-note">No line-item data found for this month.<br><small style="color:var(--muted);">This count was approved before full-item archiving was enabled. Re-approve after re-scanning to save full data.</small></div>';
+                document.getElementById('fullCountDetailSubtitle').textContent = 'No line-item data available.';
+                document.getElementById('archiveExcelBtn').disabled = true;
+                return;
+            }
+
+            _archiveItems = doc.data().items;
+            const savedAt = doc.data().savedAt ? new Date(doc.data().savedAt).toLocaleString() : 'unknown';
+            document.getElementById('fullCountDetailSubtitle').textContent =
+                _archiveItems.length + ' SKUs archived · Saved at ' + savedAt;
+            document.getElementById('archiveExcelBtn').disabled = false;
+            renderArchiveDetailTable();
+        } catch (e) {
+            document.getElementById('fullCountDetailLoading').style.display = 'none';
+            document.getElementById('fullCountDetailTableWrap').innerHTML =
+                '<div class="manual-empty-note" style="color:var(--danger);">Error loading archive: ' + (e.message || 'unknown') + '</div>';
+        }
+    }
+
+    function closeFullCountDetailModal() {
+        document.getElementById('fullCountDetailOverlay').classList.remove('open');
+    }
+
+    function setArchiveFilter(f) {
+        _archiveFilter = f;
+        document.querySelectorAll('[data-afilter]').forEach(b => b.classList.toggle('active', b.dataset.afilter === f));
+        renderArchiveDetailTable();
+    }
+
+    function filterArchiveTable() {
+        renderArchiveDetailTable();
+    }
+
+    function getFilteredArchiveItems() {
+        const search = (document.getElementById('archiveSearchInput').value || '').trim().toLowerCase();
+        return _archiveItems.filter(item => {
+            if (search && !(item.sku.toLowerCase().includes(search) || item.name.toLowerCase().includes(search))) return false;
+            if (_archiveFilter === 'short')  return item.counted && item.diff < 0;
+            if (_archiveFilter === 'excess') return item.counted && item.diff > 0;
+            if (_archiveFilter === 'match')  return item.counted && item.diff === 0;
+            if (_archiveFilter === 'nc')     return !item.counted;
+            return true;
+        });
+    }
+
+    function renderArchiveDetailTable() {
+        const wrap = document.getElementById('fullCountDetailTableWrap');
+        const rows = getFilteredArchiveItems();
+
+        if (rows.length === 0) {
+            wrap.innerHTML = '<div class="manual-empty-note">No items match the current filter.</div>';
+            return;
+        }
+
+        const rowsHtml = rows.map(item => {
+            let statusTd, varTd, valTd;
+            const isUnknown = item.counted && item.diff > 0 && item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0;
+            if (!item.counted) {
+                statusTd = '<td class="txt-na">NOT COUNTED</td>';
+                varTd    = '<td class="txt-na">—</td>';
+                valTd    = '<td class="txt-na">—</td>';
+            } else if (item.diff === 0) {
+                statusTd = '<td class="txt-matched">MATCHED</td>';
+                varTd    = '<td class="txt-matched">0 Pcs</td>';
+                valTd    = '<td>Rs. 0.00</td>';
+            } else if (item.diff < 0) {
+                statusTd = '<td class="txt-short">SHORTAGE</td>';
+                varTd    = '<td class="txt-short">-' + Math.abs(item.diff) + ' Pcs</td>';
+                valTd    = '<td>Rs. ' + Math.abs(item.valGap).toFixed(2) + '</td>';
+            } else {
+                statusTd = '<td class="txt-excess">EXCESS' + (isUnknown ? '<br><span class="tag-unknown">NOT IN SYSTEM</span>' : '') + '</td>';
+                varTd    = '<td class="txt-excess">+' + item.diff + ' Pcs</td>';
+                valTd    = '<td>Rs. ' + Math.abs(item.valGap).toFixed(2) + '</td>';
+            }
+            return '<tr>' +
+                '<td><strong>' + item.sku + '</strong></td>' +
+                '<td>' + item.name + '</td>' +
+                '<td style="text-align:center;">' + item.totalSysUnits + '</td>' +
+                '<td style="text-align:center;">' + (item.counted ? item.totalPhyUnits : '—') + '</td>' +
+                statusTd + varTd + valTd +
+            '</tr>';
+        }).join('');
+
+        wrap.innerHTML = '<table>' +
+            '<thead><tr>' +
+                '<th>SKU7 Code</th><th>Product Name</th>' +
+                '<th style="text-align:center;">Sys Units</th><th style="text-align:center;">Phy Units</th>' +
+                '<th>Status</th><th>Variance</th><th>Value</th>' +
+            '</tr></thead>' +
+            '<tbody>' + rowsHtml + '</tbody>' +
+        '</table>';
+    }
+
+    async function redownloadExcelFromArchive() {
+        if (!_archiveItems || _archiveItems.length === 0) { showToast("No archived data to export."); return; }
+        const btn = document.getElementById('archiveExcelBtn');
+        setButtonLoading(btn, true, 'Generating…');
+        try {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Stock Report ' + _archiveMonth);
+            const headerLabels = ['SKU7 Code', 'Product Name', 'System Units', 'Physical Units', 'Variance (Units)', 'Variance Value (Rs.)', 'Status', 'Remarks'];
+            ws.columns = [{width:14},{width:38},{width:14},{width:14},{width:16},{width:18},{width:14},{width:18}];
+
+            // Title row
+            ws.mergeCells('A1:H1');
+            const titleCell = ws.getCell('A1');
+            titleCell.value = 'Full Stock Report — Sarathchandra Agencies — ' + _archiveMonth;
+            titleCell.font = { bold: true, size: 13, color: { argb: 'FF1E3A8A' } };
+            titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEF1FB' } };
+            titleCell.alignment = { horizontal: 'center' };
+            ws.getRow(1).height = 28;
+
+            // Header row
+            const headerRow = ws.addRow(headerLabels);
+            headerRow.eachCell(cell => {
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                cell.alignment = { horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF1E3A8A' } }, left: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                    bottom: { style: 'thin', color: { argb: 'FF1E3A8A' } }, right: { style: 'thin', color: { argb: 'FF1E3A8A' } }
+                };
+            });
+
+            _archiveItems.forEach(item => {
+                const isUnknownSku = item.counted && item.diff > 0 && item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0;
+                const status = !item.counted ? 'NOT COUNTED' : (item.diff === 0 ? 'MATCHED' : (item.diff < 0 ? 'SHORTAGE' : 'EXCESS'));
+                const remarks = isUnknownSku ? 'Not In System' : '';
+                const row = ws.addRow([
+                    item.sku, item.name,
+                    item.totalSysUnits,
+                    item.counted ? item.totalPhyUnits : '—',
+                    item.counted ? item.diff : '—',
+                    item.counted ? item.valGap : '—',
+                    status, remarks
+                ]);
+                let fillColor = 'FFFFFFFF';
+                if (status === 'SHORTAGE') fillColor = 'FFFDECEB';
+                else if (status === 'EXCESS') fillColor = 'FFE6F6EF';
+                else if (status === 'NOT COUNTED') fillColor = 'FFF3F5FA';
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'FFD9DEE8' } }, left: { style: 'thin', color: { argb: 'FFD9DEE8' } },
+                        bottom: { style: 'thin', color: { argb: 'FFD9DEE8' } }, right: { style: 'thin', color: { argb: 'FFD9DEE8' } }
+                    };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+                    if (colNumber >= 3) cell.alignment = { horizontal: 'center' };
+                    if (colNumber === 6 && item.counted) cell.numFmt = '#,##0.00';
+                    if (status === 'SHORTAGE' && (colNumber === 5 || colNumber === 6 || colNumber === 7)) cell.font = { color: { argb: 'FFB91C1C' }, bold: true };
+                    if (status === 'EXCESS' && (colNumber === 5 || colNumber === 6 || colNumber === 7)) cell.font = { color: { argb: 'FF047857' }, bold: true };
+                    if (colNumber === 8 && isUnknownSku) cell.font = { color: { argb: 'FFB45309' }, bold: true };
+                });
+            });
+
+            ws.autoFilter = { from: 'A' + headerRow.number, to: 'H' + headerRow.number };
+
+            const buffer = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Stock_Archive_' + _archiveMonth + '.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Archive Excel downloaded for ' + _archiveMonth + '.');
+        } catch (err) {
+            showToast('Excel export failed: ' + err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
     }
 </script>
 </body>
