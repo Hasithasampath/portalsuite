@@ -10,6 +10,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script>
+        // Fallback: if auth SDK loads after DOMContentLoaded already fired, init now
+        window.addEventListener('load', function() {
+            if (typeof _initFirebaseAuth === 'function' &&
+                typeof firebaseAuth !== 'undefined' && !firebaseAuth &&
+                typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
+                console.log('Firebase Auth loaded late — initializing now.');
+                _initFirebaseAuth();
+            }
+        });
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -138,6 +150,118 @@
         .history-btn:hover { background: var(--paper); }
         .history-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
         .history-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+        .notif-wrap { position: relative; flex-shrink: 0; }
+        .notif-bell-btn { position: relative; padding: 9px 11px; }
+        .notif-badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            min-width: 17px; height: 17px;
+            padding: 0 4px;
+            border-radius: 100px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--surface);
+        }
+        .notif-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 340px;
+            max-height: 420px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: 0 12px 30px -10px rgba(15,23,42,0.25);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .notif-panel.open { display: flex; }
+        .notif-panel-header {
+            padding: 12px 16px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--ink);
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+        }
+        .notif-list { overflow-y: auto; flex: 1; padding: 6px; }
+        .notif-empty { text-align: center; color: var(--muted); font-size: 12.5px; padding: 24px 10px; }
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 9px;
+        }
+        .notif-item:hover { background: var(--paper); }
+        .notif-icon-wrap {
+            flex-shrink: 0;
+            width: 26px; height: 26px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notif-icon-wrap svg { width: 13px; height: 13px; }
+        .notif-success .notif-icon-wrap { background: #dcfce7; color: #047857; }
+        .notif-error   .notif-icon-wrap { background: #fee2e2; color: #b91c1c; }
+        .notif-warn    .notif-icon-wrap { background: #fef3c7; color: #b45309; }
+        .notif-info    .notif-icon-wrap { background: var(--navy-tint); color: var(--navy); }
+        .notif-body-wrap { flex: 1; min-width: 0; }
+        .notif-message { font-size: 12.5px; color: var(--ink); line-height: 1.4; word-break: break-word; }
+        .notif-time { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+        @media (max-width: 480px) {
+            .notif-panel { position: fixed; top: auto; right: 10px; left: 10px; width: auto; }
+        }
+
+        .health-wrap { position: relative; flex-shrink: 0; }
+        .health-btn { gap: 7px; }
+        .health-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--muted);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0);
+            transition: background 0.2s ease;
+        }
+        .health-dot.dot-green  { background: #10b981; box-shadow: 0 0 0 2.5px rgba(16,185,129,0.18); }
+        .health-dot.dot-amber  { background: #f59e0b; box-shadow: 0 0 0 2.5px rgba(245,158,11,0.18); }
+        .health-dot.dot-red    { background: #ef4444; box-shadow: 0 0 0 2.5px rgba(239,68,68,0.18); }
+        .health-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 270px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: 0 12px 30px -10px rgba(15,23,42,0.25);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .health-panel.open { display: flex; }
+        .health-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-top: 1px solid var(--line);
+        }
+        .health-row-label { font-size: 12px; color: var(--ink); font-weight: 500; }
+        .health-row-value { font-size: 11.5px; color: var(--muted); margin-left: auto; text-align: right; }
+        .health-row-last .health-row-label { flex-shrink: 0; }
+        @media (max-width: 480px) {
+            .health-panel { position: fixed; top: auto; right: 10px; left: 10px; width: auto; }
+        }
+
         .theme-toggle {
             width: auto;
             background: var(--navy-tint);
@@ -1101,7 +1225,7 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: #fff !important; padding: 0; }
             .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
-            .compact-step-strip, .table-controls, .action-bar, .theme-toggle, .history-btn, .panel-title-group .btn-ghost, .toast-container { display: none !important; }
+            .compact-step-strip, .table-controls, .action-bar, .theme-toggle, .history-btn, .notif-wrap, .health-wrap, .panel-title-group .btn-ghost, .toast-container { display: none !important; }
             .table-container { max-height: none; overflow: visible; border: none; }
             .card, .stat-mini, .top10-panel, .details-panel { break-inside: avoid; }
             th { position: static; }
@@ -1420,9 +1544,390 @@
         .suggestion-item.sg-clickable { cursor: pointer; }
         .suggestion-item.sg-clickable:hover { filter: brightness(0.97); }
         [data-theme="dark"] .suggestion-item.sg-clickable:hover { filter: brightness(1.06); }
+        /* ── Firebase Auth Screen ── */
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        #authOverlay.auth-hidden { display: none; }
+
+        .auth-split {
+            display: flex;
+            width: 100%;
+            max-width: 1040px;
+            height: min(680px, 94vh);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 32px 80px -12px rgba(15,23,42,0.22);
+        }
+
+        /* ── LEFT PANEL ── */
+        .auth-panel-left {
+            flex: 0 0 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 36px 44px;
+            overflow-y: auto;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .auth-panel-right {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 44px 48px;
+            background: #0b3d4c;
+            color: #fff;
+        }
+        .auth-squares { position: absolute; inset: 0; pointer-events: none; }
+        .auth-squares rect { fill: rgba(255,255,255,0.07); }
+
+        /* Cards floating on the right panel */
+        .auth-right-cards {
+            position: absolute;
+            top: 44px;
+            left: 0; right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 0 40px;
+            z-index: 1;
+        }
+        .auth-mock-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 18px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 20px 48px -8px rgba(0,0,0,0.32);
+            color: #0f1726;
+        }
+        .auth-mock-card-title {
+            font-size: 11.5px; font-weight: 700; color: #334155; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .auth-mock-tab-row { display: flex; gap: 6px; }
+        .auth-mock-tab { font-size: 10px; color: #94a3b8; cursor: default; }
+        .auth-mock-tab.active { color: #0b3d4c; font-weight: 700; border-bottom: 1.5px solid #0b3d4c; }
+        .auth-mock-chart { width: 100%; height: 56px; display: block; }
+        .auth-mock-days { display: flex; justify-content: space-between; font-size: 9px; color: #94a3b8; margin-top: 4px; }
+
+        /* Donut card */
+        .auth-mock-donut-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px 18px;
+            width: 100%;
+            max-width: 200px;
+            box-shadow: 0 16px 40px -8px rgba(0,0,0,0.28);
+            color: #0f1726;
+            display: flex; align-items: center; gap: 14px;
+            align-self: flex-end;
+            margin-right: 20px;
+        }
+        .auth-mock-donut-label { font-size: 11px; color: #64748b; }
+        .auth-mock-donut-value { font-size: 16px; font-weight: 800; color: #0b3d4c; }
+
+        .auth-right-bottom { position: relative; z-index: 1; }
+        .auth-right-heading { font-size: 22px; font-weight: 800; margin-bottom: 8px; line-height: 1.3; }
+        .auth-right-sub { font-size: 12.5px; line-height: 1.65; color: rgba(255,255,255,0.7); max-width: 320px; }
+
+        @media (max-width: 820px) {
+            .auth-panel-right { display: none; }
+            .auth-panel-left { flex: 1 1 100%; max-width: 100%; }
+        }
+
+        /* ── FORM ELEMENTS ── */
+        .auth-card {
+            background: transparent;
+            border: none;
+            width: 100%;
+            max-width: 340px;
+        }
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 24px;
+        }
+        .auth-logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #0b3d4c, #0e5266);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .auth-logo-icon svg { width: 18px; height: 18px; color: #fff; }
+        .auth-logo-text { line-height: 1.25; }
+        .auth-logo-title { font-size: 13px; font-weight: 800; color: #0f1726; letter-spacing: -0.01em; }
+        .auth-logo-sub   { font-size: 10.5px; color: #94a3b8; }
+
+        .auth-tab-row {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 22px;
+            gap: 3px;
+        }
+        .auth-tab {
+            flex: 1; padding: 8px;
+            border-radius: 8px; font-size: 12.5px; font-weight: 600;
+            text-align: center; cursor: pointer; border: none;
+            background: transparent; color: #94a3b8;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            box-shadow: none;
+        }
+        .auth-tab.active {
+            background: #fff; color: #0b3d4c;
+            box-shadow: 0 1px 4px rgba(15,23,42,0.1);
+        }
+
+        .auth-field { margin-bottom: 13px; }
+        .auth-field label {
+            display: block; font-size: 12.5px; font-weight: 600;
+            color: #334155; margin-bottom: 6px;
+        }
+        .auth-field input {
+            width: 100%; padding: 10px 14px;
+            border: 1.5px solid #e8ecf0;
+            border-radius: 10px; font-size: 13px;
+            font-family: var(--font-sans);
+            background: #f8fafc; color: #0f1726;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .auth-field input::placeholder { color: #b0bac6; }
+        .auth-field input:focus {
+            border-color: #0b3d4c;
+            box-shadow: 0 0 0 3.5px rgba(11,61,76,0.1);
+            background: #fff;
+        }
+
+        .auth-submit-btn {
+            width: 100%; padding: 12px;
+            background: #0b3d4c;
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.15s, transform 0.12s, box-shadow 0.2s;
+            letter-spacing: 0.01em;
+            box-shadow: 0 4px 16px -4px rgba(11,61,76,0.45);
+            position: relative; overflow: hidden;
+        }
+        .auth-submit-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+            pointer-events: none;
+        }
+        .auth-submit-btn:hover { background: #0e5266; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(11,61,76,0.5); }
+        .auth-submit-btn:active { transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(11,61,76,0.4); }
+        .auth-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .auth-error {
+            background: #fef2f2; color: #b91c1c;
+            border: 1px solid #fca5a5; border-radius: 8px;
+            padding: 9px 12px; font-size: 12px;
+            margin-bottom: 14px; display: none; line-height: 1.5;
+        }
+        .auth-error.visible { display: block; }
+
+        .auth-footer {
+            text-align: center; margin-top: 18px; font-size: 11px;
+            color: #94a3b8; border-top: 1px solid #f0f0f0; padding-top: 14px;
+        }
+
+        /* Header user badge */
+        #headerUserBadge {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px 5px 7px;
+            border-radius: 20px;
+            background: var(--navy-tint);
+            border: 1px solid var(--line);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--navy);
+            white-space: nowrap;
+        }
+        #headerUserBadge.visible { display: flex; }
+        .user-avatar {
+            width: 22px; height: 22px;
+            background: var(--navy);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        #logoutBtn {
+            margin-left: 4px; width: 18px; height: 18px;
+            border-radius: 50%; background: transparent; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--muted); padding: 0; box-shadow: none;
+            transition: color 0.15s, background 0.15s;
+        }
+        #logoutBtn:hover { color: var(--danger); background: var(--danger-bg); }
+        #logoutBtn svg { width: 12px; height: 12px; }
+
+        .offline-pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--amber); display: inline-block; flex-shrink: 0;
+            animation: offlinePulse 1.3s ease-in-out infinite;
+        }
+        @keyframes offlinePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.7); }
+        }
     </style>
 </head>
 <body>
+    <!-- ── Firebase Auth Screen ── -->
+    <div id="authOverlay">
+      <div class="auth-split">
+
+        <!-- LEFT: Form panel -->
+        <div class="auth-panel-left">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="auth-logo-text">
+                    <div class="auth-logo-title">Sarathchandra Agencies</div>
+                    <div class="auth-logo-sub">Premium Stock Controller · Balangoda</div>
+                </div>
+            </div>
+
+            <div class="auth-tab-row" style="display:none;">
+                <button class="auth-tab active" id="tabLogin"    onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab"         id="tabRegister" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <h2 id="authTitle" style="font-size:26px; font-weight:800; color:#0f1726; margin:0 0 6px; letter-spacing:-0.02em;">Welcome Back!</h2>
+            <p id="authSubtitle" style="font-size:13px; color:#64748b; margin:0 0 24px;">Please enter your log in details below</p>
+
+            <div id="authError" class="auth-error"></div>
+
+            <div id="registerFields" style="display:none;">
+                <div class="auth-field">
+                    <label>Name</label>
+                    <input type="text" id="authName" placeholder="Enter your name" autocomplete="name">
+                </div>
+            </div>
+
+            <div class="auth-field">
+                <label>Email</label>
+                <input type="email" id="authEmail" placeholder="Enter your mail" autocomplete="email">
+            </div>
+            <div class="auth-field">
+                <label>Password</label>
+                <div style="position:relative;">
+                    <input type="password" id="authPassword" placeholder="Enter your password" autocomplete="current-password" style="padding-right:42px;">
+                    <button type="button" onclick="(function(){var i=document.getElementById('authPassword');i.type=i.type==='password'?'text':'password';})()" style="position:absolute;right:0;top:0;bottom:0;width:40px;background:none;border:none;cursor:pointer;padding:0;box-shadow:none;color:#94a3b8;z-index:2;display:flex;align-items:center;justify-content:center;border-radius:0 10px 10px 0;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+                <div id="passwordHint" style="display:none; font-size:11px; color:#94a3b8; margin-top:6px; line-height:1.5;">
+                    8+ characters with uppercase, lowercase, number &amp; special character (e.g. !@#$%)
+                </div>
+            </div>
+
+            <div id="rememberMeRow" style="display:flex; align-items:center; justify-content:space-between; margin:-4px 0 20px;">
+                <label style="display:flex; align-items:center; gap:7px; font-size:12.5px; color:#64748b; cursor:pointer;">
+                    <input type="checkbox" id="rememberMeCheckbox" checked style="width:15px; height:15px; accent-color:#0b3d4c; cursor:pointer; margin:0;">
+                    Remember me
+                </label>
+                <button id="forgotPasswordLink" onclick="switchAuthTab('forgot')" style="background:none;border:none;color:#0b3d4c;font-size:12.5px;cursor:pointer;font-weight:600;padding:0;box-shadow:none;">Forgot password?</button>
+            </div>
+
+            <button class="auth-submit-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Log in</button>
+
+            <div id="offlineNotice" style="display:none; background:#fffbeb; border:1px solid #fbbf24; border-radius:9px; padding:10px 13px; margin-top:12px; font-size:12px; color:#92400e; line-height:1.6;">
+                <strong>⚠ No internet connection.</strong><br>
+                Please connect and this screen will update automatically.
+                <div style="display:flex; align-items:center; gap:6px; margin-top:7px; font-size:11px; opacity:0.85;">
+                    <span class="offline-pulse-dot"></span> Waiting for connection…
+                </div>
+            </div>
+
+            <div id="authSwitchLine" style="text-align:center; font-size:12.5px; color:#94a3b8; margin-top:20px;">
+                Don't have an account? <a href="javascript:void(0)" onclick="switchAuthTab('register')" style="color:#0b3d4c; font-weight:700; text-decoration:none;">Sign Up</a>
+            </div>
+        </div>
+        </div>
+
+        <!-- RIGHT: Decorative teal panel -->
+        <div class="auth-panel-right">
+            <!-- Floating square decorations -->
+            <svg class="auth-squares" viewBox="0 0 500 680" preserveAspectRatio="xMaxYMin slice">
+                <rect x="380" y="30"  width="28" height="28" rx="5" transform="rotate(15 394 44)"/>
+                <rect x="440" y="10"  width="18" height="18" rx="4" transform="rotate(20 449 19)"/>
+                <rect x="460" y="70"  width="36" height="36" rx="6" transform="rotate(10 478 88)"/>
+                <rect x="340" y="90"  width="16" height="16" rx="3" transform="rotate(25 348 98)"/>
+                <rect x="420" y="120" width="22" height="22" rx="4" transform="rotate(8 431 131)"/>
+                <rect x="490" y="160" width="14" height="14" rx="3" transform="rotate(30 497 167)"/>
+                <rect x="50"  y="560" width="30" height="30" rx="5" transform="rotate(12 65 575)"/>
+                <rect x="110" y="620" width="20" height="20" rx="4" transform="rotate(18 120 630)"/>
+                <rect x="20"  y="630" width="24" height="24" rx="4" transform="rotate(6 32 642)"/>
+                <rect x="80"  y="520" width="14" height="14" rx="3" transform="rotate(22 87 527)"/>
+            </svg>
+
+            <!-- Floating analytics cards -->
+            <div class="auth-right-cards">
+                <!-- Line chart card -->
+                <div class="auth-mock-card">
+                    <div class="auth-mock-card-title">
+                        Analytics
+                        <div class="auth-mock-tab-row">
+                            <span class="auth-mock-tab active">Weekly</span>
+                            <span class="auth-mock-tab">Monthly</span>
+                            <span class="auth-mock-tab">Yearly</span>
+                        </div>
+                    </div>
+                    <svg class="auth-mock-chart" viewBox="0 0 280 56" preserveAspectRatio="none">
+                        <polyline points="0,42 56,28 112,36 168,14 224,22 280,10" fill="none" stroke="#0b3d4c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="0,48 56,38 112,44 168,30 224,34 280,26" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4,3"/>
+                    </svg>
+                    <div class="auth-mock-days"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span></div>
+                </div>
+
+                <!-- Donut card -->
+                <div class="auth-mock-donut-card">
+                    <svg width="52" height="52" viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r="20" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+                        <circle cx="26" cy="26" r="20" fill="none" stroke="#0b3d4c" stroke-width="8"
+                            stroke-dasharray="75.4 125.6" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+                    </svg>
+                    <div>
+                        <div class="auth-mock-donut-label">Total</div>
+                        <div class="auth-mock-donut-value">42%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom text -->
+            <div class="auth-right-bottom">
+                <div class="auth-right-heading" id="authRightHeading">Inventory Management</div>
+                <div class="auth-right-sub" id="authRightSub">Join our platform to streamline your inventory processes, reduce costs, and enhance productivity.</div>
+            </div>
+        </div>
+
+      </div>
+    </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1451,6 +1956,39 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 Balangoda Agency
             </div>
+            <div class="health-wrap">
+                <button class="history-btn health-btn" id="healthBtn" onclick="toggleHealthPanel()" title="System health">
+                    <span class="health-dot" id="healthDotMain"></span>
+                    Status
+                </button>
+                <div class="health-panel" id="healthPanel">
+                    <div class="notif-panel-header">System Health</div>
+                    <div class="health-row">
+                        <span class="health-dot" id="healthDotInternet"></span>
+                        <span class="health-row-label">Internet</span>
+                        <span class="health-row-value" id="healthInternetText">—</span>
+                    </div>
+                    <div class="health-row">
+                        <span class="health-dot" id="healthDotCloud"></span>
+                        <span class="health-row-label">Cloud (Firebase)</span>
+                        <span class="health-row-value" id="healthCloudText">—</span>
+                    </div>
+                    <div class="health-row health-row-last">
+                        <span class="health-row-label">Last Cloud Save</span>
+                        <span class="health-row-value" id="healthLastSaveText">—</span>
+                    </div>
+                </div>
+            </div>
+            <div class="notif-wrap">
+                <button class="history-btn notif-bell-btn" id="notifBellBtn" onclick="toggleNotificationCenter()" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </button>
+                <div class="notif-panel" id="notifPanel">
+                    <div class="notif-panel-header">Notifications</div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
             <button class="history-btn" id="historyBtn" onclick="openHistoryModal()" title="View monthly stock count history">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-8"/></svg>
                 History
@@ -1458,6 +1996,13 @@
             <button class="theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()" title="Toggle dark mode">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
+            <div id="headerUserBadge">
+                <div class="user-avatar" id="userAvatarInitial">?</div>
+                <span id="userDisplayName">User</span>
+                <button id="logoutBtn" onclick="handleLogout()" title="Sign out">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -1476,7 +2021,7 @@
                 </div>
                 <div class="cstep-text">
                     <div class="cstep-title">Generate Template</div>
-                    <div class="cstep-desc">Generate template to upload and download template.</div>
+                    <div class="cstep-desc">Generate and download the Excel stock count sheet template.</div>
                 </div>
             </div>
             <div class="cstep-right">
@@ -1636,12 +2181,133 @@
             </div>
             <div class="manual-modal-foot" style="justify-content: space-between;">
                 <button class="manual-row-remove" id="deleteAllHistoryBtn" style="display:none; padding: 9px 16px; font-size: 12.5px;" onclick="deleteAllHistory()">Delete All History</button>
-                <button class="btn-danger" onclick="closeHistoryModal()">Close</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-success" id="openCompareMonthsBtn" style="display:none; padding: 9px 16px; font-size: 12.5px;" onclick="openCompareMonths()">📊 Compare Months</button>
+                    <button class="btn-danger" onclick="closeHistoryModal()">Close</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- FEATURE: Full Count Archive Detail Modal -->
+    <!-- FEATURE: Admin Panel — manage users & roles -->
+    <div class="manual-modal-overlay" id="adminPanelOverlay">
+        <div class="manual-modal-box" style="max-width: 700px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                    </div>
+                    <div>
+                        <h3>Manage Users</h3>
+                        <p>View registered users and assign Admin / User roles.</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="closeAdminPanel()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <div id="adminPanelLoading" style="text-align:center; padding: 30px; color: var(--muted); font-size: 13px;">Loading users…</div>
+                <div id="adminPanelEmptyNote" class="manual-empty-note" style="display:none;">No registered users found.</div>
+                <div id="adminPanelTableWrap" class="manual-items-table-wrap" style="display:none;"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content: flex-end;">
+                <button class="btn-danger" onclick="closeAdminPanel()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Audit Trail — log of key user actions -->
+    <div class="manual-modal-overlay" id="auditTrailOverlay">
+        <div class="manual-modal-box" style="max-width: 760px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+                    </div>
+                    <div>
+                        <h3>Audit Trail</h3>
+                        <p>Recent actions across the system (latest 200).</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="closeAuditTrail()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <input type="text" id="auditSearchInput" placeholder="Search by user, action, or details…" oninput="renderAuditTrailTable()" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--line); font-size:12.5px; margin-bottom:12px;">
+                <div id="auditTrailLoading" style="text-align:center; padding: 30px; color: var(--muted); font-size: 13px;">Loading audit log…</div>
+                <div id="auditTrailEmptyNote" class="manual-empty-note" style="display:none;">No audit log entries found.</div>
+                <div id="auditTrailTableWrap" class="manual-items-table-wrap" style="display:none; max-height:50vh; overflow-y:auto;"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content: flex-end;">
+                <button class="btn-danger" onclick="closeAuditTrail()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Compare Months — side-by-side trend comparison -->
+    <div class="manual-modal-overlay" id="compareMonthsOverlay">
+        <div class="manual-modal-box" style="max-width: 640px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+                    </div>
+                    <div>
+                        <h3>Compare Months</h3>
+                        <p>Pick two saved months to compare key metrics.</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="closeCompareMonths()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <div style="display:flex; gap:12px; margin-bottom:16px;">
+                    <div style="flex:1;">
+                        <label style="font-size:11.5px; color:var(--muted); font-weight:600;">From</label>
+                        <select id="compareMonthA" onchange="renderMonthComparison()" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-size:12.5px; margin-top:4px;"></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:11.5px; color:var(--muted); font-weight:600;">To</label>
+                        <select id="compareMonthB" onchange="renderMonthComparison()" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-size:12.5px; margin-top:4px;"></select>
+                    </div>
+                </div>
+                <div id="compareMonthsResult"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content: flex-end;">
+                <button class="btn-danger" onclick="closeCompareMonths()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURE: Data Validation Report — shown after Excel upload if issues are detected -->
+    <div class="manual-modal-overlay" id="dataValidationOverlay">
+        <div class="manual-modal-box" style="max-width: 620px;">
+            <div class="manual-modal-head">
+                <div class="manual-modal-head-titlewrap">
+                    <div class="manual-modal-head-icon" style="background:#fef3e2; color:#b45309;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <h3>Data Validation Report</h3>
+                        <p>Issues detected in the uploaded Excel file before scanning.</p>
+                    </div>
+                </div>
+                <div class="manual-modal-close" onclick="cancelDataValidation()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </div>
+            </div>
+            <div class="manual-modal-body">
+                <div id="dataValidationBody" style="max-height:50vh; overflow-y:auto;"></div>
+            </div>
+            <div class="manual-modal-foot" style="justify-content: space-between;">
+                <button class="btn-danger" onclick="cancelDataValidation()">Cancel Upload</button>
+                <button class="btn-success" onclick="continueDataValidation()">Continue Anyway</button>
+            </div>
+        </div>
+    </div>
     <div class="manual-modal-overlay" id="fullCountDetailOverlay">
         <div class="manual-modal-box" style="max-width: 900px;">
             <div class="manual-modal-head">
@@ -1674,10 +2340,16 @@
                 <div class="manual-items-table-wrap" id="fullCountDetailTableWrap" style="max-height:420px; overflow-y:auto;"></div>
             </div>
             <div class="manual-modal-foot" style="justify-content:space-between;">
-                <button class="btn-success" id="archiveExcelBtn" onclick="redownloadExcelFromArchive()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                    Re-download Excel Report
-                </button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-success" id="archiveExcelBtn" onclick="redownloadExcelFromArchive()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                        Re-download Excel Report
+                    </button>
+                    <button class="btn-success" id="archivePdfBtn" onclick="redownloadPdfFromArchive()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                        Re-download PDF Report
+                    </button>
+                </div>
                 <button class="btn-danger" onclick="closeFullCountDetailModal()">Close</button>
             </div>
         </div>
@@ -1758,7 +2430,7 @@
         <div class="suggestions-panel" id="suggestionsPanel" style="display:none;"></div>
 
         <div class="valuation-cards-row">
-        <div class="card card-short">
+        <div class="card card-short" onclick="drillToFilter('short')" style="cursor:pointer;" title="Click to view all shortage items">
             <div class="card-left">
                 <div class="card-title">Shortage Metrics</div>
                 <div class="card-value" id="valShortValue">Rs. 0.00</div>
@@ -1776,7 +2448,7 @@
             </div>
         </div>
         
-        <div class="card card-excess">
+        <div class="card card-excess" onclick="drillToFilter('excess')" style="cursor:pointer;" title="Click to view all excess items">
             <div class="card-left">
                 <div class="card-title">Excess Metrics</div>
                 <div class="card-value" id="valExcessValue">Rs. 0.00</div>
@@ -1828,8 +2500,7 @@
                 <div class="stat-mini-label">Uncounted SKU Count</div>
                 <div class="stat-mini-value" id="statUncountedSku">0</div>
             </div>
-            <div class="stat-mini">
-                <div class="stat-mini-label">Accuracy %</div>
+            <div class="stat-mini" onclick="showAccuracyBreakdown()" style="cursor:pointer;" title="Click to view matched/unmatched breakdown">
                 <div class="stat-mini-ring-row">
                     <div class="stat-mini-value" id="statAccuracy">0.0%</div>
                 </div>
@@ -1901,6 +2572,7 @@
                             <button class="filter-btn active" data-filter="all" onclick="setVarianceFilter('all')">All</button>
                             <button class="filter-btn" data-filter="short" onclick="setVarianceFilter('short')">Shortages Only</button>
                             <button class="filter-btn" data-filter="excess" onclick="setVarianceFilter('excess')">Excess Only</button>
+                            <button class="filter-btn" data-filter="matched" onclick="setVarianceFilter('matched')">Matched Only</button>
                             <button class="filter-btn" data-filter="uncounted" onclick="setVarianceFilter('uncounted')">Not Counted Only</button>
                         </div>
                     </div>
@@ -1950,6 +2622,8 @@
 
     // --- FEATURE: Firebase (Firestore) Cloud Save for Monthly Stock Count History ---
     const COMPANY_ID = "SARATHCHANDRA_BALANGODA";
+    // Owner account — protected from role/active changes by any other admin (change per-company on deploy)
+    const SUPER_ADMIN_EMAIL = "bstsampath@gmail.com";
     const firebaseConfig = {
         apiKey: "AIzaSyDkz-cL-TidV-jMqkQ1pG_APH3KvScxEB4",
         authDomain: "stock-verification-ad618.firebaseapp.com",
@@ -1959,6 +2633,10 @@
         appId: "1:1033918906913:web:62bc1f0ce641c80d5a9960"
     };
     let firestoreDb = null;
+    let firebaseAuth = null;
+    let firebaseInitError = false;
+    let currentUser = null;
+    let currentUserRole = null; // 'admin' | 'user' — fetched from Firestore on sign-in
     try {
         if (typeof firebase !== 'undefined') {
             firebase.initializeApp(firebaseConfig);
@@ -1966,6 +2644,146 @@
         }
     } catch (e) {
         console.error("Firebase init failed:", e);
+        firebaseInitError = true;
+    }
+    // Auth init separate — auth SDK load වෙලා නැතිනම් gracefully skip කරනවා
+    let _authTimeoutId = null;
+    function _initFirebaseAuth() {
+        try {
+            if (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
+                firebaseAuth = firebase.auth();
+                // Session-only persistence: logs the user out automatically when the tab/browser closes
+                firebaseAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(function(e) {
+                    console.error('Failed to set auth persistence:', e);
+                });
+                firebaseAuth.onAuthStateChanged(function(user) {
+                    if (_authTimeoutId) { clearTimeout(_authTimeoutId); _authTimeoutId = null; }
+                    if (user) { _onUserSignedIn(user); }
+                    else      { _onUserSignedOut();    }
+                });
+                // If no internet, Firebase will hang silently — show offline option after 6s
+                _authTimeoutId = setTimeout(function() {
+                    if (!currentUser) _showOfflineOption();
+                }, 6000);
+            } else {
+                console.warn('Firebase Auth SDK not loaded — running without authentication.');
+                document.getElementById('authOverlay').classList.add('auth-hidden');
+            }
+        } catch(e) {
+            console.error('Firebase Auth init error:', e);
+            document.getElementById('authOverlay').classList.add('auth-hidden');
+        }
+
+        // Immediate check — browser already knows it's offline
+        if (!navigator.onLine) _showOfflineOption();
+
+        // React live to connectivity changes
+        window.addEventListener('online',  function() { _hideOfflineOption(); });
+        window.addEventListener('offline', function() { _showOfflineOption(); });
+    }
+
+    function _showOfflineOption() {
+        const notice = document.getElementById('offlineNotice');
+        if (notice) notice.style.display = 'block';
+        const btn = document.getElementById('authSubmitBtn');
+        if (btn) btn.disabled = true;
+    }
+
+    function _hideOfflineOption() {
+        const notice = document.getElementById('offlineNotice');
+        if (notice) notice.style.display = 'none';
+        const btn = document.getElementById('authSubmitBtn');
+        if (btn) btn.disabled = false;
+        // Retry auth init in case it never completed while offline
+        if (!currentUser && firebaseAuth === null) _initFirebaseAuth();
+    }
+
+    // --- FEATURE: System Health Widget (Internet + Cloud connection + last sync time) ---
+    let lastCloudSaveAt = null; // Date, set after a successful save or fetched from the latest history doc
+
+    function setHealthDot(elId, level) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.classList.remove('dot-green', 'dot-amber', 'dot-red');
+        el.classList.add(level === 'good' ? 'dot-green' : (level === 'warn' ? 'dot-amber' : 'dot-red'));
+    }
+
+    function formatHealthTime(date) {
+        if (!date) return 'Never';
+        const diffMin = Math.floor((new Date() - date) / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return diffMin + 'm ago';
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return diffHr + 'h ago';
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function refreshHealthWidget() {
+        const online = navigator.onLine;
+        setHealthDot('healthDotInternet', online ? 'good' : 'bad');
+        const internetTextEl = document.getElementById('healthInternetText');
+        if (internetTextEl) internetTextEl.textContent = online ? 'Online' : 'Offline';
+
+        let cloudLevel, cloudText;
+        if (firebaseInitError) { cloudLevel = 'bad'; cloudText = 'Connection error'; }
+        else if (!firestoreDb) { cloudLevel = 'bad'; cloudText = 'Not configured'; }
+        else if (!online) { cloudLevel = 'warn'; cloudText = 'Waiting for internet'; }
+        else { cloudLevel = 'good'; cloudText = 'Connected'; }
+        setHealthDot('healthDotCloud', cloudLevel);
+        const cloudTextEl = document.getElementById('healthCloudText');
+        if (cloudTextEl) cloudTextEl.textContent = cloudText;
+
+        const lastSaveTextEl = document.getElementById('healthLastSaveText');
+        if (lastSaveTextEl) lastSaveTextEl.textContent = formatHealthTime(lastCloudSaveAt);
+
+        // Main status dot reflects the worse of the two statuses
+        setHealthDot('healthDotMain', online ? cloudLevel : 'bad');
+    }
+
+    function toggleHealthPanel() {
+        const panel = document.getElementById('healthPanel');
+        const isOpen = panel.classList.contains('open');
+        if (isOpen) {
+            panel.classList.remove('open');
+        } else {
+            const notifPanelEl = document.getElementById('notifPanel');
+            if (notifPanelEl) notifPanelEl.classList.remove('open');
+            refreshHealthWidget();
+            panel.classList.add('open');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const panel = document.getElementById('healthPanel');
+        const healthBtn = document.getElementById('healthBtn');
+        if (!panel || !panel.classList.contains('open')) return;
+        if (panel.contains(e.target) || (healthBtn && healthBtn.contains(e.target))) return;
+        panel.classList.remove('open');
+    });
+
+    window.addEventListener('online', refreshHealthWidget);
+    window.addEventListener('offline', refreshHealthWidget);
+
+    // On load, pull the most recently saved month's timestamp so "Last Cloud Save" is accurate
+    // even if nothing has been approved yet in this session.
+    async function loadLastCloudSaveTime() {
+        if (!firestoreDb) return;
+        try {
+            const snapshot = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('stockCounts')
+                .orderBy('month', 'desc')
+                .limit(1)
+                .get();
+            snapshot.forEach(function(doc) {
+                const data = doc.data();
+                if (data && data.savedAt) lastCloudSaveAt = new Date(data.savedAt);
+            });
+        } catch (e) {
+            console.warn("Could not load last cloud save time:", e);
+        } finally {
+            refreshHealthWidget();
+        }
     }
 
     function getCurrentMonthId() {
@@ -2021,6 +2839,82 @@
     };
     const _toastLabels = { success: 'Success', error: 'Error', warn: 'Warning', info: 'Notice' };
 
+    // --- FEATURE: Notification Center (history of past toast messages) ---
+    const NOTIFICATION_LOG_LIMIT = 30;
+    let notificationLog = [];
+    let unreadNotificationCount = 0;
+
+    function logNotification(message, type) {
+        notificationLog.unshift({ message: message, type: type, time: new Date() });
+        if (notificationLog.length > NOTIFICATION_LOG_LIMIT) notificationLog.length = NOTIFICATION_LOG_LIMIT;
+        unreadNotificationCount++;
+        updateNotificationBadge();
+    }
+
+    function updateNotificationBadge() {
+        const badge = document.getElementById('notifBadge');
+        if (!badge) return;
+        if (unreadNotificationCount > 0) {
+            badge.textContent = unreadNotificationCount > 9 ? '9+' : String(unreadNotificationCount);
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function formatNotificationTime(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return diffMin + 'm ago';
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return diffHr + 'h ago';
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderNotificationList() {
+        const listEl = document.getElementById('notifList');
+        if (!listEl) return;
+        if (notificationLog.length === 0) {
+            listEl.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
+            return;
+        }
+        listEl.innerHTML = notificationLog.map(function(n) {
+            const icon = _toastIcons[n.type] || _toastIcons.info;
+            return '<div class="notif-item notif-' + n.type + '">' +
+                '<div class="notif-icon-wrap">' + icon + '</div>' +
+                '<div class="notif-body-wrap">' +
+                    '<div class="notif-message">' + n.message + '</div>' +
+                    '<div class="notif-time">' + formatNotificationTime(n.time) + '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    function toggleNotificationCenter() {
+        const panel = document.getElementById('notifPanel');
+        const isOpen = panel.classList.contains('open');
+        if (isOpen) {
+            panel.classList.remove('open');
+        } else {
+            const healthPanelEl = document.getElementById('healthPanel');
+            if (healthPanelEl) healthPanelEl.classList.remove('open');
+            renderNotificationList();
+            panel.classList.add('open');
+            unreadNotificationCount = 0;
+            updateNotificationBadge();
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const panel = document.getElementById('notifPanel');
+        const bellBtn = document.getElementById('notifBellBtn');
+        if (!panel || !panel.classList.contains('open')) return;
+        if (panel.contains(e.target) || (bellBtn && bellBtn.contains(e.target))) return;
+        panel.classList.remove('open');
+    });
+
     function showToast(message, type) {
         const container = document.getElementById('toastContainer');
         if (!container) { alert(message); return; }
@@ -2033,6 +2927,8 @@
             else if (m.includes('success') || m.includes('saved') || m.includes('downloaded') || m.includes('approved') || m.includes('generated') || m.includes('deleted') || m.includes('confirmed') || m.includes('unlocked')) type = 'success';
             else type = 'info';
         }
+
+        logNotification(message, type);
 
         const duration = type === 'error' ? 9000 : 6000;
         const icon  = _toastIcons[type]  || _toastIcons.info;
@@ -2252,6 +3148,24 @@
         renderVarianceTable();
     }
 
+    // FEATURE: Dashboard Drill-down — Accuracy card shows matched/unmatched breakdown then filters table
+    function showAccuracyBreakdown() {
+        const counted = globalExportRows.filter(i => i.counted);
+        const matched = counted.filter(i => i.diff === 0).length;
+        const shortage = counted.filter(i => i.diff < 0).length;
+        const excess = counted.filter(i => i.diff > 0).length;
+        const uncounted = globalExportRows.length - counted.length;
+        showToast('Matched: ' + matched + ' · Shortage: ' + shortage + ' · Excess: ' + excess + ' · Not Counted: ' + uncounted, 'success');
+        drillToFilter('matched');
+    }
+
+    // FEATURE: Dashboard Drill-down — clicking a summary card jumps straight to the filtered table
+    function drillToFilter(filter) {
+        setVarianceFilter(filter);
+        const panel = document.querySelector('.details-panel');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function getFilteredExportRows() {
         const search = currentSearch.trim().toLowerCase();
         return globalExportRows.filter(item => {
@@ -2259,6 +3173,7 @@
             if (currentFilter === 'short') return item.counted && item.diff < 0;
             if (currentFilter === 'excess') return item.counted && item.diff > 0;
             if (currentFilter === 'uncounted') return !item.counted;
+            if (currentFilter === 'matched') return item.counted && item.diff === 0;
             return true;
         });
     }
@@ -2485,6 +3400,7 @@
             const d = new Date();
             const dateStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
             doc.save("Stock_Variance_Report_" + dateStr + ".pdf");
+            logAudit('PDF Downloaded', 'Stock_Variance_Report_' + dateStr + '.pdf');
         } catch (err) {
             alert("Failed to generate PDF: " + err.message);
         } finally {
@@ -2562,6 +3478,9 @@
     })();
 
     updateProgressIndicator();
+    refreshHealthWidget();
+    loadLastCloudSaveTime();
+    updateNotificationBadge();
 
     function generateCountSheet(btn) {
         const fileIn = document.getElementById('currentStockFile');
@@ -2629,7 +3548,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "LeverEDGE_Count_Sheet.xlsx";
+                a.download = "LeverEDGE_Count_Sheet_Designed.xlsx";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -2647,15 +3566,8 @@
     function loadCountSheetPreview(btn) {
         const countIn = document.getElementById('filledCountFile');
         const dashboard = document.getElementById('reviewDashboard');
-        const tableBody = document.getElementById('varianceTableBody');
         if (!countIn.files[0]) { alert("Please select the required Excel file input before continuing."); return; }
         setButtonLoading(btn, true, 'Scanning...');
-
-        // Show skeleton while processing
-        const skel = document.getElementById('dashSkeleton');
-        if (skel) { skel.classList.add('visible'); dashboard.style.display = 'none'; }
-        // Scroll skeleton into view smoothly
-        if (skel) setTimeout(() => skel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 
         readFileAsArrayBuffer(countIn, function(countBuffer) {
             try {
@@ -2666,6 +3578,127 @@
                     throw new Error("'SKU7 Code' column not found in the uploaded file. Please upload only the template generated from Step 1.");
                 }
 
+                // ── FEATURE: Data Validation — check the file for issues before scanning ──
+                const issues = validateCountData(countData);
+                if (issues.hasIssues) {
+                    setButtonLoading(btn, false);
+                    showDataValidationReport(issues, countData, btn);
+                    return;
+                }
+
+                _scanCountData(countData, btn);
+            } catch (err) {
+                alert("Error: " + err.message);
+                setButtonLoading(btn, false);
+            }
+        });
+    }
+
+    // --- FEATURE: Data Validation — scans the uploaded Excel for common data quality issues ---
+    function validateCountData(countData) {
+        const requiredColumns = ["SKU7 Code", "Product Name", "MRP (Rs.)", "AIP Value", "UPC", "System Cases", "System Pieces", "Physical Cases", "Physical Pieces"];
+        const foundColumns = Object.keys(countData[0] || {});
+        const missingColumns = requiredColumns.filter(c => !foundColumns.includes(c));
+
+        const skuSeen = {};
+        const duplicateSkus = [];
+        const invalidUpcSkus = [];
+        let emptyRowCount = 0;
+
+        countData.forEach(row => {
+            const rawSku = row["SKU7 Code"] !== undefined ? String(row["SKU7 Code"]).trim() : "";
+            const isRowBlank = Object.values(row).every(v => String(v).trim() === "");
+            if (isRowBlank) { emptyRowCount++; return; }
+            if (!rawSku) return; // no SKU — already silently skipped during the actual scan, not flagged separately
+
+            if (skuSeen[rawSku]) {
+                if (!duplicateSkus.includes(rawSku)) duplicateSkus.push(rawSku);
+            } else {
+                skuSeen[rawSku] = true;
+            }
+
+            const rawUpc = row["UPC"];
+            if (rawUpc !== undefined && rawUpc !== "") {
+                const upcNum = parseFloat(rawUpc);
+                if (isNaN(upcNum) || upcNum <= 0) {
+                    if (!invalidUpcSkus.includes(rawSku)) invalidUpcSkus.push(rawSku);
+                }
+            }
+        });
+
+        const hasIssues = missingColumns.length > 0 || duplicateSkus.length > 0 || invalidUpcSkus.length > 0 || emptyRowCount > 0;
+        return { hasIssues, missingColumns, duplicateSkus, invalidUpcSkus, emptyRowCount };
+    }
+
+    let _pendingValidatedCountData = null;
+    let _pendingValidationBtn = null;
+
+    function showDataValidationReport(issues, countData, btn) {
+        _pendingValidatedCountData = countData;
+        _pendingValidationBtn = btn;
+
+        const body = document.getElementById('dataValidationBody');
+        let sections = '';
+
+        if (issues.missingColumns.length > 0) {
+            sections += `<div style="margin-bottom:14px;">
+                <div style="font-weight:700; font-size:12.5px; color:var(--danger); margin-bottom:6px;">⚠ Missing Columns (${issues.missingColumns.length})</div>
+                <div style="font-size:12px; color:var(--muted);">${issues.missingColumns.join(', ')}</div>
+                <div style="font-size:11px; color:var(--danger); margin-top:4px;">These columns are expected from the Step 1 template. Values will default to 0/blank.</div>
+            </div>`;
+        }
+        if (issues.duplicateSkus.length > 0) {
+            sections += `<div style="margin-bottom:14px;">
+                <div style="font-weight:700; font-size:12.5px; color:#b45309; margin-bottom:6px;">⚠ Duplicate SKUs (${issues.duplicateSkus.length})</div>
+                <div style="font-size:12px; color:var(--muted); word-break:break-word;">${issues.duplicateSkus.slice(0, 30).join(', ')}${issues.duplicateSkus.length > 30 ? ' … +' + (issues.duplicateSkus.length - 30) + ' more' : ''}</div>
+                <div style="font-size:11px; color:#b45309; margin-top:4px;">Later rows with the same SKU will overwrite earlier ones in the scan.</div>
+            </div>`;
+        }
+        if (issues.invalidUpcSkus.length > 0) {
+            sections += `<div style="margin-bottom:14px;">
+                <div style="font-weight:700; font-size:12.5px; color:#b45309; margin-bottom:6px;">⚠ Invalid UPC Values (${issues.invalidUpcSkus.length} SKUs)</div>
+                <div style="font-size:12px; color:var(--muted); word-break:break-word;">${issues.invalidUpcSkus.slice(0, 30).join(', ')}${issues.invalidUpcSkus.length > 30 ? ' … +' + (issues.invalidUpcSkus.length - 30) + ' more' : ''}</div>
+                <div style="font-size:11px; color:#b45309; margin-top:4px;">UPC must be a positive number (units per case). These will default to 1.</div>
+            </div>`;
+        }
+        if (issues.emptyRowCount > 0) {
+            sections += `<div style="margin-bottom:14px;">
+                <div style="font-weight:700; font-size:12.5px; color:var(--muted); margin-bottom:6px;">ℹ Empty Rows (${issues.emptyRowCount})</div>
+                <div style="font-size:11px; color:var(--muted);">Completely blank rows were found and will be skipped automatically.</div>
+            </div>`;
+        }
+
+        body.innerHTML = sections || '<div class="manual-empty-note">No issues found.</div>';
+        document.getElementById('dataValidationOverlay').classList.add('open');
+    }
+
+    function cancelDataValidation() {
+        document.getElementById('dataValidationOverlay').classList.remove('open');
+        _pendingValidatedCountData = null;
+        if (_pendingValidationBtn) setButtonLoading(_pendingValidationBtn, false);
+        _pendingValidationBtn = null;
+    }
+
+    function continueDataValidation() {
+        document.getElementById('dataValidationOverlay').classList.remove('open');
+        if (!_pendingValidatedCountData) return;
+        const btn = _pendingValidationBtn;
+        if (btn) setButtonLoading(btn, true, 'Scanning...');
+        _scanCountData(_pendingValidatedCountData, btn);
+        _pendingValidatedCountData = null;
+        _pendingValidationBtn = null;
+    }
+
+    function _scanCountData(countData, btn) {
+        const dashboard = document.getElementById('reviewDashboard');
+        const tableBody = document.getElementById('varianceTableBody');
+
+        // Show skeleton while processing
+        const skel = document.getElementById('dashSkeleton');
+        if (skel) { skel.classList.add('visible'); dashboard.style.display = 'none'; }
+        if (skel) setTimeout(() => skel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+
+        try {
                 globalPhyCasesMap = {}; globalPhyPiecesMap = {}; globalAipValueMap = {}; globalExportRows = [];
                 tableBody.innerHTML = "";
 
@@ -2718,16 +3751,16 @@
                 });
 
                 finalizeDashboard(totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits);
-            } catch (err) {
-                const skel = document.getElementById('dashSkeleton');
-                if (skel) skel.classList.remove('visible');
-                dashboard.style.display = "none";
-                alert("Error: " + err.message);
-            } finally {
-                setButtonLoading(btn, false);
-            }
-        });
+        } catch (err) {
+            const skel = document.getElementById('dashSkeleton');
+            if (skel) skel.classList.remove('visible');
+            dashboard.style.display = "none";
+            alert("Error: " + err.message);
+        } finally {
+            if (btn) setButtonLoading(btn, false);
+        }
     }
+
 
     function finalizeDashboard(totalShortValue, totalShortUnits, totalExcessValue, totalExcessUnits) {
         const dashboard = document.getElementById('reviewDashboard');
@@ -2932,6 +3965,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            logAudit('Full Stock Report Downloaded', 'Stock_Variance_Full_Report_' + dateStr + '.xlsx');
         } catch (err) {
             alert("Failed to generate report: " + err.message);
         } finally {
@@ -2948,6 +3982,7 @@
         setTimeout(() => correctionBox.classList.remove('just-unlocked'), 600);
         updateProgressIndicator();
         showToast("Count Summary Confirmed! Step 3 has now unlocked successfully.");
+        logAudit('Count Approved', getCurrentMonthId());
         saveMonthlyStockCountToFirestore();
     }
 
@@ -2999,14 +4034,18 @@
                 .collection('stockCounts').doc(monthId)
                 .set(payload, { merge: true });
             showToast("Saved to cloud history for " + monthId + ".");
+            lastCloudSaveAt = new Date();
+            refreshHealthWidget();
         } catch (e) {
             console.error("Firestore save failed:", e);
             showToast("Cloud save failed: " + (e && e.message ? e.message : "unknown error"));
+            refreshHealthWidget();
         }
     }
 
     function rejectCountSheet() {
         if (!confirm("This will clear all scanned variance data and lock Step 3 again. Are you sure you want to reject and reset?")) return;
+        logAudit('Count Rejected & Reset', getCurrentMonthId());
         isCountApproved = false;
         isScanned = false;
         isStep3Done = false;
@@ -3114,6 +4153,8 @@
         emptyNote.style.display = 'none';
         tableWrap.style.display = 'none';
         deleteAllBtn.style.display = 'none';
+        deleteAllBtn.dataset.hasData = '0';
+        document.getElementById('openCompareMonthsBtn').style.display = 'none';
 
         if (!firestoreDb) {
             loadingEl.style.display = 'none';
@@ -3141,10 +4182,13 @@
             }
 
             renderHistoryChart(months);
+            _lastLoadedHistoryMonths = months;
             renderHistoryTable(months);
             chartWrap.style.display = 'block';
             tableWrap.style.display = 'block';
-            deleteAllBtn.style.display = 'inline-flex';
+            deleteAllBtn.dataset.hasData = '1';
+            deleteAllBtn.style.display = (currentUserRole === 'admin') ? 'inline-flex' : 'none';
+            document.getElementById('openCompareMonthsBtn').style.display = (months.length >= 2) ? 'inline-flex' : 'none';
         } catch (e) {
             console.error("Failed to load history:", e);
             loadingEl.style.display = 'none';
@@ -3170,6 +4214,7 @@
             snapshot.forEach(doc => batch.delete(doc.ref));
             await batch.commit();
             showToast("All stock count history deleted.");
+            logAudit('All History Deleted', snapshot.size + ' month(s)');
             openHistoryModal(); // refresh the (now empty) list
         } catch (e) {
             console.error("Failed to delete all history:", e);
@@ -3286,20 +4331,321 @@
                         ? `<button class="btn-ghost" style="font-size:11.5px;padding:5px 10px;" onclick="openFullCountDetail('${m.month}')">📋 Detail</button>`
                         : `<span style="color:var(--muted);font-size:11px;">No data</span>`}
                 </td>
-                <td><button class="manual-row-remove" onclick="deleteHistoryMonth('${m.month}')">Delete</button></td>
+                ${currentUserRole === 'admin' ? `<td><button class="manual-row-remove" onclick="deleteHistoryMonth('${m.month}')">Delete</button></td>` : ''}
             </tr>
         `).join('');
         wrap.innerHTML = `
             <table>
                 <thead>
-                    <tr><th>Month</th><th>Shortage</th><th>Excess</th><th>Net Gap</th><th>Accuracy</th><th>Full Data</th><th></th></tr>
+                    <tr><th>Month</th><th>Shortage</th><th>Excess</th><th>Net Gap</th><th>Accuracy</th><th>Full Data</th>${currentUserRole === 'admin' ? '<th></th>' : ''}</tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
             </table>
         `;
     }
 
-    // --- FEATURE: Delete a saved month from Firestore history ---
+    // --- FEATURE: Compare Months — side-by-side metric comparison with trend arrows ---
+    let _compareMonthsCache = [];
+
+    function openCompareMonths() {
+        _compareMonthsCache = _lastLoadedHistoryMonths || [];
+        if (_compareMonthsCache.length < 2) { showToast('Need at least 2 saved months to compare.'); return; }
+
+        const selA = document.getElementById('compareMonthA');
+        const selB = document.getElementById('compareMonthB');
+        const optionsHtml = _compareMonthsCache.map(m => `<option value="${m.month}">${m.month}</option>`).join('');
+        selA.innerHTML = optionsHtml;
+        selB.innerHTML = optionsHtml;
+        // Default: compare the two most recent months
+        selA.value = _compareMonthsCache[_compareMonthsCache.length - 2].month;
+        selB.value = _compareMonthsCache[_compareMonthsCache.length - 1].month;
+
+        document.getElementById('compareMonthsOverlay').classList.add('open');
+        renderMonthComparison();
+    }
+
+    function closeCompareMonths() {
+        document.getElementById('compareMonthsOverlay').classList.remove('open');
+    }
+
+    function _compareMetricRow(label, valA, valB, opts) {
+        opts = opts || {};
+        const prefix = opts.prefix || '';
+        const suffix = opts.suffix || '';
+        const decimals = opts.decimals !== undefined ? opts.decimals : 2;
+        const higherIsBetter = opts.higherIsBetter !== false; // accuracy: higher better; gap closer to 0 better (handled separately)
+
+        const fmt = v => prefix + Math.abs(v).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + suffix;
+        const delta = valB - valA;
+        const deltaAbs = Math.abs(delta);
+        const improved = opts.closerToZeroIsBetter
+            ? (Math.abs(valB) < Math.abs(valA))
+            : (higherIsBetter ? delta > 0 : delta < 0);
+        const unchanged = delta === 0;
+
+        const arrowColor = unchanged ? 'var(--muted)' : (improved ? 'var(--success)' : 'var(--danger)');
+        const arrowSvg = unchanged
+            ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="' + arrowColor + '" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>'
+            : (delta > 0
+                ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="' + arrowColor + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+                : '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="' + arrowColor + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>');
+
+        return `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line);">
+                <div style="font-size:12.5px; font-weight:600; color:var(--ink);">${label}</div>
+                <div style="display:flex; align-items:center; gap:10px; font-size:12.5px;">
+                    <span style="color:var(--muted);">${(valA < 0 ? '-' : '') + fmt(valA)}</span>
+                    ${arrowSvg}
+                    <span style="font-weight:700; color:var(--ink);">${(valB < 0 ? '-' : '') + fmt(valB)}</span>
+                    <span style="font-size:11px; font-weight:700; color:${arrowColor}; min-width:62px; text-align:right;">${unchanged ? 'No change' : ((delta > 0 ? '+' : '') + fmt(delta))}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderMonthComparison() {
+        const monthAId = document.getElementById('compareMonthA').value;
+        const monthBId = document.getElementById('compareMonthB').value;
+        const resultEl = document.getElementById('compareMonthsResult');
+        const mA = _compareMonthsCache.find(m => m.month === monthAId);
+        const mB = _compareMonthsCache.find(m => m.month === monthBId);
+
+        if (!mA || !mB) { resultEl.innerHTML = ''; return; }
+        if (monthAId === monthBId) {
+            resultEl.innerHTML = '<div class="manual-empty-note">Pick two different months to compare.</div>';
+            return;
+        }
+
+        resultEl.innerHTML = `
+            <div style="text-align:center; font-size:11.5px; color:var(--muted); margin-bottom:6px;">${monthAId} → ${monthBId}</div>
+            ${_compareMetricRow('Accuracy', mA.accuracyPct || 0, mB.accuracyPct || 0, { suffix: '%', decimals: 1, higherIsBetter: true })}
+            ${_compareMetricRow('Net Valuation Gap', mA.netGap || 0, mB.netGap || 0, { prefix: 'Rs. ', closerToZeroIsBetter: true })}
+            ${_compareMetricRow('Shortage Value', mA.totalShortValue || 0, mB.totalShortValue || 0, { prefix: 'Rs. ', higherIsBetter: false })}
+            ${_compareMetricRow('Excess Value', mA.totalExcessValue || 0, mB.totalExcessValue || 0, { prefix: 'Rs. ', higherIsBetter: false })}
+            ${_compareMetricRow('Counted SKUs', mA.countedSkuCount || 0, mB.countedSkuCount || 0, { decimals: 0, higherIsBetter: true })}
+            ${_compareMetricRow('Uncounted SKUs', mA.uncountedSkuCount || 0, mB.uncountedSkuCount || 0, { decimals: 0, higherIsBetter: false })}
+        `;
+    }
+
+
+    async function openAdminPanel() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required.'); return; }
+        document.getElementById('adminPanelOverlay').classList.add('open');
+        const loadingEl = document.getElementById('adminPanelLoading');
+        const emptyEl = document.getElementById('adminPanelEmptyNote');
+        const tableWrap = document.getElementById('adminPanelTableWrap');
+
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        tableWrap.style.display = 'none';
+
+        if (!firestoreDb) {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.innerText = 'Cloud user list is unavailable: Firebase is not connected.';
+            return;
+        }
+
+        try {
+            const snapshot = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('users')
+                .get();
+
+            const users = [];
+            snapshot.forEach(doc => users.push(doc.data()));
+            loadingEl.style.display = 'none';
+
+            if (users.length === 0) {
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            renderAdminUsersTable(users);
+            tableWrap.style.display = 'block';
+        } catch (e) {
+            console.error('Failed to load users:', e);
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.innerText = 'Failed to load users: ' + (e && e.message ? e.message : 'unknown error');
+        }
+    }
+
+    function closeAdminPanel() {
+        document.getElementById('adminPanelOverlay').classList.remove('open');
+    }
+
+    function renderAdminUsersTable(users) {
+        const wrap = document.getElementById('adminPanelTableWrap');
+        const myUid = currentUser && currentUser.uid;
+        const rowsHtml = users.slice().sort((a, b) => (a.email || '').localeCompare(b.email || '')).map(u => {
+            const isOwner = (u.email || '').toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+            const isSelf  = u.uid === myUid;
+            const locked  = isOwner || isSelf; // can't change own account or the protected owner account
+            const isActive = u.active !== false;
+
+            return `
+            <tr${!isActive ? ' style="opacity:0.55;"' : ''}>
+                <td>${u.displayName || '—'}${isOwner ? ' <span style="font-size:10px;color:var(--success);font-weight:700;">★ OWNER</span>' : ''}</td>
+                <td>${u.email || '—'}</td>
+                <td>${u.emailVerified ? '✅ Verified' : '⏳ Pending'}</td>
+                <td>${isActive ? '<span style="color:var(--success);">Active</span>' : '<span style="color:var(--danger);">Deactivated</span>'}</td>
+                <td>
+                    <select onchange="updateUserRole('${u.uid}', this.value, this)" ${locked ? 'disabled title="Cannot change this account\'s role"' : ''} style="padding:5px 8px; font-size:12px; border-radius:6px; border:1px solid var(--line);">
+                        <option value="user"  ${u.role === 'admin' ? '' : 'selected'}>User</option>
+                        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="manual-row-remove" style="padding:5px 10px; font-size:11.5px;" ${locked ? 'disabled title="Cannot change this account\'s status"' : ''} onclick="toggleUserActive('${u.uid}', ${isActive})">${isActive ? 'Deactivate' : 'Activate'}</button>
+                </td>
+            </tr>
+        `; }).join('');
+        wrap.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>Name</th><th>Email</th><th>Email Status</th><th>Account</th><th>Role</th><th>Action</th></tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        `;
+    }
+
+    // ─── FEATURE: Audit Trail ─────────────────────────────────────────────────
+    let _auditLogCache = [];
+
+    async function logAudit(action, details) {
+        if (!firestoreDb) return; // silently skip if offline — never block the user's actual action
+        try {
+            await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('auditLog').add({
+                    action: action,
+                    details: details || '',
+                    userEmail: (currentUser && currentUser.email) || 'unknown',
+                    userName: (currentUser && (currentUser.displayName || currentUser.email.split('@')[0])) || 'unknown',
+                    timestamp: new Date().toISOString()
+                });
+        } catch (e) {
+            console.error('Audit log write failed:', e); // never surface this to the user
+        }
+    }
+
+    async function openAuditTrail() {
+        if (currentUserRole !== 'admin') { showToast('Admin access required.'); return; }
+        document.getElementById('auditTrailOverlay').classList.add('open');
+        document.getElementById('auditSearchInput').value = '';
+        const loadingEl = document.getElementById('auditTrailLoading');
+        const emptyEl = document.getElementById('auditTrailEmptyNote');
+        const tableWrap = document.getElementById('auditTrailTableWrap');
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+        tableWrap.style.display = 'none';
+
+        if (!firestoreDb) {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.innerText = 'Audit log is unavailable: Firebase is not connected.';
+            return;
+        }
+        try {
+            const snapshot = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('auditLog')
+                .orderBy('timestamp', 'desc')
+                .limit(200)
+                .get();
+            _auditLogCache = [];
+            snapshot.forEach(doc => _auditLogCache.push(doc.data()));
+            loadingEl.style.display = 'none';
+            if (_auditLogCache.length === 0) {
+                emptyEl.style.display = 'block';
+                return;
+            }
+            tableWrap.style.display = 'block';
+            renderAuditTrailTable();
+        } catch (e) {
+            console.error('Failed to load audit log:', e);
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            emptyEl.innerText = 'Failed to load audit log: ' + (e && e.message ? e.message : 'unknown error');
+        }
+    }
+
+    function closeAuditTrail() {
+        document.getElementById('auditTrailOverlay').classList.remove('open');
+    }
+
+    function renderAuditTrailTable() {
+        const wrap = document.getElementById('auditTrailTableWrap');
+        const search = (document.getElementById('auditSearchInput').value || '').trim().toLowerCase();
+        const rows = _auditLogCache.filter(e => {
+            if (!search) return true;
+            return (e.userName || '').toLowerCase().includes(search) ||
+                   (e.userEmail || '').toLowerCase().includes(search) ||
+                   (e.action || '').toLowerCase().includes(search) ||
+                   (String(e.details || '')).toLowerCase().includes(search);
+        });
+        if (rows.length === 0) {
+            wrap.innerHTML = '<div class="manual-empty-note">No matching audit log entries.</div>';
+            return;
+        }
+        const rowsHtml = rows.map(e => {
+            const dt = e.timestamp ? new Date(e.timestamp) : null;
+            const dateStr = dt ? dt.toLocaleString() : '—';
+            return `<tr>
+                <td style="white-space:nowrap; font-size:11.5px; color:var(--muted);">${dateStr}</td>
+                <td style="font-weight:600;">${e.userName || 'unknown'}</td>
+                <td>${e.action || ''}</td>
+                <td style="color:var(--muted); font-size:12px;">${e.details || ''}</td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `
+            <table>
+                <thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        `;
+    }
+    async function toggleUserActive(uid, currentlyActive) {
+        if (!firestoreDb) return;
+        const verb = newActive ? 'Activate' : 'Deactivate';
+        if (!confirm(verb + ' this user account?' + (newActive ? '' : ' They will be signed out and unable to log in.'))) return;
+        try {
+            await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('users').doc(uid)
+                .update({ active: newActive });
+            showToast('User ' + (newActive ? 'activated' : 'deactivated') + '.', 'success');
+            logAudit(newActive ? 'User Activated' : 'User Deactivated', uid);
+            openAdminPanel(); // refresh list
+        } catch (e) {
+            console.error('Failed to update active status:', e);
+            showToast('Failed to update status: ' + (e && e.message ? e.message : 'unknown error'));
+        }
+    }
+
+    async function updateUserRole(uid, newRole, selectEl) {
+        if (!firestoreDb) return;
+        if (!confirm('Change this user\'s role to "' + newRole + '"?')) {
+            if (selectEl) selectEl.value = newRole === 'admin' ? 'user' : 'admin'; // revert dropdown
+            return;
+        }
+        try {
+            await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('users').doc(uid)
+                .update({ role: newRole });
+            showToast('Role updated to ' + newRole + '.', 'success');
+            logAudit('Role Changed', uid + ' → ' + newRole);
+        } catch (e) {
+            console.error('Failed to update role:', e);
+            showToast('Failed to update role: ' + (e && e.message ? e.message : 'unknown error'));
+            if (selectEl) selectEl.value = newRole === 'admin' ? 'user' : 'admin'; // revert dropdown
+        }
+    }
+
+
     async function deleteHistoryMonth(monthId) {
         if (!firestoreDb) return;
         if (!confirm("Delete the saved stock count history for " + monthId + "? This cannot be undone.")) return;
@@ -3309,6 +4655,7 @@
                 .collection('stockCounts').doc(monthId)
                 .delete();
             showToast(monthId + " deleted from history.");
+            logAudit('History Deleted', monthId);
             openHistoryModal(); // refresh the list
         } catch (e) {
             console.error("Failed to delete history month:", e);
@@ -3507,7 +4854,377 @@
             }
         });
     }
-    // ─── FEATURE: AI Suggestions Panel (rule-based analysis of scan data) ───
+    // ─── FEATURE: Firebase Authentication ───────────────────────────────────
+    let _authMode = 'login'; // 'login' | 'register'
+
+    function switchAuthTab(mode) {
+        _authMode = mode;
+        const isForgot = mode === 'forgot';
+        const isRegister = mode === 'register';
+
+        // Tab row — hide on forgot screen
+        document.querySelector('.auth-tab-row').style.display = 'none';
+
+        // Title / subtitle / switch-link — mirrors the segmented tabs visually
+        const titleEl = document.getElementById('authTitle');
+        const subEl = document.getElementById('authSubtitle');
+        const switchEl = document.getElementById('authSwitchLine');
+        if (mode === 'login') {
+            titleEl.textContent = 'Welcome Back!';
+            subEl.textContent = 'Please enter your log in details below';
+            switchEl.innerHTML = 'Don\'t have an account? <a href="javascript:void(0)" onclick="switchAuthTab(\'register\')" style="color:#0b3d4c; font-weight:700; text-decoration:none;">Sign Up</a>';
+            switchEl.style.display = '';
+            const rh = document.getElementById('authRightHeading');
+            const rs = document.getElementById('authRightSub');
+            if (rh) rh.textContent = 'Inventory Management';
+            if (rs) rs.textContent = 'Join our platform to streamline your inventory processes, reduce costs, and enhance productivity.';
+        } else if (mode === 'register') {
+            titleEl.textContent = 'Create an account';
+            subEl.textContent = 'Fill in your details to get started';
+            switchEl.innerHTML = 'Already have an account? <a href="javascript:void(0)" onclick="switchAuthTab(\'login\')" style="color:#0b3d4c; font-weight:700; text-decoration:none;">Log in</a>';
+            switchEl.style.display = '';
+            const rh = document.getElementById('authRightHeading');
+            const rs = document.getElementById('authRightSub');
+            if (rh) rh.textContent = 'Very simple way you can engage';
+            if (rs) rs.textContent = 'Welcome to Sarathchandra Stock Controller. Efficiently track and manage your inventory with ease.';
+        } else {
+            titleEl.textContent = 'Reset Password';
+            subEl.textContent = 'Enter your email and we will send you a reset link';
+            switchEl.style.display = 'none';
+        }
+
+        // Register-only fields
+        document.getElementById('registerFields').style.display = isRegister ? 'block' : 'none';
+
+        // Password requirement hint — register mode only
+        const pwHint = document.getElementById('passwordHint');
+        if (pwHint) pwHint.style.display = isRegister ? 'block' : 'none';
+
+        // Password field — hide on forgot screen
+        document.querySelector('.auth-field:has(#authPassword)') &&
+            (document.querySelector('.auth-field:has(#authPassword)').style.display = isForgot ? 'none' : '');
+
+        // Remember-me row — login mode only (forgot/register don't need it)
+        const rememberRow = document.getElementById('rememberMeRow');
+        if (rememberRow) rememberRow.style.display = (mode === 'login') ? 'flex' : 'none';
+
+        // Forgot password back link
+        let forgotBack = document.getElementById('forgotBackLink');
+        if (isForgot) {
+            if (!forgotBack) {
+                const el = document.createElement('div');
+                el.id = 'forgotBackLink';
+                el.style.cssText = 'text-align:center;margin-bottom:14px;';
+                el.innerHTML = '<button onclick="switchAuthTab(\'login\')" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;box-shadow:none;padding:0;">← Back to Sign In</button>';
+                document.getElementById('authError').after(el);
+            }
+            document.getElementById('forgotBackLink').style.display = '';
+            document.getElementById('authEmail').parentElement.querySelector('label').textContent = 'Enter your registered email';
+        } else {
+            if (forgotBack) forgotBack.style.display = 'none';
+            document.getElementById('authEmail').parentElement.querySelector('label').textContent = 'Email Address';
+        }
+
+        // Submit button label
+        document.getElementById('authSubmitBtn').textContent =
+            mode === 'login'    ? 'Log in'           :
+            mode === 'register' ? 'Sign up'          :
+                                  'Send Reset Link';
+
+        // Password autocomplete
+        const pwField = document.getElementById('authPassword');
+        if (pwField) pwField.autocomplete = isRegister ? 'new-password' : 'current-password';
+
+        document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+        document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
+        clearAuthError();
+    }
+
+    function showAuthError(msg) {
+        const el = document.getElementById('authError');
+        el.textContent = msg;
+        el.classList.add('visible');
+    }
+
+    function clearAuthError() {
+        const el = document.getElementById('authError');
+        el.textContent = '';
+        el.classList.remove('visible');
+        el.style.background = '';
+        el.style.color = '';
+        el.style.borderColor = '';
+        document.getElementById('authSubmitBtn').disabled = false;
+    }
+
+    function setAuthLoading(loading) {
+        const btn = document.getElementById('authSubmitBtn');
+        if (!btn) return;
+        btn.disabled = loading;
+        if (loading) {
+            btn.textContent = 'Please wait…';
+        } else if (btn.textContent !== 'Email Sent ✓') {
+            // Don't overwrite success state
+            btn.textContent =
+                _authMode === 'login'    ? 'Sign In'        :
+                _authMode === 'register' ? 'Create Account' :
+                _authMode === 'forgot'   ? 'Send Reset Link': 'Sign In';
+        }
+    }
+
+    function _friendlyAuthError(code) {
+        const map = {
+            'auth/user-not-found':       'No account found with this email.',
+            'auth/wrong-password':        'Incorrect password. Please try again.',
+            'auth/invalid-credential':    'Email or password is incorrect.',
+            'auth/email-already-in-use':  'This email is already registered. Please sign in.',
+            'auth/weak-password':         'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.',
+            'auth/password-does-not-meet-requirements': 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.',
+            'auth/invalid-email':         'Please enter a valid email address.',
+            'auth/too-many-requests':     'Too many attempts. Please try again later.',
+            'auth/network-request-failed':'Network error. Please check your internet connection.',
+        };
+        return map[code] || 'Authentication failed. Please try again.';
+    }
+
+    async function handleAuthSubmit() {
+        clearAuthError();
+        if (!navigator.onLine) { showAuthError('No internet connection. Please connect and try again.'); return; }
+        const email    = (document.getElementById('authEmail').value    || '').trim();
+        const password = (document.getElementById('authPassword').value || '').trim();
+        const name     = (document.getElementById('authName') ? document.getElementById('authName').value.trim() : '');
+
+        if (!email) { showAuthError('Please enter your email address.'); return; }
+        if (!firebaseAuth) { showAuthError('Firebase is not connected. Please check your internet connection.'); return; }
+
+        // ── Forgot Password ─────────────────────────────────────────────
+        if (_authMode === 'forgot') {
+            setAuthLoading(true);
+            try {
+                await firebaseAuth.sendPasswordResetEmail(email);
+                const el = document.getElementById('authError');
+                el.style.background = 'var(--success-bg)';
+                el.style.color = 'var(--success)';
+                el.style.borderColor = '#6ee7b7';
+                el.textContent = '✅ Reset link sent! Check your email inbox and spam folder.';
+                el.classList.add('visible');
+                document.getElementById('authSubmitBtn').disabled = true;
+                document.getElementById('authSubmitBtn').textContent = 'Email Sent ✓';
+            } catch (err) {
+                showAuthError(_friendlyAuthError(err.code));
+                document.getElementById('authSubmitBtn').disabled = false;
+                document.getElementById('authSubmitBtn').textContent = 'Send Reset Link';
+            } finally {
+                setAuthLoading(false);
+            }
+            return;
+        }
+
+        // ── Login / Register ─────────────────────────────────────────────
+        if (!password) { showAuthError('Please enter your password.'); return; }
+        if (_authMode === 'register' && !name) { showAuthError('Please enter your full name.'); return; }
+
+        setAuthLoading(true);
+        try {
+            if (_authMode === 'login') {
+                // FEATURE: Remember Me — checked = stay logged in across browser restarts (LOCAL),
+                // unchecked = log out automatically when the tab/browser closes (SESSION, default).
+                const rememberMe = document.getElementById('rememberMeCheckbox') && document.getElementById('rememberMeCheckbox').checked;
+                await firebaseAuth.setPersistence(rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+
+                const cred = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                // Block unverified users
+                if (!cred.user.emailVerified) {
+                    await firebaseAuth.signOut();
+                    showAuthError('📧 Your email is not verified yet. Please check your inbox and click the verification link.\n\nDidn\'t get it? ');
+                    // Append resend button inside error
+                    const el = document.getElementById('authError');
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Resend verification email';
+                    btn.style.cssText = 'background:none;border:none;color:var(--navy);font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-size:12px;box-shadow:none;';
+                    btn.onclick = function() { _resendVerificationEmail(email, password); };
+                    el.appendChild(btn);
+                    setAuthLoading(false);
+                    return;
+                }
+            } else {
+                const cred = await firebaseAuth.createUserWithEmailAndPassword(email, password);
+                await cred.user.updateProfile({ displayName: name });
+                // Send email verification
+                await cred.user.sendEmailVerification();
+                // Save user record to Firestore
+                if (firestoreDb) {
+                    await firestoreDb
+                        .collection('companies').doc(COMPANY_ID)
+                        .collection('users').doc(cred.user.uid)
+                        .set({
+                            uid: cred.user.uid,
+                            email: email,
+                            displayName: name,
+                            role: (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) ? 'admin' : 'user',
+                            active: true,
+                            companyId: COMPANY_ID,
+                            createdAt: new Date().toISOString(),
+                            emailVerified: false
+                        });
+                }
+                // Sign out immediately — must verify email first
+                await firebaseAuth.signOut();
+                // Show verification notice
+                _showVerifyEmailNotice(email);
+            }
+        } catch (err) {
+            setAuthLoading(false);
+            showAuthError(_friendlyAuthError(err.code));
+        }
+    }
+
+    async function handleLogout() {
+        if (!firebaseAuth) return;
+        try {
+            await firebaseAuth.signOut();
+        } catch (e) {
+            console.error('Logout error:', e);
+        }
+    }
+
+    function _onUserSignedIn(user) {
+        currentUser = user;
+        // Hide auth overlay
+        document.getElementById('authOverlay').classList.add('auth-hidden');
+        // Show user badge in header
+        const badge = document.getElementById('headerUserBadge');
+        const nameEl = document.getElementById('userDisplayName');
+        const avatarEl = document.getElementById('userAvatarInitial');
+        const displayName = user.displayName || user.email.split('@')[0];
+        nameEl.textContent = displayName;
+        avatarEl.textContent = displayName.charAt(0).toUpperCase();
+        badge.classList.add('visible');
+        showToast('Welcome, ' + displayName + '!', 'success');
+
+        // ── Role: fetch from Firestore and apply permissions ──
+        _fetchAndApplyUserRole(user.uid);
+
+        // ── Sync emailVerified status to Firestore (Auth is the source of truth) ──
+        if (firestoreDb && user.emailVerified) {
+            firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('users').doc(user.uid)
+                .update({ emailVerified: true })
+                .catch(e => console.error('Failed to sync emailVerified status:', e));
+        }
+    }
+
+    // ─── FEATURE: Role-based access (admin / user) ───────────────────────────
+    let _lastLoadedHistoryMonths = [];
+
+    async function _fetchAndApplyUserRole(uid) {
+        currentUserRole = null;
+        if (!firestoreDb) { _applyRolePermissions(); return; }
+        try {
+            const doc = await firestoreDb
+                .collection('companies').doc(COMPANY_ID)
+                .collection('users').doc(uid)
+                .get();
+            const data = doc.exists ? doc.data() : {};
+            // ── Deactivated account check ──
+            if (data.active === false) {
+                await firebaseAuth.signOut();
+                currentUser = null;
+                currentUserRole = null;
+                document.getElementById('headerUserBadge').classList.remove('visible');
+                document.getElementById('authOverlay').classList.remove('auth-hidden');
+                showAuthError('🚫 Your account has been deactivated. Please contact your administrator.');
+                return;
+            }
+            currentUserRole = data.role || 'user';
+        } catch (e) {
+            console.error('Failed to fetch user role:', e);
+            currentUserRole = 'user'; // fail-safe: default to least privilege
+        }
+        _applyRolePermissions();
+    }
+
+    function _applyRolePermissions() {
+        const isAdmin = currentUserRole === 'admin';
+
+        // Role badge next to the user name
+        let roleTag = document.getElementById('userRoleTag');
+        const badge = document.getElementById('headerUserBadge');
+        if (!roleTag && badge) {
+            roleTag = document.createElement('span');
+            roleTag.id = 'userRoleTag';
+            roleTag.style.cssText = 'font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; margin-left:6px; text-transform:uppercase; letter-spacing:0.3px;';
+            document.getElementById('userDisplayName').after(roleTag);
+        }
+        if (roleTag) {
+            roleTag.textContent = isAdmin ? 'Admin' : 'User';
+            roleTag.style.background = isAdmin ? 'var(--success-bg)' : 'var(--bg-soft, #eef2f7)';
+            roleTag.style.color = isAdmin ? 'var(--success)' : 'var(--muted)';
+        }
+
+        // Admin Panel button — visible only to admins
+        let adminBtn = document.getElementById('adminPanelBtn');
+        if (!adminBtn && badge) {
+            adminBtn = document.createElement('button');
+            adminBtn.id = 'adminPanelBtn';
+            adminBtn.className = 'theme-toggle';
+            adminBtn.title = 'Manage Users';
+            adminBtn.style.marginRight = '6px';
+            adminBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+            adminBtn.onclick = openAdminPanel;
+            badge.before(adminBtn);
+        }
+        if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
+
+        // Audit Trail button — visible only to admins
+        let auditBtn = document.getElementById('auditTrailBtn');
+        if (!auditBtn && badge) {
+            auditBtn = document.createElement('button');
+            auditBtn.id = 'auditTrailBtn';
+            auditBtn.className = 'theme-toggle';
+            auditBtn.title = 'Audit Trail';
+            auditBtn.style.marginRight = '6px';
+            auditBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>';
+            auditBtn.onclick = openAuditTrail;
+            badge.before(auditBtn);
+        }
+        if (auditBtn) auditBtn.style.display = isAdmin ? '' : 'none';
+
+        // Delete actions (history) — admin only
+        const deleteAllBtn = document.getElementById('deleteAllHistoryBtn');
+        if (deleteAllBtn) deleteAllBtn.style.display = (isAdmin && deleteAllBtn.dataset.hasData === '1') ? 'inline-flex' : 'none';
+
+        // Re-render history table rows (if currently open) so per-row Delete buttons reflect role
+        const tableWrap = document.getElementById('historyTableWrap');
+        if (tableWrap && tableWrap.innerHTML) renderHistoryTable(_lastLoadedHistoryMonths);
+    }
+
+    function _onUserSignedOut() {
+        currentUser = null;
+        // Show auth overlay
+        document.getElementById('authOverlay').classList.remove('auth-hidden');
+        // Hide user badge
+        document.getElementById('headerUserBadge').classList.remove('visible');
+        // Reset auth form
+        document.getElementById('authEmail').value    = '';
+        document.getElementById('authPassword').value = '';
+        if (document.getElementById('authName')) document.getElementById('authName').value = '';
+        switchAuthTab('login');
+        clearAuthError();
+        setAuthLoading(false);
+    }
+
+    // Enter key support on auth inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        ['authName','authEmail','authPassword'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleAuthSubmit(); });
+        });
+        // Init auth after DOM ready — ensures all CDN scripts are parsed
+        _initFirebaseAuth();
+    });
+
+
     let _sgCollapsed = false;
 
     function buildAISuggestions(summary) {
@@ -3631,6 +5348,57 @@
         }
     }
 
+    function _showVerifyEmailNotice(email) {
+        // Replace auth card content with verification notice
+        const card = document.querySelector('.auth-card');
+        card.innerHTML =
+            '<div class="auth-logo">' +
+                '<div class="auth-logo-icon" style="background:linear-gradient(135deg,#047857,#065f46);">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' +
+                '</div>' +
+                '<div class="auth-logo-text">' +
+                    '<div class="auth-logo-title">Check Your Email</div>' +
+                    '<div class="auth-logo-sub">Verification required</div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="background:var(--success-bg);border:1px solid #6ee7b7;border-radius:10px;padding:14px 16px;margin-bottom:18px;">' +
+                '<div style="font-size:13px;font-weight:700;color:var(--success);margin-bottom:6px;">📧 Verification email sent!</div>' +
+                '<div style="font-size:12px;color:var(--success);line-height:1.6;">' +
+                    'We sent a verification link to<br><strong>' + email + '</strong><br><br>' +
+                    'Click the link in that email, then come back here to sign in.' +
+                '</div>' +
+            '</div>' +
+            '<div id="verifyResendMsg" style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px;min-height:18px;"></div>' +
+            '<button class="auth-submit-btn" onclick="_resendVerificationEmail(\'' + email + '\')" id="resendVerifyBtn">Resend Verification Email</button>' +
+            '<div style="text-align:center;margin-top:14px;">' +
+                '<button onclick="location.reload()" style="background:none;border:none;color:var(--navy);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;box-shadow:none;">← Back to Sign In</button>' +
+            '</div>' +
+            '<div class="auth-footer">Sarathchandra Agencies · Unilever Distributor · Balangoda</div>';
+    }
+
+    async function _resendVerificationEmail(email, password) {
+        const msgEl = document.getElementById('verifyResendMsg');
+        const btn   = document.getElementById('resendVerifyBtn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+        try {
+            // Need to sign in temporarily to get user object for sendEmailVerification
+            if (password) {
+                const cred = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                await cred.user.sendEmailVerification();
+                await firebaseAuth.signOut();
+            } else {
+                // Use password reset as proxy if no password available
+                await firebaseAuth.sendPasswordResetEmail(email);
+            }
+            if (msgEl) msgEl.innerHTML = '<span style="color:var(--success);">✅ Sent! Check your inbox again.</span>';
+        } catch(e) {
+            if (msgEl) msgEl.innerHTML = '<span style="color:var(--danger);">Failed to resend. Try again later.</span>';
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Resend Verification Email'; }
+        }
+    }
+
+
     function toggleSuggestions() {
         const panel = document.getElementById('suggestionsPanel');
         if (!panel) return;
@@ -3680,6 +5448,7 @@
                     '<div class="manual-empty-note">No line-item data found for this month.<br><small style="color:var(--muted);">This count was approved before full-item archiving was enabled. Re-approve after re-scanning to save full data.</small></div>';
                 document.getElementById('fullCountDetailSubtitle').textContent = 'No line-item data available.';
                 document.getElementById('archiveExcelBtn').disabled = true;
+                document.getElementById('archivePdfBtn').disabled = true;
                 return;
             }
 
@@ -3688,6 +5457,7 @@
             document.getElementById('fullCountDetailSubtitle').textContent =
                 _archiveItems.length + ' SKUs archived · Saved at ' + savedAt;
             document.getElementById('archiveExcelBtn').disabled = false;
+            document.getElementById('archivePdfBtn').disabled = false;
             renderArchiveDetailTable();
         } catch (e) {
             document.getElementById('fullCountDetailLoading').style.display = 'none';
@@ -3844,8 +5614,91 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast('Archive Excel downloaded for ' + _archiveMonth + '.');
+            logAudit('Archive Excel Re-downloaded', _archiveMonth);
         } catch (err) {
             showToast('Excel export failed: ' + err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    }
+
+    // --- FEATURE: Restore History — re-generate a PDF report from archived month data ---
+    async function redownloadPdfFromArchive() {
+        if (!_archiveItems || _archiveItems.length === 0) { showToast("No archived data to export."); return; }
+        const btn = document.getElementById('archivePdfBtn');
+        setButtonLoading(btn, true, 'Generating…');
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(14);
+            doc.text("Stock Variance Report - Sarathchandra Agencies (Balangoda) - " + _archiveMonth, 14, 16);
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text("Restored from history · Generated: " + new Date().toLocaleString(), 14, 22);
+
+            doc.setFontSize(7.5);
+            const legendItems = [
+                { color: [185, 28, 28],  label: "Shortage" },
+                { color: [4, 120, 87],   label: "Excess" },
+                { color: [180, 83, 9],   label: "Not In System" },
+                { color: [100, 116, 139],label: "Not Counted" }
+            ];
+            let lx = 14;
+            legendItems.forEach(item => {
+                doc.setFillColor(...item.color);
+                doc.rect(lx, 24, 3, 3, 'F');
+                doc.setTextColor(...item.color);
+                doc.text(item.label, lx + 4.5, 26.8);
+                lx += doc.getTextWidth(item.label) + 10;
+            });
+            doc.setTextColor(0);
+
+            const body = _archiveItems.map(item => {
+                let status = !item.counted ? "NOT COUNTED" : (item.diff === 0 ? "MATCHED" : (item.diff < 0 ? "SHORTAGE" : "EXCESS"));
+                let isUnknownSku = item.counted && item.diff > 0 && item.sysCases === 0 && item.sysPieces === 0 && item.aipPrice === 0;
+                return [
+                    item.sku,
+                    item.name,
+                    item.totalSysUnits,
+                    item.counted ? item.totalPhyUnits : "—",
+                    item.counted ? item.diff : "—",
+                    item.counted ? "Rs. " + Math.abs(item.valGap).toFixed(2) : "—",
+                    status + (isUnknownSku ? " (Not In System)" : "")
+                ];
+            });
+
+            doc.autoTable({
+                startY: 31,
+                head: [["SKU", "Product Name", "Sys Units", "Phy Units", "Variance", "Value", "Status"]],
+                body: body,
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [247, 248, 251] },
+                didParseCell: function(data) {
+                    if (data.section !== 'body') return;
+                    const statusText = String(data.row.raw[6] || '');
+                    let fill = null, text = null;
+                    if (statusText.indexOf('SHORTAGE') === 0) {
+                        fill = [253, 236, 235]; text = [185, 28, 28];
+                    } else if (statusText.indexOf('EXCESS') === 0) {
+                        fill = [230, 246, 239]; text = [4, 120, 87];
+                        if (statusText.indexOf('Not In System') !== -1) { text = [180, 83, 9]; }
+                    } else if (statusText.indexOf('NOT COUNTED') === 0) {
+                        fill = [243, 245, 250]; text = [100, 116, 139];
+                    }
+                    if (fill) data.cell.styles.fillColor = fill;
+                    if (text && (data.column.index === 4 || data.column.index === 5 || data.column.index === 6)) {
+                        data.cell.styles.textColor = text;
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
+
+            doc.save("Stock_Archive_" + _archiveMonth + ".pdf");
+            showToast('Archive PDF downloaded for ' + _archiveMonth + '.');
+            logAudit('Archive PDF Re-downloaded', _archiveMonth);
+        } catch (err) {
+            showToast('PDF export failed: ' + err.message);
         } finally {
             setButtonLoading(btn, false);
         }

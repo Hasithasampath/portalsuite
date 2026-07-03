@@ -550,9 +550,939 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
+    /* === SVG Icon Sizing === */
+    .item-icon svg { width: 17px; height: 17px; stroke: currentColor; transition: transform 0.2s; }
+    .menu-item:hover .item-icon svg { transform: scale(1.12); }
+    .logo-icon svg { width: 20px; height: 20px; stroke: #ffffff; }
+
+    /* === Sidebar Search Box === */
+    .sidebar-search {
+        position: relative;
+        margin: 0 0 14px 0;
+        flex-shrink: 0;
+    }
+    .sidebar-search svg {
+        position: absolute;
+        left: 11px; top: 50%;
+        transform: translateY(-50%);
+        width: 14px; height: 14px;
+        stroke: var(--text-muted);
+        pointer-events: none;
+    }
+    .sidebar-search input {
+        width: 100%;
+        padding: 9px 12px 9px 32px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.7);
+        background: rgba(255,255,255,0.55);
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-pure);
+        outline: none;
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+    .sidebar-search input::placeholder { color: var(--text-muted); font-weight: 600; }
+    .sidebar-search input:focus {
+        background: rgba(255,255,255,0.9);
+        box-shadow: 0 0 0 2px rgba(59,130,246,0.35);
+    }
+    .sidebar-search .clear-search {
+        position: absolute;
+        right: 8px; top: 50%;
+        transform: translateY(-50%);
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.08);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 10px;
+        color: var(--text-sub);
+        line-height: 1;
+    }
+    .sidebar-search.has-text .clear-search { display: flex; }
+    .sidebar-search.has-text svg { display: none; }
+
+    .no-results {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 18px 5px;
+    }
+
+    /* === Favorite Star Button === */
+    .fav-btn {
+        margin-left: auto;
+        width: 20px; height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        border-radius: 6px;
+        opacity: 0.45;
+        transition: all 0.2s ease;
+    }
+    .fav-btn svg { width: 13px; height: 13px; stroke: #f59e0b; fill: none; }
+    .fav-btn:hover { opacity: 1; transform: scale(1.15); }
+    .fav-btn.is-fav { opacity: 1; }
+    .fav-btn.is-fav svg { fill: #f59e0b; }
+    .menu-item { padding-right: 8px; }
+
+    .label-fav { color: #d97706; }
+    .label-recent { color: #0891b2; }
+
+    /* === Skeleton Loader over iframe === */
+    .iframe-loader {
+        position: absolute;
+        top: 15px; left: 15px; right: 15px; bottom: 15px;
+        border-radius: 16px;
+        background: #ffffff;
+        z-index: 6;
+        padding: 25px;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        overflow: hidden;
+    }
+    .iframe-loader.show { display: block; opacity: 1; }
+    .skel-line {
+        height: 14px;
+        border-radius: 7px;
+        margin-bottom: 14px;
+        background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+        background-size: 400% 100%;
+        animation: skeletonShine 1.4s ease infinite;
+    }
+    .skel-line.w-30 { width: 30%; height: 20px; }
+    .skel-line.w-60 { width: 60%; }
+    .skel-line.w-90 { width: 90%; }
+    .skel-line.w-75 { width: 75%; }
+    .skel-block { height: 90px; border-radius: 12px; margin-top: 18px;
+        background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%);
+        background-size: 400% 100%;
+        animation: skeletonShine 1.4s ease infinite;
+    }
+    .skel-spinner-text {
+        text-align: center;
+        margin-top: 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+    }
+    @keyframes skeletonShine {
+        0% { background-position: 100% 50%; }
+        100% { background-position: 0 50%; }
+    }
+
+    /* Tool iframe fade-out while switching */
+    .tool-iframe.fading { opacity: 0; }
+
+    /* === Notification Center === */
+    .notif-wrap { position: relative; }
+    .notif-btn {
+        position: relative;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-sub);
+        transition: all 0.2s ease;
+    }
+    .notif-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+    .notif-btn:hover { background: rgba(255, 255, 255, 0.95); color: var(--text-pure); transform: scale(1.08); }
+    .notif-dot {
+        position: absolute;
+        top: 5px; right: 6px;
+        width: 8px; height: 8px;
+        background: #ec4899;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        display: none;
+    }
+    .notif-dot.show { display: block; }
+
+    .notif-panel {
+        position: fixed;
+        width: 290px;
+        max-height: 360px;
+        overflow-y: auto;
+        background: rgba(255,255,255,0.97);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.9);
+        border-radius: 14px;
+        box-shadow: var(--shadow-elevation);
+        z-index: 99990;
+        display: none;
+        opacity: 0;
+        transform: translateY(-6px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .notif-panel.show { display: block; opacity: 1; transform: translateY(0); }
+
+    /* iframe shield - panel open වෙද්දි iframe ඉස්සරහා transparent layer */
+    .iframe-shield {
+        position: absolute;
+        inset: 0;
+        z-index: 99980;
+        display: none;
+    }
+    .iframe-shield.active { display: block; }
+    .notif-panel-header {
+        padding: 12px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-pure);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .notif-item {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        font-size: 12px;
+        color: var(--text-sub);
+        line-height: 1.4;
+    }
+    .notif-item b { color: var(--text-pure); font-weight: 700; }
+    .notif-item .notif-time { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+    .notif-empty { padding: 20px 14px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+    /* === Toast Notification === */
+    .toast-wrap {
+        position: fixed;
+        bottom: 24px; right: 24px;
+        z-index: 99997;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+    }
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.97);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.9);
+        border-left: 3px solid #10b981;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-elevation);
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--text-pure);
+        min-width: 220px;
+        max-width: 320px;
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast.hide { opacity: 0; transform: translateX(30px) scale(0.95); }
+    .toast-icon {
+        width: 26px; height: 26px;
+        flex-shrink: 0;
+        background: rgba(16, 185, 129, 0.12);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .toast-icon svg { width: 13px; height: 13px; stroke: #10b981; stroke-width: 3; }
+    /* ========= LOGIN / REGISTER OVERLAY ========= */
+    .auth-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease;
+    }
+    .auth-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+    /* background blobs */
+    .auth-overlay::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 60% 60% at 20% 20%, rgba(59,130,246,0.18) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 50% at 80% 80%, rgba(236,72,153,0.15) 0%, transparent 70%),
+            radial-gradient(ellipse 40% 40% at 60% 10%, rgba(139,92,246,0.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .auth-card {
+        width: 400px;
+        max-width: 94vw;
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255,255,255,0.9);
+        border-radius: 24px;
+        box-shadow: 0 25px 60px -10px rgba(148,163,184,0.4);
+        padding: 36px 32px 28px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .auth-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 28px;
+    }
+    .auth-logo-icon {
+        width: 40px; height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .auth-logo-icon svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2.2; fill: none; }
+    .auth-logo-text h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--text-pure); }
+    .auth-logo-text p { margin: 0; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    /* tab switcher */
+    .auth-tabs {
+        display: flex;
+        background: rgba(0,0,0,0.04);
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 24px;
+        gap: 4px;
+    }
+    .auth-tab {
+        flex: 1;
+        padding: 9px;
+        border: none;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: inherit;
+        transition: all 0.22s ease;
+    }
+    .auth-tab.active {
+        background: #fff;
+        color: var(--text-pure);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* forms */
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .auth-field {
+        margin-bottom: 14px;
+    }
+    .auth-field label {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-sub);
+        margin-bottom: 5px;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+    .auth-input-wrap { position: relative; }
+    .auth-input-wrap svg {
+        position: absolute;
+        left: 12px; top: 50%;
+        transform: translateY(-50%);
+        width: 15px; height: 15px;
+        stroke: var(--text-muted);
+        stroke-width: 2;
+        fill: none;
+        pointer-events: none;
+    }
+    .auth-field input {
+        width: 100%;
+        padding: 11px 12px 11px 36px;
+        border-radius: 11px;
+        border: 1.5px solid rgba(0,0,0,0.08);
+        background: rgba(255,255,255,0.8);
+        font-size: 13.5px;
+        font-family: inherit;
+        font-weight: 600;
+        color: var(--text-pure);
+        outline: none;
+        transition: all 0.2s ease;
+    }
+    .auth-field input:focus {
+        border-color: #3b82f6;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+    .auth-field input.error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+
+    .auth-btn {
+        width: 100%;
+        padding: 13px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        font-family: inherit;
+        cursor: pointer;
+        margin-top: 6px;
+        letter-spacing: 0.3px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(59,130,246,0.35);
+    }
+    .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(59,130,246,0.4); }
+    .auth-btn:active { transform: translateY(0); }
+    .auth-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .auth-msg {
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        margin-top: 10px;
+        min-height: 18px;
+        border-radius: 8px;
+        padding: 5px 10px;
+    }
+    .auth-msg.err { color: #dc2626; background: rgba(239,68,68,0.08); }
+    .auth-msg.ok  { color: #059669; background: rgba(16,185,129,0.08); }
+
+    /* logged-in user chip in sidebar footer */
+    .user-chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(59,130,246,0.08);
+        border: 1px solid rgba(59,130,246,0.15);
+        border-radius: 10px;
+        padding: 7px 10px;
+        margin-bottom: 8px;
+    }
+    .user-chip-avatar {
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 800; color: #fff;
+        flex-shrink: 0;
+    }
+    .user-chip-name {
+        flex: 1;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-pure);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .user-chip-logout {
+        cursor: pointer;
+        padding: 3px;
+        border-radius: 6px;
+        color: var(--text-muted);
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .user-chip-logout:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+    .user-chip-logout svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; display: block; }
+    /* ========= ADMIN PANEL ========= */
+    .admin-overlay {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(15,23,42,0.55);
+        backdrop-filter: blur(6px);
+        display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.25s ease;
+    }
+    .admin-overlay.show { display: flex; opacity: 1; }
+
+    .admin-panel {
+        width: 720px; max-width: 96vw;
+        max-height: 88vh;
+        background: rgba(255,255,255,0.97);
+        border-radius: 22px;
+        box-shadow: 0 30px 80px -10px rgba(15,23,42,0.35);
+        display: flex; flex-direction: column;
+        overflow: hidden;
+        transform: translateY(20px) scale(0.97);
+        transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .admin-overlay.show .admin-panel { transform: translateY(0) scale(1); }
+
+    .admin-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .admin-header-icon {
+        width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+        background: linear-gradient(135deg,#f59e0b,#d97706);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .admin-header-icon svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2.2; fill: none; }
+    .admin-header-text h3 { margin: 0; font-size: 15px; font-weight: 800; color: var(--text-pure); }
+    .admin-header-text p  { margin: 0; font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+    .admin-close {
+        margin-left: auto; width: 32px; height: 32px; border-radius: 9px;
+        background: rgba(0,0,0,0.05); border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; color: var(--text-muted); transition: all 0.2s;
+    }
+    .admin-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+    .admin-stats {
+        display: flex; gap: 12px; padding: 16px 24px;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .admin-stat {
+        flex: 1; background: rgba(0,0,0,0.03); border-radius: 12px;
+        padding: 12px 14px;
+    }
+    .admin-stat-val { font-size: 22px; font-weight: 900; color: var(--text-pure); }
+    .admin-stat-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .admin-body { overflow-y: auto; flex: 1; padding: 16px 24px 20px; }
+
+    .admin-search-bar {
+        position: relative; margin-bottom: 14px;
+    }
+    .admin-search-bar svg {
+        position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+        width: 14px; height: 14px; stroke: var(--text-muted); pointer-events: none;
+    }
+    .admin-search-bar input {
+        width: 100%; padding: 9px 12px 9px 32px;
+        border: 1.5px solid rgba(0,0,0,0.08); border-radius: 10px;
+        font-family: inherit; font-size: 13px; font-weight: 600;
+        color: var(--text-pure); outline: none; background: rgba(0,0,0,0.02);
+        transition: all 0.2s;
+    }
+    .admin-search-bar input:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.12); }
+
+    .user-table { width: 100%; border-collapse: collapse; }
+    .user-table th {
+        text-align: left; font-size: 10.5px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        color: var(--text-muted); padding: 6px 10px 10px;
+        border-bottom: 2px solid rgba(0,0,0,0.06);
+    }
+    .user-table td { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.04); vertical-align: middle; }
+    .user-table tr:last-child td { border-bottom: none; }
+    .user-table tr:hover td { background: rgba(245,158,11,0.04); }
+
+    .u-avatar {
+        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 800; color: #fff;
+        background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+    }
+    .u-name { font-size: 13px; font-weight: 700; color: var(--text-pure); }
+    .u-username { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .u-email { font-size: 11.5px; font-weight: 600; color: var(--text-sub); }
+    .u-date { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 20px;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
+    }
+    .role-badge.admin { background: rgba(245,158,11,0.12); color: #d97706; border: 1px solid rgba(245,158,11,0.25); }
+    .role-badge.user  { background: rgba(59,130,246,0.1); color: #2563eb; border: 1px solid rgba(59,130,246,0.2); }
+    .role-badge.disabled { background: rgba(239,68,68,0.08); color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+
+    .role-select {
+        padding: 5px 8px; border-radius: 8px; border: 1.5px solid rgba(0,0,0,0.1);
+        font-family: inherit; font-size: 12px; font-weight: 700;
+        color: var(--text-pure); background: #fff; cursor: pointer; outline: none;
+        transition: border-color 0.2s;
+    }
+    .role-select:focus { border-color: #f59e0b; }
+
+    .u-action-btn {
+        padding: 5px 10px; border-radius: 8px; border: none;
+        font-family: inherit; font-size: 11.5px; font-weight: 700;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .u-action-btn.disable { background: rgba(239,68,68,0.08); color: #dc2626; }
+    .u-action-btn.disable:hover { background: rgba(239,68,68,0.18); }
+    .u-action-btn.enable { background: rgba(16,185,129,0.1); color: #059669; }
+    .u-action-btn.enable:hover { background: rgba(16,185,129,0.2); }
+    .u-action-btn.save { background: rgba(59,130,246,0.1); color: #2563eb; }
+    .u-action-btn.save:hover { background: rgba(59,130,246,0.2); }
+    .u-me { font-size: 10px; font-weight: 700; color: #8b5cf6; background: rgba(139,92,246,0.1); padding: 2px 7px; border-radius: 20px; }
+
+    .admin-empty { text-align: center; padding: 30px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+    /* Admin button in sidebar */
+    .admin-chip {
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(245,158,11,0.08);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 10px; padding: 7px 10px;
+        margin-bottom: 8px; cursor: pointer;
+        transition: all 0.2s;
+    }
+    .admin-chip:hover { background: rgba(245,158,11,0.15); }
+    .admin-chip svg { width: 14px; height: 14px; stroke: #d97706; stroke-width: 2.2; fill: none; flex-shrink: 0; }
+    .admin-chip-label { font-size: 12px; font-weight: 700; color: #d97706; }
+    .admin-chip-badge {
+        margin-left: auto; background: #f59e0b; color: #fff;
+        font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 20px;
+    }
+    /* ========= PROFILE EDIT MODAL ========= */
+    .profile-overlay {
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(15,23,42,0.5); backdrop-filter: blur(6px);
+        display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.22s ease;
+    }
+    .profile-overlay.show { display: flex; opacity: 1; }
+    .profile-card {
+        width: 380px; max-width: 94vw;
+        background: rgba(255,255,255,0.97);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(15,23,42,0.3);
+        overflow: hidden;
+        transform: translateY(16px) scale(0.97);
+        transition: transform 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .profile-overlay.show .profile-card { transform: translateY(0) scale(1); }
+    .profile-header {
+        padding: 18px 20px 14px;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        display: flex; align-items: center; gap: 10px;
+    }
+    .profile-header-avatar {
+        width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; font-weight: 800; color: #fff;
+    }
+    .profile-header-text h3 { margin: 0; font-size: 14px; font-weight: 800; color: var(--text-pure); }
+    .profile-header-text p  { margin: 0; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .profile-close {
+        margin-left: auto; width: 30px; height: 30px; border-radius: 8px;
+        background: rgba(0,0,0,0.05); border: none; cursor: pointer;
+        font-size: 15px; color: var(--text-muted); transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .profile-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .profile-tabs {
+        display: flex; background: rgba(0,0,0,0.03);
+        padding: 4px; gap: 4px; margin: 14px 20px 0;
+        border-radius: 10px;
+    }
+    .profile-tab {
+        flex: 1; padding: 7px; border: none; border-radius: 7px;
+        font-family: inherit; font-size: 12px; font-weight: 700;
+        cursor: pointer; background: transparent; color: var(--text-muted);
+        transition: all 0.2s;
+    }
+    .profile-tab.active { background: #fff; color: var(--text-pure); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .profile-body { padding: 16px 20px 20px; }
+    .profile-form { display: none; }
+    .profile-form.active { display: block; }
+    .p-field { margin-bottom: 12px; }
+    .p-field label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 5px; }
+    .p-field input {
+        width: 100%; padding: 10px 12px; border-radius: 10px;
+        border: 1.5px solid rgba(0,0,0,0.08); background: rgba(0,0,0,0.02);
+        font-family: inherit; font-size: 13px; font-weight: 600;
+        color: var(--text-pure); outline: none; transition: all 0.2s;
+    }
+    .p-field input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); background: #fff; }
+    .p-field input:disabled { opacity: 0.5; cursor: not-allowed; }
+    .profile-msg { font-size: 12px; font-weight: 600; min-height: 18px; padding: 5px 10px; border-radius: 8px; margin-top: 8px; text-align: center; }
+    .profile-msg.err { color: #dc2626; background: rgba(239,68,68,0.08); }
+    .profile-msg.ok  { color: #059669; background: rgba(16,185,129,0.08); }
+
+    /* user chip — clickable */
+    .user-chip { cursor: pointer; }
+    .user-chip:hover { background: rgba(59,130,246,0.12); }
+
+    /* ========= TOOL LOCK BADGE ========= */
+    .tool-lock {
+        margin-left: auto; margin-right: 4px;
+        width: 16px; height: 16px; flex-shrink: 0;
+        opacity: 0.5;
+    }
+    .tool-lock svg { width: 13px; height: 13px; stroke: #ef4444; stroke-width: 2.5; fill: none; }
+    .menu-item.locked { opacity: 0.55; cursor: not-allowed; }
+    .menu-item.locked:hover { background: rgba(239,68,68,0.06) !important; transform: none !important; }
+
+    /* ========= ADMIN PANEL TABS ========= */
+    .admin-tabs-bar {
+        display: flex; gap: 6px; padding: 12px 24px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .admin-tab-btn {
+        padding: 8px 16px; border: none; border-radius: 10px 10px 0 0;
+        font-family: inherit; font-size: 12px; font-weight: 700;
+        cursor: pointer; background: rgba(0,0,0,0.04); color: var(--text-muted);
+        transition: all 0.2s; border-bottom: 2px solid transparent;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .admin-tab-btn svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+    .admin-tab-btn.active { background: #fff; color: var(--text-pure); border-bottom-color: #f59e0b; }
+    .admin-tab-pane { display: none; }
+    .admin-tab-pane.active { display: block; }
+
+    /* Tool restrictions tab */
+    .tool-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 11px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .tool-row:last-child { border-bottom: none; }
+    .tool-row-icon { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+        background: rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; }
+    .tool-row-icon svg { width: 15px; height: 15px; stroke: var(--text-sub); stroke-width: 2; fill: none; }
+    .tool-row-label { flex: 1; font-size: 13px; font-weight: 700; color: var(--text-pure); }
+    .tool-row-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .access-toggle {
+        display: flex; gap: 4px; background: rgba(0,0,0,0.04); padding: 3px; border-radius: 8px;
+    }
+    .access-btn {
+        padding: 5px 11px; border: none; border-radius: 6px; font-family: inherit;
+        font-size: 11.5px; font-weight: 700; cursor: pointer; background: transparent;
+        color: var(--text-muted); transition: all 0.2s;
+    }
+    .access-btn.active-all  { background: #10b981; color: #fff; }
+    .access-btn.active-admin { background: #f59e0b; color: #fff; }
+
+    /* Activity log */
+    .activity-row {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
+        font-size: 12px;
+    }
+    .activity-row:last-child { border-bottom: none; }
+    .activity-dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        margin-top: 4px;
+    }
+    .activity-dot.login    { background: #10b981; }
+    .activity-dot.logout   { background: #ef4444; }
+    .activity-dot.profile  { background: #3b82f6; }
+    .act-user { font-weight: 700; color: var(--text-pure); }
+    .act-event { color: var(--text-sub); font-weight: 600; }
+    .act-time  { color: var(--text-muted); font-size: 11px; margin-left: auto; white-space: nowrap; font-weight: 600; }
 </style>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword,
+         signInWithEmailAndPassword, signOut,
+         onAuthStateChanged, updateProfile,
+         sendEmailVerification, sendPasswordResetEmail,
+         updatePassword, EmailAuthProvider,
+         reauthenticateWithCredential }                      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, query,
+         collection, where, getDocs, addDoc,
+         orderBy, limit, serverTimestamp }                   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCpZ1EcBfyF5xNt6B32Sk-YrLiIWTPX4i0",
+    authDomain: "portel-suite.firebaseapp.com",
+    projectId: "portel-suite",
+    storageBucket: "portel-suite.firebasestorage.app",
+    messagingSenderId: "559942959523",
+    appId: "1:559942959523:web:bdbf30bc38d3a6b3375a16"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── Expose to global ──────────────────────────────────────
+window._fb = {
+    auth, db,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut, updateProfile,
+    sendEmailVerification, sendPasswordResetEmail,
+    updatePassword, EmailAuthProvider, reauthenticateWithCredential,
+    doc, setDoc, getDoc,
+    query, collection, where, getDocs,
+    addDoc, orderBy, limit, serverTimestamp
+};
+
+// ── Auth State ────────────────────────────────────────────
+
+// Tab-close logout trick:
+// sessionStorage = refresh survive කරනවා, tab close = clear
+// Firebase LOCAL persistence = browser close කළත් token ඉතුරු වෙනවා
+// ඒ නිසා: sessionStorage flag නැත්නම් = new tab/browser open = force sign out
+
+const TAB_KEY = 'sp_tab_alive';
+const isRefresh = sessionStorage.getItem(TAB_KEY) === '1';
+
+if (!isRefresh) {
+    // New tab or browser reopen — force sign out Firebase token
+    signOut(auth).catch(() => {});
+}
+
+// Set flag immediately so refresh detects it
+sessionStorage.setItem(TAB_KEY, '1');
+
+onAuthStateChanged(auth, async user => {
+    // Wait for main script to initialize
+    await new Promise(r => {
+        if (document.readyState === 'complete') r();
+        else window.addEventListener('load', r);
+    });
+
+    if (user) {
+        if (!user.emailVerified) {
+            if (window._showVerifyPanel) window._showVerifyPanel(user.email);
+            return;
+        }
+        const name = user.displayName || user.email.split('@')[0];
+        if (window.enterPortal) window.enterPortal(name);
+    } else {
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.classList.remove('fade-out');
+        }
+    }
+});
+</script>
 </head>
 <body>
+
+    <!-- ===== AUTH OVERLAY ===== -->
+    <div class="auth-overlay" id="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <div class="auth-logo-text">
+                    <h2>Smart Portal Pro</h2>
+                    <p>Sarathchandra Agencies — Operations Suite</p>
+                </div>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <!-- LOGIN -->
+            <div class="auth-form active" id="form-login">
+                <div class="auth-field">
+                    <label>Username</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="login-user" placeholder="Enter your username" autocomplete="username">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Password</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+                    </div>
+                </div>
+                <div style="text-align:right; margin-top:-6px; margin-bottom:12px;">
+                    <span onclick="switchTab('forgot')" style="font-size:12px; font-weight:700; color:#3b82f6; cursor:pointer;">Forgot password?</span>
+                </div>
+                <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
+                <div class="auth-msg" id="login-msg"></div>
+            </div>
+
+            <!-- REGISTER -->
+            <div class="auth-form" id="form-register">
+                <div class="auth-field">
+                    <label>Full Name</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="reg-name" placeholder="Your full name">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Username</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input type="text" id="reg-user" placeholder="Choose a username (e.g. Jone)">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Email</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Password</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="reg-pass" placeholder="Min 6 characters">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Confirm Password</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="reg-pass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doRegister()">
+                    </div>
+                </div>
+                <button class="auth-btn" id="register-btn" onclick="doRegister()">Create Account →</button>
+                <div class="auth-msg" id="register-msg"></div>
+            </div>
+
+            <!-- FORGOT PASSWORD -->
+            <div class="auth-form" id="form-forgot">
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:13.5px; font-weight:700; color:var(--text-pure); margin-bottom:5px;">Reset your password</div>
+                    <div style="font-size:12px; color:var(--text-muted); font-weight:600; line-height:1.5;">Enter your email address. We'll send a reset link immediately.</div>
+                </div>
+                <div class="auth-field">
+                    <label>Email Address</label>
+                    <div class="auth-input-wrap">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input type="email" id="forgot-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doForgot()">
+                    </div>
+                </div>
+                <button class="auth-btn" id="forgot-btn" onclick="doForgot()">Send Reset Email →</button>
+                <div class="auth-msg" id="forgot-msg"></div>
+                <div style="text-align:center; margin-top:14px;">
+                    <span onclick="switchTab('login')" style="font-size:12px; font-weight:700; color:#3b82f6; cursor:pointer;">← Back to Sign In</span>
+                </div>
+            </div>
+
+            <!-- EMAIL VERIFICATION NOTICE -->
+            <div class="auth-form" id="form-verify">
+                <div style="text-align:center; padding: 10px 0 20px;">
+                    <div style="font-size:36px; margin-bottom:12px;">📧</div>
+                    <div style="font-size:14px; font-weight:800; color:var(--text-pure); margin-bottom:8px;">Check your email!</div>
+                    <div style="font-size:12.5px; color:var(--text-muted); font-weight:600; line-height:1.6;" id="verify-email-hint">A verification link has been sent. Click it to activate your account.</div>
+                </div>
+                <button class="auth-btn" id="verify-check-btn" onclick="checkVerified()" style="background: linear-gradient(135deg,#10b981,#059669);">I've verified my email ✓</button>
+                <div style="text-align:center; margin-top:10px;">
+                    <span onclick="resendVerification()" style="font-size:12px; font-weight:700; color:#3b82f6; cursor:pointer;">Resend verification email</span>
+                </div>
+                <div class="auth-msg" id="verify-msg"></div>
+                <div style="text-align:center; margin-top:10px;">
+                    <span onclick="doLogout()" style="font-size:11.5px; font-weight:600; color:var(--text-muted); cursor:pointer;">Sign out</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="error-overlay" class="error-blur-overlay" onclick="closeError()"></div>
     <div id="error-pop-center" class="error-popup-center">
@@ -562,57 +1492,169 @@
         <button class="error-btn" onclick="closeError()">Close</button>
     </div>
 
+    <!-- ===== ADMIN PANEL ===== -->
+    <div class="admin-overlay" id="admin-overlay" onclick="closeAdminPanel(event)">
+        <div class="admin-panel" onclick="event.stopPropagation()">
+            <div class="admin-header">
+                <div class="admin-header-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="admin-header-text">
+                    <h3>Admin Panel</h3>
+                    <p>User Management & Role Control</p>
+                </div>
+                <button class="admin-close" onclick="closeAdminPanel()">✕</button>
+            </div>
+            <div class="admin-stats">
+                <div class="admin-stat">
+                    <div class="admin-stat-val" id="stat-total">—</div>
+                    <div class="admin-stat-label">Total Users</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-val" id="stat-admins">—</div>
+                    <div class="admin-stat-label">Admins</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="admin-stat-val" id="stat-disabled">—</div>
+                    <div class="admin-stat-label">Disabled</div>
+                </div>
+            </div>
+            <div class="admin-tabs-bar">
+                <button class="admin-tab-btn active" id="atab-users"    onclick="switchAdminTab('users')">
+                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Users
+                </button>
+                <button class="admin-tab-btn" id="atab-tools"   onclick="switchAdminTab('tools')">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Tools
+                </button>
+                <button class="admin-tab-btn" id="atab-activity" onclick="switchAdminTab('activity')">
+                    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Activity
+                </button>
+            </div>
+            <div class="admin-body">
+                <!-- USERS TAB -->
+                <div class="admin-tab-pane active" id="apane-users">
+                <div class="admin-search-bar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="admin-search" placeholder="Search users…" oninput="filterAdminUsers(this.value)">
+                </div>
+                <table class="user-table">
+                    <thead><tr>
+                        <th>User</th><th>Email</th><th>Joined</th><th>Role</th><th>Actions</th>
+                    </tr></thead>
+                    <tbody id="admin-user-tbody"></tbody>
+                </table>
+                <div class="admin-empty" id="admin-empty" style="display:none;">No users found.</div>
+                </div>
+
+                <!-- TOOLS TAB -->
+                <div class="admin-tab-pane" id="apane-tools">
+                    <div id="tools-restriction-list" style="padding-top:4px;"></div>
+                </div>
+
+                <!-- ACTIVITY TAB -->
+                <div class="admin-tab-pane" id="apane-activity">
+                    <div id="activity-list" style="padding-top:4px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PROFILE EDIT MODAL ===== -->
+    <div class="profile-overlay" id="profile-overlay" onclick="closeProfileModal(event)">
+        <div class="profile-card" onclick="event.stopPropagation()">
+            <div class="profile-header">
+                <div class="profile-header-avatar" id="profile-modal-avatar">?</div>
+                <div class="profile-header-text">
+                    <h3 id="profile-modal-name">User</h3>
+                    <p id="profile-modal-username">@username</p>
+                </div>
+                <button class="profile-close" onclick="closeProfileModal()">✕</button>
+            </div>
+            <div class="profile-tabs">
+                <button class="profile-tab active" onclick="switchProfileTab('info')">Profile</button>
+                <button class="profile-tab"        onclick="switchProfileTab('password')">Password</button>
+            </div>
+            <div class="profile-body">
+                <!-- Profile Info -->
+                <div class="profile-form active" id="pform-info">
+                    <div class="p-field">
+                        <label>Full Name</label>
+                        <input type="text" id="p-name" placeholder="Your full name">
+                    </div>
+                    <div class="p-field">
+                        <label>Username</label>
+                        <input type="text" id="p-username" disabled>
+                    </div>
+                    <div class="p-field">
+                        <label>Email</label>
+                        <input type="text" id="p-email" disabled>
+                    </div>
+                    <button class="auth-btn" style="margin-top:4px;" onclick="saveProfile()">Save Changes</button>
+                    <div class="profile-msg" id="pmsg-info"></div>
+                </div>
+                <!-- Password Change -->
+                <div class="profile-form" id="pform-password">
+                    <div class="p-field">
+                        <label>Current Password</label>
+                        <input type="password" id="p-curr-pass" placeholder="Enter current password">
+                    </div>
+                    <div class="p-field">
+                        <label>New Password</label>
+                        <input type="password" id="p-new-pass" placeholder="Min 6 characters">
+                    </div>
+                    <div class="p-field">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="p-new-pass2" placeholder="Repeat new password">
+                    </div>
+                    <button class="auth-btn" style="margin-top:4px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);" onclick="savePassword()">Change Password</button>
+                    <div class="profile-msg" id="pmsg-password"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-wrap" id="toast-wrap"></div>
+
+    <div class="notif-panel" id="notif-panel">
+        <div class="notif-panel-header">Activity Notifications</div>
+        <div id="notif-list"></div>
+    </div>
+
     <div class="sidebar">
         <div class="logo-area">
-            <div class="logo-icon">⚡</div>
+            <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
             <div class="logo-text">
                 <h1>SMART PORTAL</h1>
                 <p>Operations Suite Pro</p>
             </div>
         </div>
 
-        <div class="sidebar-scroll">
-            <div class="menu-label label-cash">Cash Slip Tools</div>
-            <ul class="menu-list">
-                <li class="menu-item cash-item" onclick="loadTool('Cash slip (new).html', '💵 Cash Slip Summary (New Update)', this)">
-                    <span class="item-icon">💵</span> Cash Slip Summary (New)
-                </li>
-                <li class="menu-item cash-item" onclick="loadTool('Cash slip.html', '📄 Cash Slip Summary (Standard)', this)">
-                    <span class="item-icon">📄</span> Cash Slip Standard
-                </li>
-            </ul>
+        <div class="sidebar-search" id="sidebar-search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="tool-search-input" placeholder="Search Tool..." autocomplete="off" oninput="onSearchInput(this.value)">
+            <div class="clear-search" id="clear-search-btn" onclick="clearSearch()">✕</div>
+        </div>
 
-            <div class="menu-label label-data">Data Converters</div>
-            <ul class="menu-list">
-                <li class="menu-item data-item" onclick="loadTool('unilever_converter.html', '🔄 Unilever Claim Converter', this)">
-                    <span class="item-icon">🔄</span> Unilever Claim Converter
-                </li>
-                <li class="menu-item data-item" onclick="loadTool('general_excel.html', '✨ General Excel Viewer', this)">
-                    <span class="item-icon">✨</span> General Excel Viewer
-                </li>
-            </ul>
-
-            <div class="menu-label label-finance">Finance & Reports</div>
-            <ul class="menu-list">
-                <li class="menu-item finance-item" onclick="loadTool('market_billing.html', '🛒 Market Order Billing', this)">
-                    <span class="item-icon">🛒</span> Market Billing Tool
-                </li>
-                <li class="menu-item finance-item" onclick="loadTool('credit_report.html', '💳 Credit Report Tool', this)">
-                    <span class="item-icon">💳</span> Credit Report Tool
-                </li>
-                <li class="menu-item finance-item" onclick="loadTool('cheque_report.html', '🏦 Cheque Status Report', this)">
-                    <span class="item-icon">🏦</span> Cheque Report Tool
-                </li>
-                <li class="menu-item finance-item" onclick="loadTool('stock_report.html', '📦 Stock Sheet / Sales Report', this)">
-                    <span class="item-icon">📦</span> Stock Sheet Tool
-                </li>
-                <li class="menu-item finance-item" onclick="loadTool('stock_count.html', '🔢 Stock Count Controller', this)">
-                    <span class="item-icon">🔢</span> Stock Count Controller
-                </li>
-            </ul>
+        <div class="sidebar-scroll" id="sidebar-scroll">
+            <!-- Dynamic menu rendered by JS -->
         </div>
 
         <div class="sidebar-footer">
+            <div class="admin-chip" id="admin-chip" onclick="openAdminPanel()" style="display:none;">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span class="admin-chip-label">Admin Panel</span>
+                <span class="admin-chip-badge" id="admin-user-count">0</span>
+            </div>
+            <div class="user-chip" id="user-chip" onclick="openProfileModal()" title="Edit Profile">
+                <div class="user-chip-avatar" id="user-avatar">?</div>
+                <span class="user-chip-name" id="user-chip-name">User</span>
+                <div class="user-chip-logout" onclick="event.stopPropagation();doLogout()" title="Log Out">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </div>
+            </div>
             <span class="credits-text">Developed by Hasitha Sampath</span>
         </div>
     </div>
@@ -624,6 +1666,12 @@
                 <h2 class="page-title" id="current-title">Dashboard Overview</h2>
             </div>
             <div class="navbar-right">
+                <div class="notif-wrap">
+                    <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel(event)" title="Notifications">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span class="notif-dot" id="notif-dot"></span>
+                    </button>
+                </div>
                 <div class="live-clock" id="live-clock">-- --- --:--:--</div>
                 <div class="system-status" id="status-badge">
                     <div class="status-dot" id="status-dot"></div>
@@ -643,11 +1691,951 @@
             </div>
 
             <iframe id="tool-viewport" class="tool-iframe" style="display:none;"></iframe>
+            <div class="iframe-shield" id="iframe-shield"></div>
+
+            <div class="iframe-loader" id="iframe-loader">
+                <div class="skel-line w-30"></div>
+                <div class="skel-line w-90"></div>
+                <div class="skel-line w-75"></div>
+                <div class="skel-line w-60"></div>
+                <div class="skel-block"></div>
+                <div class="skel-spinner-text">Loading Tool…</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===== 1. LIVE CLOCK =====
+        // ===== ICON LIBRARY (Lucide-style inline SVGs) =====
+        const ICONS = {
+            receipt: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>',
+            filetext: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+            repeat: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>',
+            table: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>',
+            cart: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+            card: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+            bank: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 21 7 3 7"/></svg>',
+            package: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+            hash: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+            star: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            history: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/></svg>'
+        };
+
+        // ===== TOOL REGISTRY =====
+        const TOOLS = [
+            { id: 'cash_new',    file: 'Cash slip (new).html',  title: '💵 Cash Slip Summary (New Update)', label: 'Cash Slip Summary (New)', cat: 'cash',    catClass: 'cash-item',    icon: 'receipt' },
+            { id: 'cash_std',    file: 'Cash slip.html',        title: '📄 Cash Slip Summary (Standard)',   label: 'Cash Slip Standard',      cat: 'cash',    catClass: 'cash-item',    icon: 'filetext' },
+            { id: 'unilever',    file: 'unilever_converter.html', title: '🔄 Unilever Claim Converter',     label: 'Unilever Claim Converter', cat: 'data',   catClass: 'data-item',    icon: 'repeat' },
+            { id: 'gen_excel',   file: 'general_excel.html',    title: '✨ General Excel Viewer',           label: 'General Excel Viewer',    cat: 'data',    catClass: 'data-item',    icon: 'table' },
+            { id: 'market',      file: 'market_billing.html',   title: '🛒 Market Order Billing',           label: 'Market Billing Tool',     cat: 'finance', catClass: 'finance-item', icon: 'cart' },
+            { id: 'credit',      file: 'credit_report.html',    title: '💳 Credit Report Tool',             label: 'Credit Report Tool',      cat: 'finance', catClass: 'finance-item', icon: 'card' },
+            { id: 'cheque',      file: 'cheque_report.html',    title: '🏦 Cheque Status Report',           label: 'Cheque Report Tool',      cat: 'finance', catClass: 'finance-item', icon: 'bank' },
+            { id: 'stock_sheet', file: 'stock_report.html',     title: '📦 Stock Sheet / Sales Report',     label: 'Stock Sheet Tool',        cat: 'finance', catClass: 'finance-item', icon: 'package' },
+            { id: 'stock_count', file: 'stock_count.html',      title: '🔢 Stock Count Controller',         label: 'Stock Count Controller',  cat: 'finance', catClass: 'finance-item', icon: 'hash' }
+        ];
+        const CAT_LABELS = { cash: 'Cash Slip Tools', data: 'Data Converters', finance: 'Finance & Reports' };
+
+        let currentToolId = null;
+        let searchTerm = '';
+
+        // ===== FAVORITES & RECENT (persisted) =====
+        function getFavs() { try { return JSON.parse(localStorage.getItem('sp_favs') || '[]'); } catch(e) { return []; } }
+        function setFavs(arr) { localStorage.setItem('sp_favs', JSON.stringify(arr)); }
+        function toggleFav(id, evt) {
+            if (evt) evt.stopPropagation();
+            let favs = getFavs();
+            if (favs.includes(id)) favs = favs.filter(f => f !== id);
+            else favs.unshift(id);
+            setFavs(favs);
+            renderMenu();
+        }
+
+        function getRecent() { try { return JSON.parse(localStorage.getItem('sp_recent') || '[]'); } catch(e) { return []; } }
+        function addRecent(id) {
+            let recent = getRecent().filter(r => r !== id);
+            recent.unshift(id);
+            recent = recent.slice(0, 4);
+            localStorage.setItem('sp_recent', JSON.stringify(recent));
+        }
+
+        // ===== MENU ITEM HTML BUILDER =====
+        function buildMenuItemHTML(tool) {
+            const favs = getFavs();
+            const isFav = favs.includes(tool.id);
+            const isActive = tool.id === currentToolId ? 'active' : '';
+            const restriction = (window._toolRestrictions || {})[tool.id] || 'all';
+            const isLocked = restriction === 'admin' && window._currentUserRole !== 'admin';
+            const lockBadge = isLocked ? `<span class="tool-lock"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>` : '';
+            return `<li class="menu-item ${tool.catClass} ${isActive} ${isLocked ? 'locked' : ''}" data-id="${tool.id}" onclick="selectTool('${tool.id}')">
+                <span class="item-icon">${ICONS[tool.icon] || ''}</span> ${tool.label}
+                ${lockBadge}
+                <span class="fav-btn ${isFav ? 'is-fav' : ''}" onclick="toggleFav('${tool.id}', event)" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">${ICONS.star}</span>
+            </li>`;
+        }
+
+        // ===== RENDER SIDEBAR MENU (handles search, favorites, recent) =====
+        function renderMenu() {
+            const container = document.getElementById('sidebar-scroll');
+            const q = searchTerm.trim().toLowerCase();
+            const filtered = q ? TOOLS.filter(t => t.label.toLowerCase().includes(q)) : TOOLS;
+
+            let html = '';
+
+            if (q) {
+                if (filtered.length === 0) {
+                    html += `<div class="no-results">No tools match "${escapeHtml(searchTerm)}"</div>`;
+                } else {
+                    html += `<div class="menu-label label-data">Search Results</div><ul class="menu-list">`;
+                    filtered.forEach(t => html += buildMenuItemHTML(t));
+                    html += `</ul>`;
+                }
+                container.innerHTML = html;
+                setupKeyboardNav();
+                return;
+            }
+
+            // Favorites section
+            const favs = getFavs();
+            const favTools = favs.map(id => TOOLS.find(t => t.id === id)).filter(Boolean);
+            if (favTools.length) {
+                html += `<div class="menu-label label-fav">⭐ Favorites</div><ul class="menu-list">`;
+                favTools.forEach(t => html += buildMenuItemHTML(t));
+                html += `</ul>`;
+            }
+
+            // Recent section
+            const recentIds = getRecent();
+            const recentTools = recentIds.map(id => TOOLS.find(t => t.id === id)).filter(Boolean);
+            if (recentTools.length) {
+                html += `<div class="menu-label label-recent">${ICONS.history.replace('<svg', '<svg style="width:11px;height:11px;vertical-align:-1px;margin-right:3px;"')} Recently Opened</div><ul class="menu-list">`;
+                recentTools.forEach(t => html += buildMenuItemHTML(t));
+                html += `</ul>`;
+            }
+
+            // Category sections
+            ['cash', 'data', 'finance'].forEach(cat => {
+                const tools = TOOLS.filter(t => t.cat === cat);
+                html += `<div class="menu-label label-${cat}">${CAT_LABELS[cat]}</div><ul class="menu-list">`;
+                tools.forEach(t => html += buildMenuItemHTML(t));
+                html += `</ul>`;
+            });
+
+            container.innerHTML = html;
+            setupKeyboardNav();
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        // ===== SEARCH BOX HANDLERS =====
+        function onSearchInput(val) {
+            searchTerm = val;
+            const wrap = document.getElementById('sidebar-search-wrap');
+            wrap.classList.toggle('has-text', val.trim().length > 0);
+            renderMenu();
+        }
+        function clearSearch() {
+            searchTerm = '';
+            document.getElementById('tool-search-input').value = '';
+            document.getElementById('sidebar-search-wrap').classList.remove('has-text');
+            renderMenu();
+        }
+
+        // ===== SELECT TOOL (entry point replacing old inline onclick) =====
+        function selectTool(id) {
+            const tool = TOOLS.find(t => t.id === id);
+            if (!tool) return;
+
+            // Check tool restriction
+            const restriction = (window._toolRestrictions || {})[id] || 'all';
+            if (restriction === 'admin' && window._currentUserRole !== 'admin') {
+                showToast('🔒 Admin access required');
+                return;
+            }
+
+            currentToolId = id;
+            addRecent(id);
+            renderMenu();
+            const el = document.querySelector(`.menu-item[data-id="${id}"]`);
+            loadTool(tool.file, tool.title, el, tool.label);
+            logActivity(window._currentUserUid, 'tool_opened', { tool: tool.label });
+        }
+
+        // ===== NOTIFICATION CENTER =====
+        function getNotifs() { try { return JSON.parse(localStorage.getItem('sp_notifs') || '[]'); } catch(e) { return []; } }
+        function pushNotif(text) {
+            let notifs = getNotifs();
+            notifs.unshift({ text: text, time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) });
+            notifs = notifs.slice(0, 20);
+            localStorage.setItem('sp_notifs', JSON.stringify(notifs));
+            localStorage.setItem('sp_notifs_unread', '1');
+            renderNotifs();
+        }
+        function renderNotifs() {
+            const list = document.getElementById('notif-list');
+            const notifs = getNotifs();
+            const dot = document.getElementById('notif-dot');
+            dot.classList.toggle('show', localStorage.getItem('sp_notifs_unread') === '1');
+            if (!notifs.length) {
+                list.innerHTML = `<div class="notif-empty">No activity yet</div>`;
+                return;
+            }
+            list.innerHTML = notifs.map(n => `<div class="notif-item"><b>${escapeHtml(n.text)}</b><div class="notif-time">${n.time}</div></div>`).join('');
+        }
+        function toggleNotifPanel(evt) {
+            evt.stopPropagation();
+            const panel = document.getElementById('notif-panel');
+            const btn = document.getElementById('notif-btn');
+            const shield = document.getElementById('iframe-shield');
+            const opening = !panel.classList.contains('show');
+
+            if (opening) {
+                const rect = btn.getBoundingClientRect();
+                panel.style.top = (rect.bottom + 8) + 'px';
+                panel.style.right = (window.innerWidth - rect.right) + 'px';
+                localStorage.setItem('sp_notifs_unread', '0');
+                document.getElementById('notif-dot').classList.remove('show');
+                shield.classList.add('active');
+            } else {
+                shield.classList.remove('active');
+            }
+
+            panel.classList.toggle('show');
+        }
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('notif-panel');
+            const btn = document.getElementById('notif-btn');
+            const shield = document.getElementById('iframe-shield');
+            if (panel.classList.contains('show') && !panel.contains(e.target) && e.target !== btn) {
+                panel.classList.remove('show');
+                shield.classList.remove('active');
+            }
+        });
+
+        // ===== TOAST NOTIFICATION =====
+        function showToast(text) {
+            const wrap = document.getElementById('toast-wrap');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span>${escapeHtml(text)}</span>`;
+            wrap.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        // ========= AUTH SYSTEM (Firebase + Firestore) =========
+
+        function switchTab(tab) {
+            const tabs  = ['login','register','forgot','verify'];
+            const hasTabs = ['login','register']; // tabs that show the tab bar
+            tabs.forEach(t => {
+                const f = document.getElementById('form-' + t);
+                if(f) f.classList.toggle('active', t === tab);
+            });
+            ['login','register'].forEach(t => {
+                const b = document.getElementById('tab-' + t);
+                if(b) b.classList.toggle('active', t === tab);
+            });
+            const tabBar = document.getElementById('auth-tabs');
+            if(tabBar) tabBar.style.display = hasTabs.includes(tab) ? 'flex' : 'none';
+            // clear messages
+            ['login-msg','register-msg','forgot-msg','verify-msg'].forEach(id => {
+                const el = document.getElementById(id); if(el) { el.textContent=''; el.className='auth-msg'; }
+            });
+        }
+
+        function setMsg(id, text, type) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.textContent = text;
+            el.className = 'auth-msg ' + type;
+        }
+
+        function friendlyError(code) {
+            const map = {
+                'auth/invalid-credential':     'Invalid username or password.',
+                'auth/user-not-found':         'No account found.',
+                'auth/wrong-password':         'Wrong password.',
+                'auth/email-already-in-use':   'Email already registered.',
+                'auth/weak-password':          'Password must be at least 6 characters.',
+                'auth/too-many-requests':      'Too many attempts. Try again later.',
+                'auth/network-request-failed': 'No internet connection.',
+                'auth/invalid-email':          'Invalid email address.',
+            };
+            return map[code] || 'Something went wrong. Try again.';
+        }
+
+        // Login: username → Firestore lookup → email → Firebase signIn
+        async function doLogin() {
+            const username = document.getElementById('login-user').value.trim().toLowerCase();
+            const pass     = document.getElementById('login-pass').value;
+            if (!username || !pass) { setMsg('login-msg', 'Please fill all fields.', 'err'); return; }
+
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true; btn.textContent = 'Signing in…';
+
+            try {
+                const fb = window._fb;
+
+                // Look up email by username in Firestore
+                let email;
+                try {
+                    const q    = fb.query(fb.collection(fb.db, 'portal_users'), fb.where('username', '==', username));
+                    const snap = await fb.getDocs(q);
+                    if (snap.empty) {
+                        setMsg('login-msg', 'Username not found.', 'err');
+                        btn.disabled = false; btn.textContent = 'Sign In →';
+                        return;
+                    }
+                    email = snap.docs[0].data().email;
+                } catch(fsErr) {
+                    console.error('Firestore lookup error:', fsErr.code, fsErr.message);
+                    setMsg('login-msg', 'Login service unavailable. Check Firestore rules.', 'err');
+                    btn.disabled = false; btn.textContent = 'Sign In →';
+                    return;
+                }
+
+                // Firebase Auth sign in
+                await fb.signInWithEmailAndPassword(fb.auth, email, pass);
+                // onAuthStateChanged handles next step
+
+            } catch(e) {
+                console.error('Login error:', e.code, e.message);
+                setMsg('login-msg', friendlyError(e.code), 'err');
+                document.getElementById('login-pass').classList.add('error');
+                btn.disabled = false; btn.textContent = 'Sign In →';
+            }
+        }
+
+        // Register: real email + username → Firebase Auth + Firestore doc + verification email
+        async function doRegister() {
+            const name  = document.getElementById('reg-name').value.trim();
+            const user  = document.getElementById('reg-user').value.trim().toLowerCase();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const pass  = document.getElementById('reg-pass').value;
+            const pass2 = document.getElementById('reg-pass2').value;
+
+            if (!name || !user || !email || !pass || !pass2) { setMsg('register-msg', 'Please fill all fields.', 'err'); return; }
+            if (pass !== pass2)  { setMsg('register-msg', 'Passwords do not match.', 'err'); return; }
+            if (pass.length < 6) { setMsg('register-msg', 'Password must be at least 6 characters.', 'err'); return; }
+            if (!/^[a-z0-9_]+$/.test(user)) { setMsg('register-msg', 'Username: lowercase letters, numbers, _ only.', 'err'); return; }
+
+            const btn = document.getElementById('register-btn');
+            btn.disabled = true; btn.textContent = 'Creating account…';
+
+            try {
+                const fb = window._fb;
+
+                // 1. Create Firebase Auth user first (so we're authenticated for Firestore reads)
+                let cred;
+                try {
+                    cred = await fb.createUserWithEmailAndPassword(fb.auth, email, pass);
+                } catch(authErr) {
+                    setMsg('register-msg', friendlyError(authErr.code), 'err');
+                    btn.disabled = false; btn.textContent = 'Create Account →';
+                    return;
+                }
+
+                try {
+                    await fb.updateProfile(cred.user, { displayName: name });
+
+                    // 2. Now authenticated — check username not taken
+                    const q    = fb.query(fb.collection(fb.db, 'portal_users'), fb.where('username', '==', user));
+                    const snap = await fb.getDocs(q);
+                    if (!snap.empty) {
+                        // Username taken — delete the auth user we just created
+                        await cred.user.delete();
+                        setMsg('register-msg', 'Username already taken. Choose another.', 'err');
+                        btn.disabled = false; btn.textContent = 'Create Account →';
+                        return;
+                    }
+
+                    // 3. First registered user = admin, others = user
+                    const allSnap = await fb.getDocs(fb.collection(fb.db, 'portal_users'));
+                    const role = allSnap.empty ? 'admin' : 'user';
+
+                    // 4. Save to Firestore
+                    await fb.setDoc(fb.doc(fb.db, 'portal_users', cred.user.uid), {
+                        uid: cred.user.uid,
+                        name, username: user, email,
+                        role,
+                        disabled: false,
+                        createdAt: new Date().toISOString()
+                    });
+
+                    // 5. Send verification email
+                    await fb.sendEmailVerification(cred.user);
+
+                    // 6. Show verify panel
+                    _showVerifyPanel(email);
+
+                } catch(innerErr) {
+                    // Firestore failed — clean up Auth user
+                    try { await cred.user.delete(); } catch(e) {}
+                    console.error('Register error:', innerErr);
+                    setMsg('register-msg', 'Account setup failed. Please try again.', 'err');
+                    btn.disabled = false; btn.textContent = 'Create Account →';
+                    return;
+                }
+
+            } catch(e) {
+                console.error('Unexpected register error:', e);
+                setMsg('register-msg', 'Unexpected error. Please try again.', 'err');
+                btn.disabled = false; btn.textContent = 'Create Account →';
+            }
+        }
+
+        // Password reset — accepts username or email
+        async function doForgot() {
+            const input = document.getElementById('forgot-email').value.trim().toLowerCase();
+            if (!input) { setMsg('forgot-msg', 'Please enter your username or email.', 'err'); return; }
+
+            const btn = document.getElementById('forgot-btn');
+            btn.disabled = true; btn.textContent = 'Sending…';
+
+            try {
+                const fb = window._fb;
+                let email = input;
+
+                // If not an email, look up by username
+                if (!input.includes('@')) {
+                    const q    = fb.query(fb.collection(fb.db, 'portal_users'), fb.where('username', '==', input));
+                    const snap = await fb.getDocs(q);
+                    if (snap.empty) {
+                        setMsg('forgot-msg', 'Username not found.', 'err');
+                        btn.disabled = false; btn.textContent = 'Send Reset Email →';
+                        return;
+                    }
+                    email = snap.docs[0].data().email;
+                }
+
+                await fb.sendPasswordResetEmail(fb.auth, email);
+                setMsg('forgot-msg', `Reset link sent to ${email} ✓`, 'ok');
+                btn.textContent = 'Email Sent!';
+            } catch(e) {
+                setMsg('forgot-msg', friendlyError(e.code), 'err');
+                btn.disabled = false; btn.textContent = 'Send Reset Email →';
+            }
+        }
+
+        // Show verify waiting panel
+        window._showVerifyPanel = function(email) {
+            const el = document.getElementById('verify-email-hint');
+            if (el) el.textContent = email || '';
+            switchTab('verify');
+        }
+
+        // User clicks "I've verified"
+        async function checkVerified() {
+            const fb   = window._fb;
+            const user = fb.auth.currentUser;
+            if (!user) { switchTab('login'); return; }
+            const btn = document.getElementById('verify-check-btn');
+            if(btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+            try {
+                await user.reload();
+                if (user.emailVerified) {
+                    enterPortal(user.displayName || user.email.split('@')[0]);
+                } else {
+                    setMsg('verify-msg', 'Not verified yet. Please click the link in your email.', 'err');
+                    if(btn) { btn.disabled = false; btn.textContent = 'I\'ve Verified — Continue →'; }
+                }
+            } catch(e) {
+                setMsg('verify-msg', 'Check failed. Try again.', 'err');
+                if(btn) { btn.disabled = false; btn.textContent = 'I\'ve Verified — Continue →'; }
+            }
+        }
+
+        // Resend verification
+        async function resendVerification() {
+            const user = window._fb.auth.currentUser;
+            if (!user) return;
+            try {
+                await window._fb.sendEmailVerification(user);
+                setMsg('verify-msg', 'Verification email resent ✓', 'ok');
+            } catch(e) {
+                setMsg('verify-msg', 'Could not resend. Try again later.', 'err');
+            }
+        }
+
+        // Enter portal after verified login
+        // Current user role stored globally
+        window._currentUserRole = 'user';
+        window._currentUserUid  = null;
+        window._allUsers = []; // cache for admin panel
+
+        window.enterPortal = async function(name) {
+            const initials = name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            document.getElementById('user-avatar').textContent = initials;
+            document.getElementById('user-chip-name').textContent = name;
+
+            const overlay = document.getElementById('auth-overlay');
+            overlay.classList.add('fade-out');
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+
+            const lb = document.getElementById('login-btn');
+            const rb = document.getElementById('register-btn');
+            if(lb) { lb.disabled = false; lb.textContent = 'Sign In →'; }
+            if(rb) { rb.disabled = false; rb.textContent = 'Create Account →'; }
+
+            pushNotif(`${name} logged in`);
+            showToast(`Welcome, ${name}! 👋`);
+
+            // Load role from Firestore
+            const uid  = window._fb.auth.currentUser?.uid;
+            window._currentUserUid = uid;
+            if (uid) {
+                try {
+                    const snap = await window._fb.getDoc(window._fb.doc(window._fb.db, 'portal_users', uid));
+                    if (snap.exists()) {
+                        const role = snap.data().role || 'user';
+                        window._currentUserRole = role;
+
+                        // Check disabled
+                        if (snap.data().disabled) {
+                            showToast('Your account has been disabled.');
+                            setTimeout(() => doLogout(), 1500);
+                            return;
+                        }
+
+                        if (role === 'admin') {
+                            document.getElementById('admin-chip').style.display = 'flex';
+                            loadAdminUserCount();
+                        } else {
+                            document.getElementById('admin-chip').style.display = 'none';
+                        }
+
+                        // Store username for profile modal
+                        window._profileUsername = snap.data().username || '';
+                    }
+                } catch(e) { console.warn('Role load failed', e); }
+            }
+
+            // Load tool restrictions for this user
+            await loadToolRestrictionsForUser();
+
+            // Log login activity
+            await logActivity(uid, 'login');
+        }
+
+        // ===== ADMIN PANEL FUNCTIONS =====
+
+        async function loadAdminUserCount() {
+            try {
+                const fb   = window._fb;
+                const snap = await fb.getDocs(fb.collection(fb.db, 'portal_users'));
+                document.getElementById('admin-user-count').textContent = snap.size;
+            } catch(e) {}
+        }
+
+        async function openAdminPanel() {
+            if (window._currentUserRole !== 'admin') return;
+            const overlay = document.getElementById('admin-overlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => overlay.classList.add('show'));
+            switchAdminTab('users');
+            await loadAllUsers();
+        }
+
+        function closeAdminPanel(evt) {
+            if (evt && evt.target !== document.getElementById('admin-overlay')) return;
+            const overlay = document.getElementById('admin-overlay');
+            overlay.classList.remove('show');
+            setTimeout(() => { overlay.style.display = 'none'; }, 250);
+        }
+
+        async function loadAllUsers() {
+            const tbody = document.getElementById('admin-user-tbody');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);font-weight:600;font-size:13px;">Loading users…</td></tr>`;
+
+            try {
+                const fb   = window._fb;
+                const snap = await fb.getDocs(fb.collection(fb.db, 'portal_users'));
+                window._allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Stats
+                const total    = window._allUsers.length;
+                const admins   = window._allUsers.filter(u => u.role === 'admin').length;
+                const disabled = window._allUsers.filter(u => u.disabled).length;
+                document.getElementById('stat-total').textContent    = total;
+                document.getElementById('stat-admins').textContent   = admins;
+                document.getElementById('stat-disabled').textContent = disabled;
+                document.getElementById('admin-user-count').textContent = total;
+
+                renderAdminTable(window._allUsers);
+            } catch(e) {
+                document.getElementById('admin-user-tbody').innerHTML =
+                    `<tr><td colspan="5" style="text-align:center;padding:20px;color:#ef4444;font-weight:600;">Failed to load users.</td></tr>`;
+            }
+        }
+
+        function renderAdminTable(users) {
+            const tbody  = document.getElementById('admin-user-tbody');
+            const empty  = document.getElementById('admin-empty');
+            const myUid  = window._currentUserUid;
+
+            if (!users.length) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            tbody.innerHTML = users.map(u => {
+                const initials = (u.name || u.username || '?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+                const joined   = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+                const isMe     = u.uid === myUid;
+                const disabled = u.disabled || false;
+                const role     = u.role || 'user';
+
+                const roleClass = disabled ? 'disabled' : role;
+                const roleLabel = disabled ? 'Disabled' : role.charAt(0).toUpperCase() + role.slice(1);
+
+                return `<tr id="urow-${u.uid}">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:9px;">
+                            <div class="u-avatar">${initials}</div>
+                            <div>
+                                <div class="u-name">${escapeHtml(u.name || '—')} ${isMe ? '<span class="u-me">You</span>' : ''}</div>
+                                <div class="u-username">@${escapeHtml(u.username || '—')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="u-email">${escapeHtml(u.email || '—')}</span></td>
+                    <td><span class="u-date">${joined}</span></td>
+                    <td>
+                        ${isMe
+                            ? `<span class="role-badge ${roleClass}">${roleLabel}</span>`
+                            : `<select class="role-select" id="role-sel-${u.uid}" ${disabled ? 'disabled' : ''}>
+                                <option value="user"  ${role==='user'  ? 'selected' : ''}>User</option>
+                                <option value="admin" ${role==='admin' ? 'selected' : ''}>Admin</option>
+                               </select>`
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            ${isMe ? '<span style="font-size:11px;color:var(--text-muted);font-weight:600;">—</span>' : `
+                                <button class="u-action-btn save" onclick="saveUserRole('${u.uid}')">Save</button>
+                                <button class="u-action-btn ${disabled ? 'enable' : 'disable'}" onclick="toggleUserDisabled('${u.uid}', ${!disabled})">
+                                    ${disabled ? 'Enable' : 'Disable'}
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterAdminUsers(q) {
+            const term = q.toLowerCase().trim();
+            const filtered = !term ? window._allUsers :
+                window._allUsers.filter(u =>
+                    (u.name||'').toLowerCase().includes(term) ||
+                    (u.username||'').toLowerCase().includes(term) ||
+                    (u.email||'').toLowerCase().includes(term)
+                );
+            renderAdminTable(filtered);
+        }
+
+        async function saveUserRole(uid) {
+            const sel  = document.getElementById('role-sel-' + uid);
+            const role = sel ? sel.value : null;
+            if (!role) return;
+
+            try {
+                const fb = window._fb;
+                await fb.setDoc(fb.doc(fb.db, 'portal_users', uid), { role }, { merge: true });
+                showToast(`Role updated to ${role} ✓`);
+                await loadAllUsers();
+            } catch(e) {
+                showToast('Failed to update role.');
+            }
+        }
+
+        async function toggleUserDisabled(uid, disable) {
+            try {
+                const fb = window._fb;
+                await fb.setDoc(fb.doc(fb.db, 'portal_users', uid), { disabled: disable }, { merge: true });
+                await logActivity(uid, disable ? 'account_disabled' : 'account_enabled');
+                showToast(`User ${disable ? 'disabled' : 'enabled'} ✓`);
+                await loadAllUsers();
+            } catch(e) {
+                showToast('Action failed.');
+            }
+        }
+
+        // ===== ADMIN PANEL TABS =====
+        function switchAdminTab(tab) {
+            ['users','tools','activity'].forEach(t => {
+                document.getElementById('atab-'  + t)?.classList.toggle('active', t === tab);
+                document.getElementById('apane-' + t)?.classList.toggle('active', t === tab);
+            });
+            if (tab === 'tools')    loadToolRestrictions();
+            if (tab === 'activity') loadActivityLog();
+        }
+
+        // ===== TOOL RESTRICTIONS =====
+        window._toolRestrictions = {}; // { tool_id: 'all' | 'admin' }
+
+        async function loadToolRestrictions() {
+            const list = document.getElementById('tools-restriction-list');
+            list.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--text-muted);font-weight:600;">Loading…</div>`;
+            try {
+                const fb   = window._fb;
+                const snap = await fb.getDoc(fb.doc(fb.db, 'portal_settings', 'tool_restrictions'));
+                window._toolRestrictions = snap.exists() ? snap.data() : {};
+                renderToolRestrictions();
+            } catch(e) {
+                list.innerHTML = `<div style="padding:20px;text-align:center;color:#ef4444;font-size:13px;font-weight:600;">Failed to load.</div>`;
+            }
+        }
+
+        function renderToolRestrictions() {
+            const list = document.getElementById('tools-restriction-list');
+            list.innerHTML = TOOLS.map(t => {
+                const access = window._toolRestrictions[t.id] || 'all';
+                return `<div class="tool-row">
+                    <div class="tool-row-icon">${ICONS[t.icon] || ''}</div>
+                    <div class="flex-1">
+                        <div class="tool-row-label">${escapeHtml(t.label)}</div>
+                    </div>
+                    <div class="access-toggle">
+                        <button class="access-btn ${access==='all'   ? 'active-all'   : ''}" onclick="setToolAccess('${t.id}','all')">All</button>
+                        <button class="access-btn ${access==='admin' ? 'active-admin' : ''}" onclick="setToolAccess('${t.id}','admin')">Admin only</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function setToolAccess(toolId, access) {
+            window._toolRestrictions[toolId] = access;
+            renderToolRestrictions();
+            try {
+                const fb = window._fb;
+                await fb.setDoc(fb.doc(fb.db, 'portal_settings', 'tool_restrictions'),
+                    window._toolRestrictions, { merge: true });
+                showToast(`Access updated ✓`);
+                renderMenu(); // Refresh sidebar to show/hide locks
+            } catch(e) {
+                showToast('Save failed.');
+            }
+        }
+
+        // Load tool restrictions on portal enter (for all users)
+        async function loadToolRestrictionsForUser() {
+            try {
+                const fb   = window._fb;
+                const snap = await fb.getDoc(fb.doc(fb.db, 'portal_settings', 'tool_restrictions'));
+                window._toolRestrictions = snap.exists() ? snap.data() : {};
+                renderMenu();
+            } catch(e) {}
+        }
+
+        // ===== ACTIVITY LOG =====
+        async function logActivity(uid, event, extra = {}) {
+            try {
+                const fb   = window._fb;
+                const user = fb.auth.currentUser;
+                await fb.addDoc(fb.collection(fb.db, 'portal_activity'), {
+                    uid: uid || user?.uid || 'unknown',
+                    event,
+                    name: user?.displayName || '—',
+                    ts: fb.serverTimestamp(),
+                    ...extra
+                });
+            } catch(e) {} // Non-critical
+        }
+
+        async function loadActivityLog() {
+            const list = document.getElementById('activity-list');
+            list.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--text-muted);font-weight:600;">Loading…</div>`;
+            try {
+                const fb   = window._fb;
+                const snap = await fb.getDocs(
+                    fb.query(fb.collection(fb.db, 'portal_activity'),
+                    fb.orderBy('ts','desc'), fb.limit(40))
+                );
+                if (snap.empty) {
+                    list.innerHTML = `<div style="padding:20px;text-align:center;font-size:13px;color:var(--text-muted);font-weight:600;">No activity yet.</div>`;
+                    return;
+                }
+                const eventLabel = {
+                    login:            'logged in',
+                    logout:           'logged out',
+                    profile_updated:  'updated profile',
+                    password_changed: 'changed password',
+                    account_disabled: 'account disabled',
+                    account_enabled:  'account enabled',
+                    tool_opened:      'opened tool',
+                };
+                const dotClass = {
+                    login: 'login', logout: 'logout',
+                    profile_updated: 'profile', password_changed: 'profile',
+                };
+                list.innerHTML = snap.docs.map(d => {
+                    const data = d.data();
+                    const time = data.ts?.toDate ? data.ts.toDate().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+                    const dc   = dotClass[data.event] || 'login';
+                    const ev   = eventLabel[data.event] || data.event;
+                    const extra = data.tool ? ` — ${escapeHtml(data.tool)}` : '';
+                    return `<div class="activity-row">
+                        <div class="activity-dot ${dc}"></div>
+                        <div>
+                            <span class="act-user">${escapeHtml(data.name || '—')}</span>
+                            <span class="act-event"> ${ev}${extra}</span>
+                        </div>
+                        <span class="act-time">${time}</span>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                list.innerHTML = `<div style="padding:20px;text-align:center;color:#ef4444;font-size:13px;font-weight:600;">Failed to load activity.</div>`;
+            }
+        }
+
+        // ===== PROFILE MODAL =====
+        let _profileData = {};
+
+        function openProfileModal() {
+            const overlay = document.getElementById('profile-overlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => overlay.classList.add('show'));
+
+            // Fill fields from current user
+            const user = window._fb.auth.currentUser;
+            const name = user?.displayName || '';
+            _profileData = { email: user?.email || '', uid: user?.uid };
+
+            document.getElementById('profile-modal-avatar').textContent =
+                name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
+            document.getElementById('profile-modal-name').textContent = name || '—';
+            document.getElementById('profile-modal-username').textContent = '@' + (window._profileUsername || '—');
+
+            document.getElementById('p-name').value     = name;
+            document.getElementById('p-username').value = window._profileUsername || '';
+            document.getElementById('p-email').value    = user?.email || '';
+
+            ['p-curr-pass','p-new-pass','p-new-pass2'].forEach(id => {
+                const el = document.getElementById(id); if(el) el.value = '';
+            });
+            ['pmsg-info','pmsg-password'].forEach(id => {
+                const el = document.getElementById(id); if(el) { el.textContent=''; el.className='profile-msg'; }
+            });
+            switchProfileTab('info');
+        }
+
+        function closeProfileModal(evt) {
+            if (evt && evt.target !== document.getElementById('profile-overlay')) return;
+            const overlay = document.getElementById('profile-overlay');
+            overlay.classList.remove('show');
+            setTimeout(() => { overlay.style.display = 'none'; }, 220);
+        }
+
+        function switchProfileTab(tab) {
+            ['info','password'].forEach(t => {
+                document.getElementById('pform-' + t)?.classList.toggle('active', t === tab);
+            });
+            document.querySelectorAll('.profile-tab').forEach((btn, i) => {
+                btn.classList.toggle('active', (i===0 && tab==='info') || (i===1 && tab==='password'));
+            });
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('p-name').value.trim();
+            if (!name) { setPMsg('pmsg-info', 'Name cannot be empty.', 'err'); return; }
+            const btn = document.querySelector('#pform-info .auth-btn');
+            btn.disabled = true; btn.textContent = 'Saving…';
+            try {
+                const fb   = window._fb;
+                const user = fb.auth.currentUser;
+                await fb.updateProfile(user, { displayName: name });
+                await fb.setDoc(fb.doc(fb.db, 'portal_users', user.uid), { name }, { merge: true });
+                // Update UI
+                const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+                document.getElementById('user-avatar').textContent     = initials;
+                document.getElementById('user-chip-name').textContent  = name;
+                document.getElementById('profile-modal-avatar').textContent = initials;
+                document.getElementById('profile-modal-name').textContent   = name;
+                setPMsg('pmsg-info', 'Profile updated ✓', 'ok');
+                await logActivity(user.uid, 'profile_updated');
+                showToast('Profile updated ✓');
+            } catch(e) {
+                setPMsg('pmsg-info', 'Update failed. Try again.', 'err');
+            }
+            btn.disabled = false; btn.textContent = 'Save Changes';
+        }
+
+        async function savePassword() {
+            const curr  = document.getElementById('p-curr-pass').value;
+            const newP  = document.getElementById('p-new-pass').value;
+            const newP2 = document.getElementById('p-new-pass2').value;
+            if (!curr || !newP || !newP2) { setPMsg('pmsg-password', 'Fill all fields.', 'err'); return; }
+            if (newP !== newP2) { setPMsg('pmsg-password', 'Passwords do not match.', 'err'); return; }
+            if (newP.length < 6) { setPMsg('pmsg-password', 'Min 6 characters.', 'err'); return; }
+
+            const btn = document.querySelector('#pform-password .auth-btn');
+            btn.disabled = true; btn.textContent = 'Changing…';
+            try {
+                const fb   = window._fb;
+                const user = fb.auth.currentUser;
+                const cred = fb.EmailAuthProvider.credential(user.email, curr);
+                await fb.reauthenticateWithCredential(user, cred);
+                await fb.updatePassword(user, newP);
+                setPMsg('pmsg-password', 'Password changed ✓', 'ok');
+                await logActivity(user.uid, 'password_changed');
+                showToast('Password changed ✓');
+                ['p-curr-pass','p-new-pass','p-new-pass2'].forEach(id => {
+                    const el = document.getElementById(id); if(el) el.value = '';
+                });
+            } catch(e) {
+                const msg = e.code === 'auth/invalid-credential' ? 'Current password is wrong.' : 'Change failed. Try again.';
+                setPMsg('pmsg-password', msg, 'err');
+            }
+            btn.disabled = false; btn.textContent = 'Change Password';
+        }
+
+        function setPMsg(id, text, type) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.textContent = text;
+            el.className = 'profile-msg ' + type;
+        }
+
+        // Logout
+        async function doLogout() {
+            // Log before signing out
+            if (window._currentUserUid) {
+                await logActivity(window._currentUserUid, 'logout');
+            }
+            try { await window._fb.signOut(window._fb.auth); } catch(e) {}
+            window._currentUserRole = 'user';
+            window._currentUserUid  = null;
+            window._allUsers = [];
+            window._toolRestrictions = {};
+            document.getElementById('admin-chip').style.display = 'none';
+            document.getElementById('admin-user-count').textContent = '0';
+            document.getElementById('tool-viewport').src = '';
+            document.getElementById('tool-viewport').style.display = 'none';
+            document.getElementById('welcome-overlay').style.display = 'flex';
+            document.getElementById('welcome-overlay').style.opacity = '1';
+            document.getElementById('current-title').innerText = 'Dashboard Overview';
+            currentToolId = null;
+            renderMenu();
+            ['login-user','login-pass','reg-name','reg-user','reg-email','reg-pass','reg-pass2','forgot-email'].forEach(id => {
+                const el = document.getElementById(id); if(el) { el.value=''; el.classList.remove('error'); }
+            });
+            switchTab('login');
+        }
+
+        renderMenu();
+        renderNotifs();
+
+
         function startClock() {
             function tick() {
                 const now = new Date();
@@ -736,11 +2724,11 @@
         }
 
 
-        function loadTool(fileName, toolTitle, element) {
+        function loadTool(fileName, toolTitle, element, label) {
             // 1. ෆයිල් එක නිකන්ම ඩබල් ක්ලික් කරලා බ්‍රවුසර් එකෙන් ඕපන් කරලා තියෙනවා නම් (file:/// ප්‍රොටොකෝල්)
             // බ්‍රවුසර් එකේ CORS බ්ලොක් එක නිසා HTTP Request එකක් කරන්න බැරි බැවින් කෙලින්ම Iframe එකට ලෝඩ් වෙන්න සලස්වයි.
             if (window.location.protocol === 'file:') {
-                executeNavigation(fileName, toolTitle, element);
+                executeNavigation(fileName, toolTitle, element, label);
                 return;
             }
 
@@ -751,7 +2739,7 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        executeNavigation(fileName, toolTitle, element);
+                        executeNavigation(fileName, toolTitle, element, label);
                     } else {
                         showCenterError(`The selected Page is missing or currently unavailable...`);
                     }
@@ -765,11 +2753,11 @@
             xhr.send();
         }
 
-        function executeNavigation(fileName, toolTitle, element) {
+        function executeNavigation(fileName, toolTitle, element, label) {
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active');
             });
-            element.classList.add('active');
+            if (element) element.classList.add('active');
             document.getElementById('current-title').innerText = toolTitle;
 
             document.getElementById('welcome-overlay').style.opacity = '0';
@@ -778,8 +2766,24 @@
             }, 400);
 
             const iframe = document.getElementById('tool-viewport');
-            iframe.src = fileName;
-            iframe.style.display = 'block';
+            const loader = document.getElementById('iframe-loader');
+
+            // Fade-out current view, show skeleton loader
+            iframe.classList.add('fading');
+            loader.classList.add('show');
+
+            iframe.onload = function() {
+                loader.classList.remove('show');
+                iframe.classList.remove('fading');
+            };
+
+            setTimeout(() => {
+                iframe.src = fileName;
+                iframe.style.display = 'block';
+            }, 180);
+
+            pushNotif(`${label || toolTitle} opened`);
+            showToast(`${label || toolTitle} loaded`);
         }
 
         // Mid-Screen Center Error Display Control
