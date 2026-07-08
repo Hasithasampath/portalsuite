@@ -13,11 +13,19 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
 <!-- Non-blocking font load -->
-<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap"></noscript>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<script>
+  // Apply saved theme before first paint (prevents flash)
+  (function() {
+    const t = localStorage.getItem('sa_theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 
 <!-- Scripts deferred  -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
@@ -87,31 +95,64 @@
     --border: #b8c7d9;
     --text: #0f172a;
     --muted: #475569;
-    --highlight-bg: #f1f5f9; 
+    --highlight-bg: #f1f5f9;
+    /* surface tokens */
+    --bg-page:    linear-gradient(135deg, #f0f4f8 0%, #dbeafe 100%);
+    --bg-card:    rgba(255,255,255,0.95);
+    --bg-surface: rgba(255,255,255,0.97);
+    --bg-input:   #ffffff;
+    --bg-subtle:  #f8fafc;
+    --bg-checkbox:#ffffff;
+    --bg-modal:   #ffffff;
+    --bg-modal-border: #e2e8f0;
+    --shadow-card: 0 10px 30px rgba(15,23,42,0.08);
+    --shadow-ctrl: 0 8px 25px rgba(0,0,0,0.06);
+    --shadow-stat: 0 4px 15px rgba(0,0,0,0.05);
+  }
+
+  [data-theme="dark"] {
+    --border:     #2d3f55;
+    --text:       #e2e8f0;
+    --muted:      #94a3b8;
+    --highlight-bg: #1e3a2f;
+    --bg-page:    linear-gradient(135deg, #0b1120 0%, #0f172a 100%);
+    --bg-card:    rgba(15,23,42,0.95);
+    --bg-surface: rgba(20,29,47,0.98);
+    --bg-input:   #1e293b;
+    --bg-subtle:  #1a2640;
+    --bg-checkbox:#1e293b;
+    --bg-modal:   #141d2f;
+    --bg-modal-border: #2d3f55;
+    --shadow-card: 0 10px 30px rgba(0,0,0,0.35);
+    --shadow-ctrl: 0 8px 25px rgba(0,0,0,0.30);
+    --shadow-stat: 0 4px 15px rgba(0,0,0,0.25);
+    color-scheme: dark;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'Barlow', sans-serif;
-    background: linear-gradient(135deg, #f0f4f8 0%, #dbeafe 100%);
+    background: var(--bg-page);
     color: var(--text);
     min-height: 100vh;
     padding-bottom: 50px;
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
   .top-container {
     max-width: 1140px;
     margin: 30px auto 20px auto;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     padding: 25px;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-card);
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--bg-modal-border);
     position: relative;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
   }
   .top-container p { color: var(--muted); margin-bottom: 20px; font-size: 14px; font-weight: 500; }
   
@@ -124,21 +165,21 @@
   }
   
   .plus-setup-btn {
-    padding: 11px 20px;
+    padding: 5px 12px;
     background: var(--btn-neutral);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: 6px;
+    font-size: 11.5px;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-family: 'Barlow Condensed', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(71, 85, 105, 0.2);
+    box-shadow: 0 2px 8px rgba(71, 85, 105, 0.18);
     transition: all 0.2s ease;
   }
   .plus-setup-btn.lorry-btn {
@@ -146,7 +187,7 @@
   }
   .plus-setup-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(71, 85, 105, 0.3);
+    box-shadow: 0 4px 14px rgba(71, 85, 105, 0.28);
   }
 
   .modal-overlay {
@@ -172,7 +213,7 @@
     width: 100%;
   }
   .modal-box {
-    background: #ffffff;
+    background: var(--bg-modal);
     padding: 25px;
     border-radius: 16px;
     width: 100%;
@@ -181,16 +222,17 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--bg-modal-border);
     position: relative;
     display: flex;
     flex-direction: column;
     margin: auto;
     flex-shrink: 0;
+    transition: background 0.3s ease;
   }
   .modal-box h3 {
     font-family: 'Barlow Condensed', sans-serif;
-    color: #1e293b;
+    color: var(--text);
     margin-bottom: 4px;
     font-size: 20px;
     text-transform: uppercase;
@@ -205,9 +247,11 @@
   .add-form-row input, .add-form-row select {
     padding: 6px 10px;
     font-size: 13px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--border);
     border-radius: 6px;
     font-weight: 600;
+    background: var(--bg-input);
+    color: var(--text);
   }
   .add-form-row input:focus, .add-form-row select:focus { border-color: #2563eb; outline: none; }
   
@@ -220,13 +264,15 @@
     flex: 1;
     padding: 6px 12px;
     font-size: 13px;
-    border: 2px solid #cbd5e1;
+    border: 2px solid var(--border);
     border-radius: 6px;
+    background: var(--bg-input);
+    color: var(--text);
   }
 
   .table-scroll-container {
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
     border-radius: 8px;
     margin-bottom: 15px;
     height: 320px;
@@ -237,31 +283,157 @@
     font-size: 12.5px;
   }
   .policy-mgmt-table th {
-    background: #f1f5f9;
+    background: var(--bg-subtle);
+    color: var(--text);
     padding: 8px;
     text-align: left;
     position: sticky;
     top: 0;
-    border-bottom: 2px solid #cbd5e1;
+    border-bottom: 2px solid var(--border);
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
     text-transform: uppercase;
   }
   .policy-mgmt-table td {
     padding: 6px 8px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
   }
   .policy-mgmt-table tr:hover td {
-    background-color: #f8fafc;
+    background-color: var(--bg-subtle);
   }
   
   .delete-icon-btn {
     background: none;
-    border: none;
-    color: #ff416c;
+    border: 1.5px solid transparent;
+    color: #94a3b8;
     cursor: pointer;
-    font-size: 14px;
+    padding: 3px 5px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   }
+  .delete-icon-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fecaca;
+    transform: scale(1.12);
+  }
+
+  /* ── Button press feedback ────────────────────────────────── */
+  .plus-setup-btn:active  { transform: translateY(0) scale(0.95) !important; opacity: 0.85; }
+  .print-btn:active       { transform: scale(0.96) !important; opacity: 0.85; }
+  .modal-btn:active       { transform: scale(0.96) !important; opacity: 0.85; }
+
+  /* ── Input focus ring ─────────────────────────────────────── */
+  .add-form-row input:focus,
+  .add-form-row select:focus,
+  .search-bar-row input:focus,
+  .rep-dropdown:focus,
+  #gsheetUrl:focus {
+    outline: none;
+    border-color: #1e3c72;
+    box-shadow: 0 0 0 3px rgba(30,60,114,0.10);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  /* ── Upload zone pulse when idle ──────────────────────────── */
+  @keyframes zonePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(30,60,114,0); }
+    50%       { box-shadow: 0 0 0 5px rgba(30,60,114,0.07); }
+  }
+  .upload-zone { animation: zonePulse 3s ease-in-out infinite; }
+  .upload-zone:hover, .upload-zone.drag-over { animation: none; }
+
+  /* ── Stat icon colors per card ────────────────────────────── */
+  .stat-card:nth-child(1) .stat-icon i { color: #1e3c72; }
+  .stat-card:nth-child(2) .stat-icon i { color: #0891b2; }
+  .stat-card:nth-child(3) .stat-icon i { color: #4f46e5; }
+  .stat-card:nth-child(4) .stat-icon i { color: #059669; }
+
+  /* ── Skeleton shimmer ────────────────────────────────────── */
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+    display: block;
+  }
+  .stat-card.loading .stat-icon,
+  .stat-card.loading .stat-label,
+  .stat-card.loading .stat-value { visibility: hidden; }
+  .stat-card.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .stat-card { position: relative; }
+
+  /* ── Bulk PDF per-person tracker ─────────────────────────── */
+  #bulkPersonList {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+  }
+  .bulk-person-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: 'Barlow', sans-serif;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+  .bulk-person-row.done   { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  .bulk-person-row.active { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+  .bulk-person-row.error  { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  .bulk-person-icon { width: 16px; text-align: center; flex-shrink: 0; }
+  .bulk-person-name { flex: 1; font-weight: 600; letter-spacing: 0.3px; }
+  .bulk-person-vehicle { font-size: 11px; color: #94a3b8; font-family: 'Barlow Condensed', sans-serif; }
+  .bulk-person-row.done .bulk-person-vehicle { color: #4ade80; }
+
+  /* ── Dark Mode Toggle Button ─────────────────────────────── */
+  .dark-mode-toggle {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-input);
+    color: var(--muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .dark-mode-toggle:hover {
+    background: var(--bg-subtle);
+    color: var(--text);
+    border-color: var(--muted);
+    transform: rotate(15deg);
+  }
+  .dark-mode-toggle i[data-lucide] { width: 13px; height: 13px; stroke-width: 2; }
+
+  /* ── Upload zone icon size ────────────────────────────────── */
+  .upload-zone-icon i[data-lucide] { width: 26px; height: 26px; stroke-width: 1.6; }
 
   .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; }
   .modal-btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; text-transform: uppercase; }
@@ -270,18 +442,19 @@
   .modal-btn.secondary { background: #ff416c; color: white; }
 
   .control-panel {
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--bg-surface);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     max-width: 1140px;
     margin: 0 auto 25px auto;
     padding: 20px;
     border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    box-shadow: var(--shadow-ctrl);
     display: none;
     flex-direction: column;
     gap: 15px;
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid var(--border);
+    transition: background 0.3s ease, border-color 0.3s ease;
   }
   .panel-top-row {
     display: flex;
@@ -302,8 +475,8 @@
     letter-spacing: 0.5px;
   }
   .rep-dropdown {
-    padding: 8px 14px; font-size: 14px; font-weight: 700; border: 2px solid #cbd5e1;
-    border-radius: 6px; color: var(--text); background-color: #fff; min-width: 250px; cursor: pointer;
+    padding: 8px 14px; font-size: 14px; font-weight: 700; border: 2px solid var(--border);
+    border-radius: 6px; color: var(--text); background-color: var(--bg-input); min-width: 250px; cursor: pointer;
     transition: all 0.2s ease;
   }
   .rep-dropdown:focus { border-color: #1e3c72; outline: none; }
@@ -315,8 +488,9 @@
 
   .print-btn {
     padding: 9px 16px;
-    background: #fff;
-    border: 1.5px solid #475569;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    color: var(--text);
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
@@ -330,27 +504,28 @@
     text-transform: uppercase;
     letter-spacing: 0.4px;
   }
-  .print-btn:hover { background: #f8fafc; border-color: #0f172a; }
-  .excel-btn { background: #fff; border-color: #107c41; color: #107c41; margin-right: 5px;}
+  .print-btn:hover { background: var(--bg-subtle); border-color: var(--text); }
+  .excel-btn { background: var(--bg-input); border-color: #107c41; color: #107c41; margin-right: 5px;}
   .excel-btn:hover { background: #f0fdf4; border-color: #0b592e; }
 
   .btn-group { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 
   .beat-checkbox-container {
-    background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 100%;
+    background: var(--bg-subtle); padding: 15px; border-radius: 8px; border: 1px solid var(--border); width: 100%;
+    transition: background 0.3s ease, border-color 0.3s ease;
   }
   .beat-checkbox-title {
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: #1e3c72;
     text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
   }
-  .beat-btn { padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; color: #475569; }
-  .beat-btn:hover { background: #cbd5e1; color: #0f172a; }
+  .beat-btn { padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: var(--border); border: none; border-radius: 4px; cursor: pointer; color: var(--muted); }
+  .beat-btn:hover { background: var(--border); color: var(--text); }
   .beat-checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .checkbox-item {
     display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-    background: #fff; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; transition: all 0.2s;
+    background: var(--bg-checkbox); color: var(--text); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); transition: all 0.2s;
   }
-  .checkbox-item:hover { border-color: #cbd5e1; background: #f1f5f9; }
+  .checkbox-item:hover { border-color: var(--muted); background: var(--bg-subtle); }
 
   .sheet { display: none; padding: 0; max-width: 1140px; margin: 0 auto; }
   .sheet.active { display: block; }
@@ -535,7 +710,7 @@
   /* ── Summary Stats Bar ────────────────────────────────── */
   .summary-stats-bar { display: none; max-width: 1140px; margin: 0 auto 18px auto; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .summary-stats-bar.visible { display: grid; }
-  .stat-card { background: rgba(255,255,255,0.97); border-radius: 10px; padding: 12px 16px; border: 1px solid #e8edf3; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .stat-card { background: var(--bg-surface); border-radius: 10px; padding: 12px 16px; border: 1px solid var(--border); box-shadow: var(--shadow-stat); transition: background 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; }
   .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
   .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; font-family: 'Barlow Condensed', sans-serif; line-height: 1.1; }
   .stat-value.accent { color: #1e3c72; }
@@ -606,14 +781,15 @@
     width: 100%;
     border: none;
     border-top: 1px dashed #e2e8f0;
-    margin: 14px 0 10px 0;
+    margin: 8px 0 6px 0;
   }
   .setup-btn-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    justify-content: flex-start;
+    gap: 7px;
     flex-wrap: wrap;
+    width: 100%;
   }
   .setup-label {
     font-family: 'Barlow Condensed', sans-serif;
@@ -623,6 +799,41 @@
     color: #94a3b8;
     letter-spacing: 1px;
     margin-right: 4px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.2s ease, background 0.2s ease;
+    flex-shrink: 0;
+  }
+  .setup-label:hover { color: #475569; background: #e2e8f0; }
+  .setup-label.active { color: #1e3c72; }
+  .setup-chevron {
+    font-size: 14px;
+    line-height: 1;
+    transition: transform 0.3s ease;
+    display: inline-block;
+  }
+  .setup-label.active .setup-chevron { transform: rotate(180deg); }
+
+  /* ── Setup buttons slide wrapper ────────────────────────── */
+  #setupBtnsWrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    transition: max-width 0.45s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.3s ease;
+  }
+  #setupBtnsWrap.open {
+    max-width: 900px;
+    opacity: 1;
   }
 
   /* ── Control panel header strip ──────────────────────────── */
@@ -736,8 +947,62 @@
 
   /* ── Setup Button Row Container ─────────────────────────── */
   .setup-btn-row {
-    background: #f8fafc; border: 1px solid #e2e8f0;
-    border-radius: 12px; padding: 10px 18px;
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    border-radius: 8px; padding: 3px 10px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* ── Lucide icon sizing inside buttons ──────────────────── */
+  .plus-setup-btn i[data-lucide],
+  .print-btn i[data-lucide] {
+    width: 13px; height: 13px;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .stat-icon i[data-lucide] {
+    width: 20px; height: 20px;
+    stroke-width: 1.8;
+  }
+  .ph-title i[data-lucide] {
+    width: 13px; height: 13px;
+    stroke-width: 2.2;
+    vertical-align: middle;
+    margin-right: 2px;
+  }
+
+  /* ── Card Hover — Lift + Shadow + Border ────────────────── */
+  .stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+    border-color: #cbd5e1;
+  }
+  .beat-checkbox-container {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .beat-checkbox-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    border-color: #94a3b8;
+  }
+  .control-panel {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .control-panel:hover {
+    box-shadow: 0 12px 35px rgba(0,0,0,0.09);
+    border-color: #cbd5e1;
+  }
+  .slip {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .slip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.09);
   }
 
   /* ── Control Panel Slide Animation ─────────────────────── */
@@ -824,10 +1089,10 @@
 
   /* #6 — GSheet sync badge */
   .gsync-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
     background: #f0fdf4; border: 1.5px solid #86efac;
-    border-radius: 20px; font-size: 11px; font-weight: 700;
+    border-radius: 20px; font-size: 10.5px; font-weight: 700;
     color: #15803d; font-family: 'Barlow Condensed', sans-serif;
     cursor: pointer; transition: all 0.18s;
     white-space: nowrap;
@@ -901,7 +1166,7 @@
   <div class="upload-row" style="flex-direction:column; gap:0;">
     <div class="upload-input-wrap">
       <label class="upload-zone" for="excelFileInput">
-        <span class="upload-zone-icon">📂</span>
+        <span class="upload-zone-icon"><i data-lucide="folder-open"></i></span>
         <div class="upload-zone-text">
           Drop your LeverEDGE Excel here
           <small>or click to browse &nbsp;·&nbsp; .xlsx / .xls</small>
@@ -909,23 +1174,28 @@
         <input type="file" id="excelFileInput" accept=".xlsx, .xls">
       </label>
       <div class="file-name-badge" id="fileNameBadge">
-        <span>📄</span>
+        <i data-lucide="file-spreadsheet" style="width:14px;height:14px;flex-shrink:0;"></i>
         <span class="fname-text" id="fileNameText"></span>
-        <button class="file-clear-btn" title="Clear data" onclick="clearAllData()">✕</button>
+        <button class="file-clear-btn" title="Clear data" onclick="clearAllData()"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
       </div>
     </div>
     <hr class="setup-divider">
     <div class="setup-btn-row">
-      <span class="setup-label">⚙️ Setup</span>
-      <button class="plus-setup-btn" id="clearDataBtn" style="background:linear-gradient(135deg,#64748b,#475569); display:none;" onclick="clearAllData()">🗑️ Clear Data</button>
-      <button class="plus-setup-btn" onclick="openHighlightModal()">⭐ Credit Policy</button>
-      <span class="gsync-badge no-sync" id="gsyncBadge" onclick="openGsheetModal()" title="Google Sheets sync status">
-        <span class="gsync-dot"></span>
-        <span id="gsyncBadgeText">Not Synced</span>
-      </span>
-      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);" onclick="openGeotagModal()">🎯 Non-Geotag</button>
-      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);" onclick="openVanModal()">👤 DM Setup</button>
-      <button class="plus-setup-btn lorry-btn" onclick="openLorryModal()">🚚 Lorry</button>
+      <span class="setup-label" id="setupToggleLabel" onclick="toggleSetupRow()"><i data-lucide="settings-2"></i> Setup <span class="setup-chevron">›</span></span>
+      <button class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+        <i data-lucide="moon" id="darkModeIcon"></i>
+      </button>
+      <button class="plus-setup-btn" id="clearDataBtn" style="background:linear-gradient(135deg,#64748b,#475569); display:none;" onclick="clearAllData()"><i data-lucide="trash-2"></i> Clear Data</button>
+      <div id="setupBtnsWrap">
+        <button class="plus-setup-btn" onclick="openHighlightModal()"><i data-lucide="star"></i> Credit Policy</button>
+        <span class="gsync-badge no-sync" id="gsyncBadge" onclick="openGsheetModal()" title="Google Sheets sync status">
+          <span class="gsync-dot"></span>
+          <span id="gsyncBadgeText">Not Synced</span>
+        </span>
+        <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);" onclick="openGeotagModal()"><i data-lucide="map-pin-off"></i> Non-Geotag</button>
+        <button class="plus-setup-btn" style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);" onclick="openVanModal()"><i data-lucide="user-cog"></i> DM Setup</button>
+        <button class="plus-setup-btn lorry-btn" onclick="openLorryModal()"><i data-lucide="truck"></i> Lorry</button>
+      </div>
     </div>
   </div>
 </div>
@@ -956,12 +1226,12 @@
 
 <div class="modal-overlay" id="highlightModal">
   <div class="modal-box">
-    <h3>⭐ Credit Policy Configuration</h3>
+    <h3><i data-lucide="star" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;color:#f59e0b;"></i>Credit Policy Configuration</h3>
     <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Manage active accounts with allowed terms. You can also export/import via Excel sheet.</p>
 
     <div style="margin-bottom:10px;">
       <button id="gsheetIconBtn" title="Google Sheets Auto-Sync" onclick="openGSheetModal()" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; color:#0369a1; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; cursor:pointer;">
-        🔗 Sheet Sync
+        <i data-lucide="link-2" style="width:13px;height:13px;"></i> Sheet Sync
         <span id="gsheetSyncDot" style="display:none; width:7px; height:7px; border-radius:50%; background:#10b981;"></span>
       </button>
     </div>
@@ -975,13 +1245,13 @@
         <option value="CR/CHQ">Both (CR/CHQ)</option>
       </select>
       <input type="number" id="addDays" placeholder="Days" style="width:65px;" min="0" value="7">
-      <button class="plus-setup-btn" style="padding: 6px 12px; font-size:12px;" onclick="addPolicyItem()">➕ Add Item</button>
+      <button class="plus-setup-btn" style="padding: 6px 12px; font-size:12px;" onclick="addPolicyItem()"><i data-lucide="plus"></i> Add Item</button>
     </div>
 
     <div class="search-bar-row">
-      <input type="text" id="modalSearchInput" placeholder="🔍 Quick filter list by T-Code or Name..." oninput="renderModalTable()">
-      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadHighlightTemplate()">📥 Export Settings</button>
-      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('policyFileInput').click()">📤 Import Settings</button>
+      <input type="text" id="modalSearchInput" placeholder="Quick filter by T-Code or Name..." oninput="renderModalTable()">
+      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadHighlightTemplate()"><i data-lucide="download" style="width:13px;height:13px;"></i> Export</button>
+      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('policyFileInput').click()"><i data-lucide="upload" style="width:13px;height:13px;"></i> Import</button>
       <input type="file" id="policyFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importHighlightExcel(event)">
     </div>
     
@@ -1009,12 +1279,12 @@
 
 <div class="modal-overlay" id="gsheetModal">
   <div class="modal-box" style="max-width:480px;">
-    <h3>🔗 Google Sheets Auto-Sync</h3>
+    <h3><i data-lucide="link-2" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;color:#0284c7;"></i>Google Sheets Auto-Sync</h3>
     <p style="font-size:11px; margin-bottom:10px; color:var(--muted)">Sheet publicly shared "Anyone with link can view"</p>
 
     <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
       <input type="url" id="gsheetUrl" placeholder="Paste Google Sheet link..." oninput="saveGSheetUrl()" style="flex:1; min-width:200px; padding:6px 10px; font-size:12px; border:2px solid #bae6fd; border-radius:6px; background:#fff; font-family:monospace;">
-      <button class="plus-setup-btn" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%); padding:7px 14px; font-size:12px;" onclick="syncFromGoogleSheets()">🔄 Sync Now</button>
+      <button class="plus-setup-btn" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%); padding:7px 14px; font-size:12px;" onclick="syncFromGoogleSheets()"><i data-lucide="refresh-cw"></i> Sync Now</button>
     </div>
     <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer; color:#475569;">
       <input type="checkbox" id="autoSyncToggle" onchange="toggleAutoSync()" style="width:14px; height:14px; cursor:pointer; accent-color:#0284c7;">
@@ -1030,19 +1300,19 @@
 
 <div class="modal-overlay" id="geotagModal">
   <div class="modal-box">
-    <h3>🎯 Non-Geotag Outlets Setup</h3>
+    <h3><i data-lucide="map-pin-off" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;color:#7c3aed;"></i>Non-Geotag Outlets Setup</h3>
     <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Manage outlets without Geotags. They will show a crosshair target icon marker. Export/Import via Excel template.</p>
     
     <div class="add-form-row">
       <input type="text" id="addGeoTCode" placeholder="T-Code (e.g., TI017...)" style="width:150px;">
       <input type="text" id="addGeoName" placeholder="Customer / Party Name" style="flex:1; min-width:200px;">
-      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 6px 12px; font-size:12px;" onclick="addGeotagItem()">➕ Add Item</button>
+      <button class="plus-setup-btn" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); padding: 6px 12px; font-size:12px;" onclick="addGeotagItem()"><i data-lucide="plus"></i> Add Item</button>
     </div>
 
     <div class="search-bar-row">
-      <input type="text" id="geoModalSearchInput" placeholder="🔍 Quick filter list by T-Code or Name..." oninput="renderGeotagTable()">
-      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadGeotagTemplate()">📥 Export Settings</button>
-      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('geotagFileInput').click()">📤 Import Settings</button>
+      <input type="text" id="geoModalSearchInput" placeholder="Quick filter by T-Code or Name..." oninput="renderGeotagTable()">
+      <button class="print-btn excel-btn" style="padding: 4px 10px; font-size: 12px;" onclick="downloadGeotagTemplate()"><i data-lucide="download" style="width:13px;height:13px;"></i> Export</button>
+      <button class="print-btn" style="padding: 4px 10px; font-size: 12px; border-color: #107c41; color: #107c41;" onclick="document.getElementById('geotagFileInput').click()"><i data-lucide="upload" style="width:13px;height:13px;"></i> Import</button>
       <input type="file" id="geotagFileInput" accept=".xlsx, .xls" style="display: none;" onchange="importGeotagExcel(event)">
     </div>
     
@@ -1068,12 +1338,12 @@
 
 <div class="modal-overlay" id="lorryModal">
   <div class="modal-box">
-    <h3>🚚 Vehicle Numbers Setup</h3>
+    <h3><i data-lucide="truck" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;color:#334155;"></i>Vehicle Numbers Setup</h3>
     <p><strong><em>Enter your vehicle registration numbers here. Separate each vehicle number by a new line or comma:</em></strong></p>
     <textarea id="lorryNumbersInput" placeholder="Example:&#10;WP DG-1234&#10;CP RE-5678&#10;LY-5432" style="height: 180px; margin-top: 10px; width:100%; font-family:monospace; padding:10px; border:2px solid #e2e8f0; border-radius:8px; resize:none;"></textarea>
     <div class="modal-actions">
       <button class="modal-btn close" onclick="closeLorryModal()">Cancel</button>
-      <button class="modal-btn save" onclick="saveLorryNumbers()">💾 Save Vehicles</button>
+      <button class="modal-btn save" onclick="saveLorryNumbers()"><i data-lucide="save" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>Save Vehicles</button>
     </div>
   </div>
 </div>
@@ -1081,20 +1351,20 @@
 <!-- VAN / DM Mapping Modal -->
 <div class="modal-overlay" id="vanModal">
   <div class="modal-box">
-    <h3>👤 Delivery Person / DM Setup</h3>
+    <h3><i data-lucide="user-cog" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;color:#0891b2;"></i>Delivery Person / DM Setup</h3>
     <p style="font-size:12px; margin-bottom:10px; color:var(--muted)">Delivery person names, VAN codes, and full DM names. Saves to Firebase automatically.</p>
 
     <div class="add-form-row">
       <input type="text" id="addVanDPName" placeholder="DP Name uppercase (e.g., CC MANOJ)" style="flex:1; min-width:160px;">
       <input type="text" id="addVanCode" placeholder="VAN Code (e.g., DM000001)" style="width:130px;">
       <input type="text" id="addVanDMCode" placeholder="Full DM Name" style="flex:1; min-width:150px;">
-      <button class="plus-setup-btn" style="padding:6px 12px; font-size:12px; background:linear-gradient(135deg,#0891b2,#0e7490);" onclick="addVanMappingItem()">➕ Add</button>
+      <button class="plus-setup-btn" style="padding:6px 12px; font-size:12px; background:linear-gradient(135deg,#0891b2,#0e7490);" onclick="addVanMappingItem()"><i data-lucide="plus"></i> Add</button>
     </div>
 
     <div class="search-bar-row">
-      <input type="text" id="vanModalSearchInput" placeholder="🔍 Filter by name..." oninput="renderVanMappingTable()">
-      <button class="print-btn excel-btn" style="padding:4px 10px; font-size:12px;" onclick="downloadVanMappingTemplate()">📥 Export</button>
-      <button class="print-btn" style="padding:4px 10px; font-size:12px; border-color:#107c41; color:#107c41;" onclick="document.getElementById('vanFileInput').click()">📤 Import</button>
+      <input type="text" id="vanModalSearchInput" placeholder="Filter by name..." oninput="renderVanMappingTable()">
+      <button class="print-btn excel-btn" style="padding:4px 10px; font-size:12px;" onclick="downloadVanMappingTemplate()"><i data-lucide="download" style="width:13px;height:13px;"></i> Export</button>
+      <button class="print-btn" style="padding:4px 10px; font-size:12px; border-color:#107c41; color:#107c41;" onclick="document.getElementById('vanFileInput').click()"><i data-lucide="upload" style="width:13px;height:13px;"></i> Import</button>
       <input type="file" id="vanFileInput" accept=".xlsx,.xls" style="display:none;" onchange="importVanMappingExcel(event)">
     </div>
 
@@ -1122,22 +1392,22 @@
 <!-- Summary Stats Bar -->
 <div class="summary-stats-bar" id="summaryStatsBar">
   <div class="stat-card">
-    <span class="stat-icon">👥</span>
+    <span class="stat-icon"><i data-lucide="users"></i></span>
     <div class="stat-label">Delivery Persons</div>
     <div class="stat-value accent" id="statDPs">0</div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon">🗺️</span>
+    <span class="stat-icon"><i data-lucide="map"></i></span>
     <div class="stat-label">Total Beats</div>
     <div class="stat-value accent" id="statBeats">0</div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon">📋</span>
+    <span class="stat-icon"><i data-lucide="file-text"></i></span>
     <div class="stat-label">Total Bills</div>
     <div class="stat-value" id="statBills">0</div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon">💰</span>
+    <span class="stat-icon"><i data-lucide="circle-dollar-sign"></i></span>
     <div class="stat-label">Total Value</div>
     <div class="stat-value" id="statValue" style="font-size:16px;">Rs. 0.00</div>
   </div>
@@ -1146,7 +1416,7 @@
 <div class="control-panel" id="controlPanel">
   <div class="panel-header-strip">
     <span class="ph-dot"></span>
-    <span class="ph-title">📋 Session Controls</span>
+    <span class="ph-title"><i data-lucide="sliders-horizontal"></i> Session Controls</span>
   </div>
   <div class="panel-top-row">
     <div class="selector-group">
@@ -1164,21 +1434,22 @@
     </div>
     <div class="btn-group">
       <!--<button class="print-btn excel-btn" onclick="validateAndDownloadExcel()">📥 Download Excel</button>-->
-      <button class="print-btn btn-print-action" onclick="validateAndPrint()">🖨 Print Current Summary</button>
+      <button class="print-btn btn-print-action" onclick="validateAndPrint()"><i data-lucide="printer"></i> Print Current Summary</button>
       <div class="btn-separator"></div>
-      <button class="print-btn" style="border-color:#dc2626; color:#dc2626;" onclick="downloadSlipPDF()">📄 Download PDF</button>
+      <button class="print-btn" style="border-color:#dc2626; color:#dc2626;" onclick="downloadSlipPDF()"><i data-lucide="file-down"></i> Download PDF</button>
       <!--<button class="print-btn" style="border-color:#25D366; color:#25D366;" onclick="shareSlipPDF()">📤 Share</button>-->
     </div>
 
-    <div id="bulkDownloadPanel" style="display:none; margin-top:10px; padding:10px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; flex-direction:column; gap:6px; flex-wrap:wrap;">
+    <div id="bulkDownloadPanel" style="display:none; margin-top:10px; padding:12px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:10px; flex-direction:column; gap:8px;">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
         <div style="font-size:12px; font-weight:700; color:#047857;">
-          ✅ All delivery persons have a lorry assigned — you can now download PDFs for everyone.
+          All delivery persons have a lorry assigned — you can now download PDFs for everyone.
           <div id="bulkDownloadStatus" style="font-weight:500; color:#059669; margin-top:2px;"></div>
         </div>
-        <button class="print-btn" style="border-color:#059669; color:#059669;" onclick="downloadAllPDFs()">📦 Download All PDFs (ZIP)</button>
+        <button class="print-btn" id="bulkDownloadBtn" style="border-color:#059669; color:#059669; flex-shrink:0;" onclick="downloadAllPDFs()"><i data-lucide="package-open"></i> Download All PDFs (ZIP)</button>
       </div>
       <div class="bulk-prog-track" id="bulkProgTrack" style="display:none;"><div class="bulk-prog-fill" id="bulkProgFill"></div></div>
+      <div id="bulkPersonList" style="display:none;"></div>
     </div>
   </div>
 
@@ -1205,20 +1476,46 @@ function debounce(fn, delay) {
 }
 
 // ─── Count-up animation for stat cards ───────────────────────────────────
-function animateCount(el, target, isValue = false, duration = 550) {
-  let startTime = null;
-  const step = (ts) => {
-    if (!startTime) startTime = ts;
-    const progress = Math.min((ts - startTime) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const current = Math.round(eased * target);
-    el.textContent = isValue
-      ? 'Rs. ' + current.toLocaleString('en-LK') + '.00'
-      : current;
-    if (progress < 1) requestAnimationFrame(step);
-    else el.textContent = isValue ? fmt(target) : target;
-  };
-  requestAnimationFrame(step);
+function animateCount(el, target, isValue = false, duration = 1100, delay = 0) {
+  const from = 0;
+  el.textContent = isValue ? 'Rs. 0.00' : '0';
+  el.style.transition = 'color 0.2s ease';
+
+  if (target === 0) return;
+
+  setTimeout(() => {
+    // Highlight glow during count
+    el.style.color = isValue ? '#059669' : '#1e3c72';
+    el.style.textShadow = '0 0 12px rgba(30,60,114,0.18)';
+
+    let startTime = null;
+    const step = (ts) => {
+      if (!startTime) startTime = ts;
+      const elapsed = ts - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // easeOutQuart — snappy start, silky smooth landing
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const current = from + (target - from) * eased;
+
+      if (isValue) {
+        el.textContent = 'Rs. ' + current.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        el.textContent = Math.round(current).toLocaleString('en-LK');
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        // Settle on exact final value
+        el.textContent = isValue ? fmt(target) : target.toLocaleString('en-LK');
+        // Fade glow out
+        el.style.color = '';
+        el.style.textShadow = '';
+      }
+    };
+    requestAnimationFrame(step);
+  }, delay);
 }
 
 // 🛠️ Default VAN Mapping — loaded from Firebase on init; editable via DM Setup modal
@@ -1254,6 +1551,58 @@ function getDMCode(name) {
 const fmt = n => 'Rs. ' + (Number(n) || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 // ─── Toast Notifications ──────────────────────────────────────────────────────
+// ─── Dark Mode Toggle ────────────────────────────────────────────────────
+function toggleDarkMode() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('sa_theme', newTheme);
+  updateDarkModeIcon(newTheme);
+}
+
+function updateDarkModeIcon(theme) {
+  const btn  = document.getElementById('darkModeToggle');
+  const icon = document.getElementById('darkModeIcon');
+  if (!btn || !icon) return;
+  if (theme === 'dark') {
+    icon.setAttribute('data-lucide', 'sun');
+    btn.title = 'Switch to Light Mode';
+  } else {
+    icon.setAttribute('data-lucide', 'moon');
+    btn.title = 'Switch to Dark Mode';
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('sa_theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', saved);
+  updateDarkModeIcon(saved);
+}
+
+// ── Setup Row Toggle ──────────────────────────────────────────────────────
+let _setupAutoCollapseTimer = null;
+
+function toggleSetupRow() {
+  const wrap  = document.getElementById('setupBtnsWrap');
+  const label = document.getElementById('setupToggleLabel');
+  const isOpen = wrap.classList.contains('open');
+  clearTimeout(_setupAutoCollapseTimer);
+  if (isOpen) {
+    wrap.classList.remove('open');
+    label.classList.remove('active');
+  } else {
+    wrap.classList.add('open');
+    label.classList.add('active');
+    _setupAutoCollapseTimer = setTimeout(() => {
+      wrap.classList.remove('open');
+      label.classList.remove('active');
+    }, 8000);
+  }
+}
+
 function showToast(msg, type = 'info', duration = 3500) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -1464,7 +1813,7 @@ function renderModalTable() {
       <td>${item.name}</td>
       <td><span style="font-weight:600; font-size:11px; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${item.type}</span></td>
       <td style="font-weight:700; color:#1e3c72;">${item.days}D</td>
-      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deletePolicyItem('${tcode}')">❌</button></td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deletePolicyItem('${tcode}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -1748,7 +2097,7 @@ function renderGeotagTable() {
     tr.innerHTML = `
       <td style="font-weight:700;">${tcode}</td>
       <td>${item.name}</td>
-      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteGeotagItem('${tcode}')">❌</button></td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteGeotagItem('${tcode}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2201,10 +2550,14 @@ async function buildSlipPDF() {
   return doc;
 }
 
-function buildSlipFilename() {
-  const vehicleNo = (document.getElementById('vehicleSelect').value || 'slip').replace(/\s+/g, '_');
+function buildSlipFilename(dpName, vehicleNo) {
   const today = new Date().toISOString().slice(0, 10);
-  return `Cash_Slip_${vehicleNo}_${today}.pdf`;
+  const dp = dpName || document.getElementById('srSelect').value || 'SR';
+  const vehicle = vehicleNo || document.getElementById('vehicleSelect').value || 'NoVehicle';
+  // Sanitize: keep alphanumeric, spaces→hyphens, remove special chars
+  const safeDp = dp.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-').toUpperCase();
+  const safeVehicle = vehicle.replace(/[^a-zA-Z0-9\-]/g, '').toUpperCase();
+  return `${today}_${safeDp}_${safeVehicle}.pdf`;
 }
 
 async function downloadSlipPDF() {
@@ -2219,7 +2572,10 @@ async function downloadSlipPDF() {
     setLoaderProgress(40, 'Rendering pages...');
     const doc = await buildSlipPDF();
     setLoaderProgress(90, 'Saving...');
-    doc.save(buildSlipFilename());
+    doc.save(buildSlipFilename(
+      document.getElementById('srSelect').value,
+      document.getElementById('vehicleSelect').value
+    ));
     hideLoader();
     showToast('✅ PDF downloaded!', 'success');
   } catch (err) {
@@ -2240,7 +2596,10 @@ async function shareSlipPDF() {
     const doc = await buildSlipPDF();
     hideLoader();
     const blob = doc.output('blob');
-    const filename = buildSlipFilename();
+    const filename = buildSlipFilename(
+      document.getElementById('srSelect').value,
+      document.getElementById('vehicleSelect').value
+    );
     const file = new File([blob], filename, { type: 'application/pdf' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -2267,26 +2626,57 @@ async function downloadAllPDFs() {
   }
   if (!confirm(`Download PDFs for all ${DELIVERY_PERSON_LIST.length} delivery persons as one ZIP file?`)) return;
 
-  const srSelect  = document.getElementById('srSelect');
-  const vSelect   = document.getElementById('vehicleSelect');
-  const statusEl  = document.getElementById('bulkDownloadStatus');
-  const progTrack = document.getElementById('bulkProgTrack');
-  const progFill  = document.getElementById('bulkProgFill');
-  const originalDP = srSelect.value;
+  const srSelect    = document.getElementById('srSelect');
+  const statusEl    = document.getElementById('bulkDownloadStatus');
+  const progTrack   = document.getElementById('bulkProgTrack');
+  const progFill    = document.getElementById('bulkProgFill');
+  const personList  = document.getElementById('bulkPersonList');
+  const downloadBtn = document.getElementById('bulkDownloadBtn');
+  const originalDP  = srSelect.value;
+  const today       = new Date().toISOString().slice(0, 10);
+  const total       = DELIVERY_PERSON_LIST.length;
 
-  const zip   = new JSZip();
-  const today = new Date().toISOString().slice(0, 10);
-  const total = DELIVERY_PERSON_LIST.length;
+  // Disable button during run
+  downloadBtn.disabled = true;
+  downloadBtn.style.opacity = '0.5';
 
+  // Build per-person rows
+  personList.style.display = 'flex';
+  personList.innerHTML = DELIVERY_PERSON_LIST.map((dp, i) => {
+    const vehicle = LORRY_ASSIGNMENTS[dp] || '—';
+    return `<div class="bulk-person-row" id="bpr-${i}">
+      <span class="bulk-person-icon" id="bpi-${i}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+      </span>
+      <span class="bulk-person-name">${dp}</span>
+      <span class="bulk-person-vehicle">${vehicle}</span>
+    </div>`;
+  }).join('');
+
+  // Progress bar
   progTrack.style.display = 'block';
   progFill.style.width = '0%';
+  if (statusEl) statusEl.textContent = '';
 
+  const zip = new JSZip();
+  const svgDone = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const svgActive = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>`;
+  const svgError = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+  let doneCount = 0;
   try {
     for (let i = 0; i < total; i++) {
       const dp = DELIVERY_PERSON_LIST[i];
-      const pct = Math.round(((i) / total) * 90);
-      if (statusEl) statusEl.textContent = `Generating ${i + 1}/${total}: ${dp}...`;
-      progFill.style.width = pct + '%';
+      const vehicle = LORRY_ASSIGNMENTS[dp] || 'NoVehicle';
+      const row = document.getElementById(`bpr-${i}`);
+      const icon = document.getElementById(`bpi-${i}`);
+
+      // Mark active
+      row.classList.add('active');
+      icon.innerHTML = svgActive;
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      if (statusEl) statusEl.textContent = `Generating ${i + 1} / ${total}: ${dp}…`;
+      progFill.style.width = Math.round((i / total) * 88) + '%';
 
       srSelect.value = dp;
       handleSRChange();
@@ -2294,35 +2684,58 @@ async function downloadAllPDFs() {
 
       const doc = await buildSlipPDF();
       const blob = doc.output('blob');
-      const vehicleNo = vSelect.value || LORRY_ASSIGNMENTS[dp] || 'NoVehicle';
-      const safeDP = dp.replace(/[^a-zA-Z0-9]+/g, '_');
-      zip.file(`Cash_Slip_${safeDP}_${vehicleNo}_${today}.pdf`, blob);
+      const filename = buildSlipFilename(dp, vehicle);
+      zip.file(filename, blob);
+      doneCount++;
+
+      // Mark done
+      row.classList.remove('active');
+      row.classList.add('done');
+      icon.innerHTML = svgDone;
     }
 
-    if (statusEl) statusEl.textContent = 'Packaging ZIP file…';
+    if (statusEl) statusEl.textContent = 'Packaging ZIP…';
     progFill.style.width = '95%';
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const zipBlob = await zip.generateAsync({ type: 'blob' }, meta => {
+      progFill.style.width = 95 + Math.round(meta.percent * 0.05) + '%';
+    });
     progFill.style.width = '100%';
 
     const a = document.createElement('a');
     a.href = URL.createObjectURL(zipBlob);
-    a.download = `All_Cash_Slips_${today}.zip`;
+    a.download = `Cash_Slips_ALL_${today}.zip`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
 
-    if (statusEl) statusEl.textContent = `✅ Downloaded ${total} PDFs as ZIP.`;
+    if (statusEl) statusEl.textContent = `${doneCount} PDFs packaged and downloaded.`;
     showToast(`✅ ${total} PDFs downloaded as ZIP!`, 'success');
-    setTimeout(() => { progTrack.style.display = 'none'; progFill.style.width = '0%'; }, 3000);
+    setTimeout(() => {
+      progTrack.style.display = 'none';
+      progFill.style.width = '0%';
+      personList.style.display = 'none';
+      personList.innerHTML = '';
+      if (statusEl) statusEl.textContent = '';
+    }, 6000);
+
   } catch (err) {
     console.error('Bulk PDF error:', err);
     if (statusEl) statusEl.textContent = '❌ Failed to generate ZIP. Please try again.';
     progTrack.style.display = 'none';
     showToast('❌ Failed to generate ZIP. Please try again.', 'error');
+    // Mark remaining rows as error
+    for (let j = doneCount; j < total; j++) {
+      const row = document.getElementById(`bpr-${j}`);
+      const icon = document.getElementById(`bpi-${j}`);
+      if (row) { row.classList.remove('active'); row.classList.add('error'); }
+      if (icon) icon.innerHTML = svgError;
+    }
   } finally {
     srSelect.value = originalDP;
     handleSRChange();
+    downloadBtn.disabled = false;
+    downloadBtn.style.opacity = '';
   }
 }
 
@@ -2364,7 +2777,7 @@ function renderVanMappingTable() {
       <td style="font-weight:700; font-size:12px;">${dpName}</td>
       <td style="font-weight:700; color:#1e3c72;">${item.van}</td>
       <td>${item.dmCode}</td>
-      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteVanMappingItem('${dpName.replace(/'/g,"\\'")}')" title="Remove">❌</button></td>
+      <td style="text-align:center;"><button class="delete-icon-btn" onclick="deleteVanMappingItem('${dpName.replace(/'/g,"\\'")}')" title="Remove"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2451,6 +2864,12 @@ function importVanMappingExcel(event) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', async () => {
+  // Init theme first — prevents flash
+  initTheme();
+
+  // Render all Lucide icons
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
   await initializePolicyDatabase();
   loadLorryNumbersDropdown();
 
@@ -2662,6 +3081,9 @@ function initFiltersAndInterface() {
   document.getElementById('summaryStatsBar').classList.add('visible');
   document.getElementById('clearDataBtn').style.display = 'inline-flex';
 
+  // Skeleton shimmer on stat cards while data loads
+  document.querySelectorAll('.stat-card').forEach(c => c.classList.add('loading'));
+
   // Hide empty state guide, slide in control panel
   const guideEl = document.getElementById('emptyStateGuide');
   if (guideEl) guideEl.style.display = 'none';
@@ -2669,12 +3091,18 @@ function initFiltersAndInterface() {
   void controlPanel.offsetWidth; // reflow to restart animation
   controlPanel.classList.add('anim-in');
 
-  // Count-up animation on stats
+  // Count-up animation on stats — staggered per card
   requestAnimationFrame(() => {
-    animateCount(document.getElementById('statDPs'),   DELIVERY_PERSON_LIST.length);
-    animateCount(document.getElementById('statBeats'), allBeats.size);
-    animateCount(document.getElementById('statBills'), allBills.size);
-    animateCount(document.getElementById('statValue'), totalVal, true);
+    // Remove skeletons staggered (just before each card animates)
+    [0, 100, 200, 320].forEach((delay, idx) => {
+      setTimeout(() => {
+        document.querySelectorAll('.stat-card')[idx]?.classList.remove('loading');
+      }, delay);
+    });
+    animateCount(document.getElementById('statDPs'),    DELIVERY_PERSON_LIST.length, false, 900,  0);
+    animateCount(document.getElementById('statBeats'),  allBeats.size,               false, 1000, 100);
+    animateCount(document.getElementById('statBills'),  allBills.size,               false, 1100, 200);
+    animateCount(document.getElementById('statValue'),  totalVal,                    true,  1300, 320);
   });
 
   DELIVERY_PERSON_LIST.forEach(name => {
@@ -3156,6 +3584,12 @@ function downloadStyled12VanExcel() {
   const formattedDate = finalDeliveryDate && finalDeliveryDate !== "-" ? finalDeliveryDate.trim() : "No-Date";
   XLSX.writeFile(wb, `${formattedDate} delivery cash slip.xlsx`);
 }
+</script>
+<script>
+// Lucide icons — re-run after defer scripts fully load
+window.addEventListener('load', () => {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+});
 </script>
 </body>
 </html>
