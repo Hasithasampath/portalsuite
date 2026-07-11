@@ -299,8 +299,10 @@
     border-bottom: 1px solid var(--border);
     color: var(--text);
   }
+  .policy-mgmt-table tbody tr:nth-child(even) td { background: var(--bg-subtle); }
+  .policy-mgmt-table tbody tr:nth-child(odd)  td { background: var(--bg-modal); }
   .policy-mgmt-table tr:hover td {
-    background-color: var(--bg-subtle);
+    background: color-mix(in srgb, #1e3c72 6%, var(--bg-modal)) !important;
   }
   
   .delete-icon-btn {
@@ -338,15 +340,7 @@
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
-  /* ── Upload zone pulse when idle ──────────────────────────── */
-  @keyframes zonePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(30,60,114,0); }
-    50%       { box-shadow: 0 0 0 5px rgba(30,60,114,0.07); }
-  }
-  .upload-zone { animation: zonePulse 3s ease-in-out infinite; }
-  .upload-zone:hover, .upload-zone.drag-over { animation: none; }
-
-  /* ── Stat icon colors per card ────────────────────────────── */
+  .upload-zone-icon i[data-lucide] { width: 26px; height: 26px; stroke-width: 1.6; }
   .stat-card:nth-child(1) .stat-icon i { color: #1e3c72; }
   .stat-card:nth-child(2) .stat-icon i { color: #0891b2; }
   .stat-card:nth-child(3) .stat-icon i { color: #4f46e5; }
@@ -431,6 +425,90 @@
     transform: rotate(15deg);
   }
   .dark-mode-toggle i[data-lucide] { width: 13px; height: 13px; stroke-width: 2; }
+
+  /* ── Custom SR Dropdown ──────────────────────────────────── */
+  .custom-select-wrap { position: relative; min-width: 260px; }
+  .custom-select-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-input); border: 2px solid var(--border);
+    border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+    color: var(--text); font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+  }
+  .custom-select-trigger:hover { border-color: #1e3c72; }
+  .custom-select-trigger.open {
+    border-color: #1e3c72;
+    box-shadow: 0 0 0 3px rgba(30,60,114,0.10);
+    border-radius: 8px 8px 0 0;
+  }
+  .custom-select-trigger .cs-chevron {
+    display: inline-flex; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    color: var(--muted); flex-shrink: 0;
+  }
+  .custom-select-trigger.open .cs-chevron { transform: rotate(180deg); }
+
+  .custom-select-panel {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+    background: var(--bg-modal); border: 2px solid #1e3c72; border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .custom-select-panel.open { max-height: 300px; overflow-y: auto; }
+  .cs-search {
+    padding: 8px 10px; border: none; border-bottom: 1px solid var(--border);
+    width: 100%; font-size: 12px; background: var(--bg-subtle); color: var(--text);
+    font-family: 'Barlow', sans-serif; outline: none; box-sizing: border-box;
+  }
+  .cs-option {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; cursor: pointer; font-size: 12.5px; font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+    color: var(--text); transition: background 0.15s ease;
+    border-bottom: 1px solid var(--border);
+  }
+  .cs-option:last-child { border-bottom: none; }
+  .cs-option:hover { background: var(--bg-subtle); }
+  .cs-option.selected { color: #1e3c72; background: #eff6ff; }
+  .cs-option .cs-check {
+    opacity: 0; color: #1e3c72; flex-shrink: 0;
+    transition: opacity 0.15s ease;
+  }
+  .cs-option.selected .cs-check { opacity: 1; }
+  .cs-lorry-tag {
+    font-size: 10px; color: var(--muted); font-weight: 600;
+    background: var(--bg-subtle); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 10px; font-family: 'Barlow', sans-serif;
+    text-transform: none;
+  }
+  .cs-lorry-tag.assigned { color: #059669; border-color: #6ee7b7; background: #f0fdf4; }
+
+  /* ── Vehicle filter-box slide transition ─────────────────── */
+  .lorry-filter-box {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .lorry-filter-box.updating {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  /* ── Beat badge upgrade ───────────────────────────────────── */
+  .beat-count-badge {
+    font-size: 10px; font-weight: 700;
+    background: var(--bg-subtle); color: var(--muted);
+    padding: 2px 7px; border-radius: 10px; margin-left: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    border: 1px solid var(--border);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+  .checkbox-item:has(input[type="checkbox"]:checked) .beat-count-badge {
+    background: #dbeafe; color: #1e40af; border-color: #93c5fd;
+  }
 
   /* ── Upload zone icon size ────────────────────────────────── */
   .upload-zone-icon i[data-lucide] { width: 26px; height: 26px; stroke-width: 1.6; }
@@ -520,12 +598,13 @@
   }
   .beat-btn { padding: 3px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: var(--border); border: none; border-radius: 4px; cursor: pointer; color: var(--muted); }
   .beat-btn:hover { background: var(--border); color: var(--text); }
-  .beat-checkbox-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .beat-checkbox-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .checkbox-item {
     display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
     background: var(--bg-checkbox); color: var(--text); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); transition: all 0.2s;
   }
-  .checkbox-item:hover { border-color: var(--muted); background: var(--bg-subtle); }
+  .checkbox-item:nth-child(even) { background: var(--bg-subtle); }
+  .checkbox-item:hover { border-color: var(--muted); background: color-mix(in srgb, #1e3c72 5%, var(--bg-checkbox)); }
 
   .sheet { display: none; padding: 0; max-width: 1140px; margin: 0 auto; }
   .sheet.active { display: block; }
@@ -612,12 +691,110 @@
   }
   .policy-notice div { font-style: italic; display: flex; align-items: center; gap: 5px; }
 
+  /* ── Cashier summary header strip ──────────────────────── */
+  .cashier-summary-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 10px; margin: 0 20px 0 20px;
+    background: #1e293b;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid #000;
+    border-bottom: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cashier-summary-header span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cashier-summary-header .csh-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #10b981; flex-shrink: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Wrapper keeps header + calc-table together across page breaks */
+  .cashier-section-wrap {
+    page-break-inside: avoid; break-inside: avoid;
+  }
   .cashier-calculation-space {
-    padding: 10px 20px;
+    padding: 0 20px 10px 20px;
     background: #fff;
     border-top: 1px dashed #cbd5e1;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  /* Label col shading inside calc-table */
+  .calc-table .label-col { width: 20%; font-weight: 600; background: #f5f5f5; }
+  .calc-table .total-row td { border-top: 2px solid #000 !important; font-weight: 700; background: #f0f0f0; }
+  .calc-table .total-row .label-col { background: #e8e8e8; }
+
+  /* #4 — Collection boxes upgrade */
+  .collection-row { padding: 0 20px 0 20px; background: #fff; display: flex; gap: 0; page-break-inside: avoid; break-inside: avoid; border: 1px solid #000; margin: 0 20px; border-top: none; }
+  .coll-box { flex: 1; padding: 6px 12px; border-right: 1px solid #000; }
+  .coll-box:last-child { border-right: none; }
+  .coll-box .clabel { font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #000; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .coll-box .cvalue { border-bottom: 1.5px solid #000; min-height: 22px; }
+
+  /* #6 — Sig-line solid + taller */
+  .slip-footer {
+    border: 1px solid #000; margin: 6px 20px 0 20px;
+    padding: 10px 0 8px 0;
+    display: flex; justify-content: space-between;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  /* #7 — Sig block vertical dividers */
+  .sig-block { flex: 1; text-align: center; padding: 0 20px; border-right: 1px solid #000; }
+  .sig-block:last-child { border-right: none; }
+  .sig-block .sig-line { border-bottom: 1.5px solid #000; height: 24px; margin-bottom: 4px; }
+  .sig-block .sig-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #000; letter-spacing: 0.4px; }
+  .sig-date { font-size: 8px; font-weight: 600; text-transform: uppercase; color: #475569; margin-top: 5px; border-bottom: 1px solid #000; padding-bottom: 2px; text-align: left; }
+
+  /* ── Page 2 bordered header grid ───────────────────────── */
+  .blank-header-grid {
+    display: grid; grid-template-columns: 1.2fr 1.5fr 1.5fr;
+    gap: 0; font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; margin-bottom: 6px;
+    border: 1px solid #000;
+  }
+  .blank-header-cell {
+    padding: 5px 8px; border-right: 1px solid #000;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .blank-header-cell:last-child { border-right: none; }
+  .bhc-label { font-size: 8px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+  .bhc-value { font-size: 12px; font-weight: 700; color: #000; }
+
+  /* ── Page 2 collection sheet title ─────────────────────── */
+  /* ── Page 2 combined header ───────────────────────────────── */
+  .p2-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 6px 8px;
+    border: 1px solid #000; border-bottom: 2px solid #000;
+    background: #f5f5f5; margin-bottom: 0;
+    white-space: nowrap; overflow: hidden;
+  }
+  .p2-header-left { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+  .p2-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; white-space: nowrap; }
+  .p2-vehicle-label { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: 0.8px; white-space: nowrap; }
+  .p2-vehicle-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 700; color: #000;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    border-bottom: 1.5px solid #000; padding-bottom: 1px;
+    min-width: 80px; text-align: right; white-space: nowrap;
+  }
+  .p2-title-main {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #000; line-height: 1;
+    white-space: nowrap;
+  }
+  .p2-title-sub {
+    font-size: 9px; font-weight: 600; color: #444;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   
   .calc-table {
@@ -640,19 +817,15 @@
   .calc-table .val-col { width: 22%; }
   .calc-table .split-col { width: 3%; border-top: none !important; border-bottom: none !important; }
 
-  .collection-row { padding: 8px 20px; background: #fff; border-top: 1px solid var(--border); display: flex; gap: 20px; page-break-inside: avoid; break-inside: avoid; }
-  .coll-box { flex: 1; border: 1px solid #000000; border-radius: 4px; padding: 4px 10px; }
-  .coll-box .clabel { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #000; margin-bottom: 2px; }
-  .coll-box .cvalue { border-bottom: 1px dashed #cbd5e1; min-height: 16px; }
+  /* collection-row upgraded — see line 724 */
+  /* coll-box upgraded — see line 725 */
+  /* clabel/cvalue upgraded — see lines 727-728 */
 
-  .slip-footer { border-top: 1px solid var(--border); padding: 15px 20px 8px 20px; display: flex; justify-content: space-between; page-break-inside: avoid; break-inside: avoid; }
-  .sig-block { flex: 1; text-align: center; padding: 0 25px; }
-  .sig-block .sig-line { border-bottom: 1px dashed #000; height: 16px; margin-bottom: 4px; }
-  .sig-block .sig-label { font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
+  .slip-footer-old-placeholder { display:none; } /* old rules moved above */
 
   .page-block-blank {
     background: #fff; border: 1px solid #000; padding: 6px 10px; margin-top: 35px; border-radius: 6px;
-    page-break-before: always; break-before: page; box-sizing: border-box;
+    box-sizing: border-box;
     min-height: 190mm; overflow: hidden;
   }
   .van-no-right { text-align: right; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
@@ -679,6 +852,9 @@
   .pdf-export .slip-table tr.highlight-row td { background-color: #f5f5f5 !important; font-weight: 700 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .pdf-export .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; padding: 5px 4px; }
   .pdf-export .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+  .pdf-export .cashier-summary-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #1e293b !important; }
+  .pdf-export .cashier-summary-header span { color: #fff !important; }
+  .pdf-export .cashier-summary-header .csh-dot { background: #10b981 !important; }
   .pdf-export .calc-table td { border: 1px solid #000 !important; padding: 4px 6px; }
   .pdf-export.page-block-blank, .pdf-export .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 6px 10px !important; margin-top: 0 !important; min-height: 195mm !important; box-sizing: border-box !important; }
   .pdf-export .blank-row td { height: 25px !important; padding: 3px 4px !important; }
@@ -711,10 +887,6 @@
   .summary-stats-bar { display: none; max-width: 1140px; margin: 0 auto 18px auto; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .summary-stats-bar.visible { display: grid; }
   .stat-card { background: var(--bg-surface); border-radius: 10px; padding: 12px 16px; border: 1px solid var(--border); box-shadow: var(--shadow-stat); transition: background 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; }
-  .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
-  .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; font-family: 'Barlow Condensed', sans-serif; line-height: 1.1; }
-  .stat-value.accent { color: #1e3c72; }
-
   /* ── Beat Checkbox pill badge ─────────────────────────── */
   .beat-count-badge { font-size: 10px; font-weight: 700; background: #e2e8f0; color: #475569; padding: 1px 6px; border-radius: 10px; margin-left: 4px; font-family: 'Barlow Condensed', sans-serif; }
 
@@ -779,9 +951,11 @@
   }
   .setup-divider {
     width: 100%;
+    height: 1px;
     border: none;
-    border-top: 1px dashed #e2e8f0;
-    margin: 8px 0 6px 0;
+    background: linear-gradient(to right, transparent, var(--border) 25%, var(--border) 75%, transparent);
+    margin: 10px 0 8px 0;
+    opacity: 0.7;
   }
   .setup-btn-row {
     display: flex;
@@ -812,12 +986,14 @@
   .setup-label:hover { color: #475569; background: #e2e8f0; }
   .setup-label.active { color: #1e3c72; }
   .setup-chevron {
-    font-size: 14px;
-    line-height: 1;
-    transition: transform 0.3s ease;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease;
+    opacity: 0.6;
   }
-  .setup-label.active .setup-chevron { transform: rotate(180deg); }
+  .setup-chevron i[data-lucide] { width: 13px; height: 13px; stroke-width: 2.5; }
+  .setup-label:hover .setup-chevron { opacity: 1; }
+  .setup-label.active .setup-chevron { transform: rotate(90deg); opacity: 1; }
 
   /* ── Setup buttons slide wrapper ────────────────────────── */
   #setupBtnsWrap {
@@ -840,33 +1016,73 @@
   .panel-header-strip {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 10px;
+    margin: -20px -20px 16px -20px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 55%, #2c5364 100%);
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
   }
   .panel-header-strip .ph-title {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
-    color: #1e3c72;
-    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 1.2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-header-strip .ph-title i[data-lucide] {
+    color: rgba(255,255,255,0.6);
   }
   .panel-header-strip .ph-dot {
     width: 6px; height: 6px;
     border-radius: 50%;
     background: #10b981;
     flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(16,185,129,0.6);
+    animation: dotPulse 1.8s ease-in-out infinite;
   }
 
   /* ── Stat cards with icon ────────────────────────────────── */
   .stat-icon {
-    font-size: 18px;
-    line-height: 1;
-    margin-bottom: 6px;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    transition: background 0.3s ease;
   }
+  .stat-icon i[data-lucide] { width: 18px; height: 18px; stroke-width: 1.8; }
+
+  /* ── Stat card inner — two-col layout ───────────────────────── */
+  .stat-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stat-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .stat-label {
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+    color: var(--muted); font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px; line-height: 1;
+  }
+  .stat-value {
+    font-size: 22px; font-weight: 700; color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; line-height: 1.1;
+  }
+  .stat-value.accent { color: #1e3c72; }
+
+  /* Icon bg color per card */
+  .stat-card:nth-child(1) .stat-icon { background: #eff6ff; border-color: #bfdbfe; }
+  .stat-card:nth-child(2) .stat-icon { background: #ecfeff; border-color: #a5f3fc; }
+  .stat-card:nth-child(3) .stat-icon { background: #eef2ff; border-color: #c7d2fe; }
+  .stat-card:nth-child(4) .stat-icon { background: #f0fdf4; border-color: #bbf7d0; }
 
   /* ── Print button — blue ─────────────────────────────────── */
   .print-btn.btn-print-action { border-color: #1e3c72; color: #1e3c72; }
@@ -877,16 +1093,52 @@
      ══════════════════════════════════════════════════════════ */
 
   /* ── Custom Upload Zone ─────────────────────────────────── */
+  /* ── Upload Zone — animated gradient border ─────────────── */
+  @keyframes gradientSpin {
+    from { --border-angle: 0deg;   }
+    to   { --border-angle: 360deg; }
+  }
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
   .upload-zone {
     display: inline-flex; align-items: center; gap: 14px;
-    padding: 15px 28px; background: #f8fafc;
-    border: 2px dashed #cbd5e1; border-radius: 12px;
-    cursor: pointer; transition: all 0.22s ease;
+    padding: 15px 28px;
+    background: var(--bg-subtle);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
     font-family: 'Barlow Condensed', sans-serif; color: #475569;
     user-select: none; text-decoration: none;
+    position: relative;
+    transition: color 0.22s ease, background 0.22s ease;
+  }
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 2px;
+    background: conic-gradient(from var(--border-angle),
+      #cbd5e1 0%, #94a3b8 25%, #1e3c72 50%, #94a3b8 75%, #cbd5e1 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: gradientSpin 4s linear infinite;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+  }
+  .upload-zone:hover::before, .upload-zone.drag-over::before {
+    background: conic-gradient(from var(--border-angle),
+      #1e3c72 0%, #2a5298 35%, #0891b2 50%, #2a5298 75%, #1e3c72 100%);
+    animation: gradientSpin 1.5s linear infinite;
+    opacity: 1;
   }
   .upload-zone:hover, .upload-zone.drag-over {
-    border-color: #1e3c72; background: #eff6ff; color: #1e3c72;
+    background: #eff6ff; color: #1e3c72;
     box-shadow: 0 0 0 4px rgba(30,60,114,0.07);
   }
   .upload-zone-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
@@ -929,11 +1181,22 @@
   #lorryModal  .modal-box::before { background: linear-gradient(90deg,#1e293b,#334155); }
   #vanModal    .modal-box::before { background: linear-gradient(90deg,#0891b2,#0e7490); }
 
-  /* ── Stat Card Accent Top Borders ──────────────────────── */
-  .stat-card:nth-child(1) { border-top: 3px solid #1e3c72; }
-  .stat-card:nth-child(2) { border-top: 3px solid #0891b2; }
-  .stat-card:nth-child(3) { border-top: 3px solid #4f46e5; }
-  .stat-card:nth-child(4) { border-top: 3px solid #059669; }
+  /* ── Stat Card Accent Top Borders — animated left→right reveal ─ */
+  .stat-card { overflow: hidden; }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    border-radius: 2px 2px 0 0;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .stat-card.line-ready::before { width: 100%; }
+  .stat-card:nth-child(1)::before { background: #1e3c72; transition-delay: 0.05s; }
+  .stat-card:nth-child(2)::before { background: #0891b2; transition-delay: 0.15s; }
+  .stat-card:nth-child(3)::before { background: #4f46e5; transition-delay: 0.25s; }
+  .stat-card:nth-child(4)::before { background: #059669; transition-delay: 0.35s; }
 
   /* ── Stats Bar entrance animation ───────────────────────── */
   @keyframes statFadeUp {
@@ -1027,15 +1290,35 @@
   /* ── Top Title upgrade ──────────────────────────────────── */
   .top-title {
     font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 2px; line-height: 1.1;
+  }
+  .top-title-main {
     background: var(--primary-gradient);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    font-size: 26px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0; margin-bottom: 2px; line-height: 1.1;
+    background-clip: text;
   }
-  .top-title-sep { opacity: 0.4; }
+  .top-title-loc {
+    font-size: 11px; font-weight: 700; opacity: 0.7;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .top-tagline {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Barlow', sans-serif; font-size: 10.5px; font-weight: 600;
+    color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 6px; margin-top: 2px;
+  }
+  .top-tagline::before, .top-tagline::after {
+    content: '';
+    display: block; width: 28px; height: 1px;
+    background: var(--border);
+  }
   .top-subtitle {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
-    color: #64748b; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 14px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 14px;
+    opacity: 0.8;
   }
 
   /* ── Button Group Separator ─────────────────────────────── */
@@ -1098,15 +1381,50 @@
     white-space: nowrap;
   }
   .gsync-badge:hover { background: #dcfce7; border-color: #4ade80; }
+  /* ── Gsync dot pulse (synced state) ─────────────────────── */
+  @keyframes dotPulse {
+    0%   { box-shadow: 0 0 0 0   rgba(34,197,94,0.6); transform: scale(1);    }
+    50%  { box-shadow: 0 0 0 5px rgba(34,197,94,0);   transform: scale(1.1);  }
+    100% { box-shadow: 0 0 0 0   rgba(34,197,94,0);   transform: scale(1);    }
+  }
+  @keyframes dotPulseAmber {
+    0%   { box-shadow: 0 0 0 0   rgba(234,179,8,0.6); }
+    60%  { box-shadow: 0 0 0 5px rgba(234,179,8,0);   }
+    100% { box-shadow: 0 0 0 0   rgba(234,179,8,0);   }
+  }
   .gsync-badge .gsync-dot {
     width: 7px; height: 7px; border-radius: 50%;
     background: #22c55e; flex-shrink: 0;
-    box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+    animation: dotPulse 1.8s ease-in-out infinite;
   }
+
+  /* ── Icon spin (lorry btn click) ────────────────────────── */
+  @keyframes iconSpin {
+    0%   { transform: rotate(0deg)   scale(1);    }
+    60%  { transform: rotate(400deg) scale(1.15); }
+    80%  { transform: rotate(510deg) scale(0.95); }
+    100% { transform: rotate(540deg) scale(1);    }
+  }
+  @keyframes iconBounce {
+    0%   { transform: scale(1);    }
+    40%  { transform: scale(1.25); }
+    70%  { transform: scale(0.9);  }
+    100% { transform: scale(1);    }
+  }
+  @keyframes iconShake {
+    0%,100% { transform: rotate(0deg);   }
+    20%     { transform: rotate(-15deg); }
+    40%     { transform: rotate(15deg);  }
+    60%     { transform: rotate(-10deg); }
+    80%     { transform: rotate(10deg);  }
+  }
+  .icon-spin   { animation: iconSpin   0.65s cubic-bezier(0.4,0,0.2,1) both; }
+  .icon-bounce { animation: iconBounce 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+  .icon-shake  { animation: iconShake  0.4s ease both; }
   .gsync-badge.stale { background: #fefce8; border-color: #fde047; color: #854d0e; }
-  .gsync-badge.stale .gsync-dot { background: #eab308; box-shadow: 0 0 0 2px rgba(234,179,8,0.25); }
+  .gsync-badge.stale .gsync-dot { background: #eab308; animation: dotPulseAmber 1.5s ease-in-out infinite; }
   .gsync-badge.no-sync { background: #f8fafc; border-color: #e2e8f0; color: #94a3b8; }
-  .gsync-badge.no-sync .gsync-dot { background: #cbd5e1; box-shadow: none; }
+  .gsync-badge.no-sync .gsync-dot { background: #cbd5e1; box-shadow: none; animation: none; }
 
   /* #7 — DP keyboard shortcut hint */
   .dp-kb-hint {
@@ -1140,8 +1458,11 @@
     }
     .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; padding: 5px 4px; }
     .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+    .cashier-summary-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #1e293b !important; }
+    .cashier-summary-header span { color: #fff !important; }
+    .cashier-summary-header .csh-dot { background: #10b981 !important; }
     .calc-table td { border: 1px solid #000 !important; padding: 4px 6px; }
-    .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 6px 10px !important; margin-top: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; min-height: 195mm !important; box-sizing: border-box !important; }
+    .page-block-blank { border: 1px solid #000 !important; border-radius: 0 !important; padding: 6px 10px !important; margin-top: 0 !important; page-break-inside: avoid !important; break-inside: avoid !important; min-height: 195mm !important; max-height: 200mm !important; overflow: hidden !important; box-sizing: border-box !important; }
     .blank-row td { height: 25px !important; padding: 3px 4px !important; }
     .page-block-blank table thead tr th { font-size: 13px !important; font-weight: 700 !important; text-align: center !important; vertical-align: middle !important; }
     .page-block-blank table thead tr:last-child th { font-size: 11px !important; font-weight: 700 !important; text-align: center !important; vertical-align: middle !important; }
@@ -1160,8 +1481,11 @@
 </div>
 
 <div class="top-container">
-  <h1 class="top-title">Sarathchandra Agencies <span class="top-title-sep">·</span> Balangoda</h1>
-  <p class="top-subtitle">Collection Sheet Summary</p>
+  <p class="top-tagline">Unilever Distributor</p>
+  <h1 class="top-title">
+    <span class="top-title-main">Sarathchandra Agencies</span>
+  </h1>
+  <p class="top-subtitle"><span class="top-title-loc">Balangoda</span> &nbsp;·&nbsp; Collection Sheet Summary</p>
   
   <div class="upload-row" style="flex-direction:column; gap:0;">
     <div class="upload-input-wrap">
@@ -1181,7 +1505,7 @@
     </div>
     <hr class="setup-divider">
     <div class="setup-btn-row">
-      <span class="setup-label" id="setupToggleLabel" onclick="toggleSetupRow()"><i data-lucide="settings-2"></i> Setup <span class="setup-chevron">›</span></span>
+      <span class="setup-label" id="setupToggleLabel" onclick="toggleSetupRow()"><i data-lucide="settings-2"></i> Setup <span class="setup-chevron"><i data-lucide="chevron-right"></i></span></span>
       <button class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
         <i data-lucide="moon" id="darkModeIcon"></i>
       </button>
@@ -1392,24 +1716,40 @@
 <!-- Summary Stats Bar -->
 <div class="summary-stats-bar" id="summaryStatsBar">
   <div class="stat-card">
-    <span class="stat-icon"><i data-lucide="users"></i></span>
-    <div class="stat-label">Delivery Persons</div>
-    <div class="stat-value accent" id="statDPs">0</div>
+    <div class="stat-inner">
+      <span class="stat-icon"><i data-lucide="users"></i></span>
+      <div class="stat-text">
+        <div class="stat-label">Delivery Persons</div>
+        <div class="stat-value accent" id="statDPs">0</div>
+      </div>
+    </div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon"><i data-lucide="map"></i></span>
-    <div class="stat-label">Total Beats</div>
-    <div class="stat-value accent" id="statBeats">0</div>
+    <div class="stat-inner">
+      <span class="stat-icon"><i data-lucide="map"></i></span>
+      <div class="stat-text">
+        <div class="stat-label">Total Beats</div>
+        <div class="stat-value accent" id="statBeats">0</div>
+      </div>
+    </div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon"><i data-lucide="file-text"></i></span>
-    <div class="stat-label">Total Bills</div>
-    <div class="stat-value" id="statBills">0</div>
+    <div class="stat-inner">
+      <span class="stat-icon"><i data-lucide="file-text"></i></span>
+      <div class="stat-text">
+        <div class="stat-label">Total Bills</div>
+        <div class="stat-value" id="statBills">0</div>
+      </div>
+    </div>
   </div>
   <div class="stat-card">
-    <span class="stat-icon"><i data-lucide="circle-dollar-sign"></i></span>
-    <div class="stat-label">Total Value</div>
-    <div class="stat-value" id="statValue" style="font-size:16px;">Rs. 0.00</div>
+    <div class="stat-inner">
+      <span class="stat-icon"><i data-lucide="circle-dollar-sign"></i></span>
+      <div class="stat-text">
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value" id="statValue" style="font-size:16px;">Rs. 0.00</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1421,11 +1761,23 @@
   <div class="panel-top-row">
     <div class="selector-group">
       <div class="filter-box">
-        <label for="srSelect">Select Delivery Person:</label>
-        <select id="srSelect" class="rep-dropdown"></select>
+        <label>Select Delivery Person:</label>
+        <!-- Hidden native select kept for existing JS compatibility -->
+        <select id="srSelect" style="display:none;"></select>
+        <!-- Custom styled dropdown -->
+        <div class="custom-select-wrap" id="customSRWrap">
+          <div class="custom-select-trigger" id="customSRTrigger" onclick="toggleCustomSR()">
+            <span id="customSRLabel" style="flex:1;">-- Select SR --</span>
+            <span class="cs-chevron"><i data-lucide="chevron-down" style="width:14px;height:14px;stroke-width:2.5;"></i></span>
+          </div>
+          <div class="custom-select-panel" id="customSRPanel">
+            <input class="cs-search" id="customSRSearch" placeholder="Search name…" oninput="filterCustomSR()" autocomplete="off">
+            <div id="customSROptions"></div>
+          </div>
+        </div>
         <div class="dp-kb-hint"><kbd>Ctrl</kbd> + <kbd>←</kbd><kbd>→</kbd> to switch</div>
       </div>
-      <div class="filter-box">
+      <div class="filter-box lorry-filter-box" id="lorryFilterBox">
         <label for="vehicleSelect" style="color: #ff416c; font-weight: bold;">Select Vehicle Number (Required):</label>
         <select id="vehicleSelect" class="rep-dropdown" onchange="handleVehicleChange()">
           <option value="">-- Choose Vehicle --</option>
@@ -1766,6 +2118,8 @@ function closeModal(id) {
 let _openModalCount = 0;
 
 function openHighlightModal() {
+  const icon = document.querySelector('[onclick="openHighlightModal()"] i[data-lucide]');
+  if (icon) { icon.classList.remove('icon-bounce'); void icon.offsetWidth; icon.classList.add('icon-bounce'); icon.addEventListener('animationend', () => icon.classList.remove('icon-bounce'), { once: true }); }
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
   openModal('highlightModal');
@@ -2068,6 +2422,8 @@ async function restoreGSheetUI() {
 }
 
 function openGeotagModal() {
+  const icon = document.querySelector('[onclick="openGeotagModal()"] i[data-lucide]');
+  if (icon) { icon.classList.remove('icon-shake'); void icon.offsetWidth; icon.classList.add('icon-shake'); icon.addEventListener('animationend', () => icon.classList.remove('icon-shake'), { once: true }); }
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
   openModal('geotagModal');
@@ -2249,6 +2605,14 @@ function importGeotagExcel(event) {
 }
 
 async function openLorryModal() {
+  // Spin the truck icon on the button
+  const lorryBtn = document.querySelector('.plus-setup-btn.lorry-btn i[data-lucide="truck"]');
+  if (lorryBtn) {
+    lorryBtn.classList.remove('icon-spin');
+    void lorryBtn.offsetWidth; // reflow to restart animation
+    lorryBtn.classList.add('icon-spin');
+    lorryBtn.addEventListener('animationend', () => lorryBtn.classList.remove('icon-spin'), { once: true });
+  }
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
   openModal('lorryModal');
@@ -2357,7 +2721,7 @@ function handleVehicleChange() {
 
   sessionStorage.setItem('sarathchandra_lorry_assignments', JSON.stringify(LORRY_ASSIGNMENTS));
   updateBulkDownloadStatus();
-
+  rebuildCustomSROptions();
   if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
 }
 
@@ -2394,7 +2758,7 @@ const PDF_CONTENT_WIDTH_MM = 287;
 // (with print-equivalent styling via .pdf-export), then captures it.
 // This makes the PDF match the printed page regardless of the device's
 // actual screen/viewport width (important on mobile).
-async function elementToCanvas(el) {
+async function elementToCanvas(el, scale = 2) {
   // Create an isolated off-screen container so html2canvas never
   // captures the body's dark gradient — we pass the wrapper itself
   // (not the clone) to html2canvas so its backgroundColor: '#ffffff'
@@ -2430,7 +2794,7 @@ async function elementToCanvas(el) {
     // way the slicer can place a break right before or right after the
     // whole calc-table, but never inside it.
     const wrapperTop = wrapper.getBoundingClientRect().top;
-    const atomicBlocks = Array.from(clone.querySelectorAll('.cashier-calculation-space'));
+    const atomicBlocks = Array.from(clone.querySelectorAll('.cashier-section-wrap, .cashier-calculation-space'));
     const isInsideAtomicBlock = (node) => atomicBlocks.some(block => block.contains(node) && block !== node);
 
     const rowBoundaries = Array.from(clone.querySelectorAll('tr'))
@@ -2448,7 +2812,7 @@ async function elementToCanvas(el) {
     const allBoundaries = rowBoundaries.concat(atomicBlockEdges);
 
     const opts = {
-      scale: 2,
+      scale,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
@@ -2481,7 +2845,7 @@ async function elementToCanvas(el) {
 // "Blank Field Collection Sheet" as page 2), matching the printed page's
 // size exactly. If a section is taller than one A4 page, it is sliced
 // across multiple pages (same as how it would overflow when printed).
-async function buildSlipPDF() {
+async function buildSlipPDF(isBulk = false) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
@@ -2490,6 +2854,10 @@ async function buildSlipPDF() {
   const marginY = 4; // top/bottom
   const availH  = doc.internal.pageSize.getHeight() - marginY * 2; // ~202mm
 
+  // Bulk: lower scale + JPEG quality for speed; single: full quality
+  const canvasScale = isBulk ? 1.5 : 2;
+  const jpegQuality = isBulk ? 0.82 : 0.92;
+
   const sections = [
     document.querySelector('.sheet.active .slip'),
     document.querySelector('.sheet.active .page-block-blank')
@@ -2497,16 +2865,31 @@ async function buildSlipPDF() {
 
   let firstPage = true;
   for (let i = 0; i < sections.length; i++) {
-    const canvas = await elementToCanvas(sections[i]);
-
-    // Canvas was rendered at PDF_CONTENT_WIDTH_MM (287mm) wide, so placing
-    // it at that width gives a 1:1 mm match with the printed page.
+    const canvas = await elementToCanvas(sections[i], canvasScale);
     const imgW   = PDF_CONTENT_WIDTH_MM;
-    const fullH  = canvas.height / canvas.width * imgW; // total height in mm
+    const fullH  = canvas.height / canvas.width * imgW;
 
+    if (i === 1) {
+      // ── Page 2 (Collection Sheet) — ALWAYS force one A4 page ──
+      if (!firstPage) doc.addPage();
+      if (fullH <= availH + 0.5) {
+        // Fits naturally — place as-is
+        doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, fullH);
+      } else {
+        // Too tall — scale down proportionally to fit availH
+        const scale   = availH / fullH;
+        const renderW = imgW * scale;
+        const xOff    = marginX + (imgW - renderW) / 2; // centre horizontally
+        doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', xOff, marginY, renderW, availH);
+      }
+      firstPage = false;
+      continue;
+    }
+
+    // ── Page 1 (Slip) — existing slice logic ──────────────────
     if (fullH <= availH + 0.5) {
       if (!firstPage) doc.addPage();
-      doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', marginX, marginY, imgW, fullH);
+      doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, fullH);
       firstPage = false;
     } else {
       // Content is taller than one page — slice it into page-sized chunks.
@@ -2540,7 +2923,7 @@ async function buildSlipPDF() {
         ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
 
         if (!firstPage) doc.addPage();
-        doc.addImage(sliceCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', marginX, marginY, imgW, sliceH / pxPerMm);
+        doc.addImage(sliceCanvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, sliceH / pxPerMm);
         firstPage = false;
         yOffset += sliceH;
       }
@@ -2682,7 +3065,7 @@ async function downloadAllPDFs() {
       handleSRChange();
       await new Promise(r => setTimeout(r, 60));
 
-      const doc = await buildSlipPDF();
+      const doc = await buildSlipPDF(true);
       const blob = doc.output('blob');
       const filename = buildSlipFilename(dp, vehicle);
       zip.file(filename, blob);
@@ -2752,6 +3135,8 @@ async function initializeVanMapping() {
 }
 
 function openVanModal() {
+  const icon = document.querySelector('[onclick="openVanModal()"] i[data-lucide]');
+  if (icon) { icon.classList.remove('icon-spin'); void icon.offsetWidth; icon.classList.add('icon-spin'); icon.addEventListener('animationend', () => icon.classList.remove('icon-spin'), { once: true }); }
   if (_openModalCount === 0) _lockBodyScroll();
   _openModalCount++;
   openModal('vanModal');
@@ -2926,8 +3311,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     const cur = sel.selectedIndex;
     if (e.key === 'ArrowRight') sel.selectedIndex = Math.min(cur + 1, sel.options.length - 1);
     else                        sel.selectedIndex = Math.max(cur - 1, 0);
+    // Sync custom dropdown label + selected state
+    const newVal = sel.options[sel.selectedIndex].text;
+    document.getElementById('customSRLabel').textContent = newVal;
+    document.querySelectorAll('.cs-option').forEach(o => o.classList.toggle('selected', o.dataset.value === newVal));
     sel.dispatchEvent(new Event('change'));
-    showToast(`👤 ${sel.options[sel.selectedIndex].text}`, 'info');
+    showToast(`👤 ${newVal}`, 'info');
   });
 
   // Warn before tab close if lorry assignments exist (session data would be lost)
@@ -3096,7 +3485,12 @@ function initFiltersAndInterface() {
     // Remove skeletons staggered (just before each card animates)
     [0, 100, 200, 320].forEach((delay, idx) => {
       setTimeout(() => {
-        document.querySelectorAll('.stat-card')[idx]?.classList.remove('loading');
+        const card = document.querySelectorAll('.stat-card')[idx];
+        if (card) {
+          card.classList.remove('loading');
+          // Trigger accent line left→right reveal
+          requestAnimationFrame(() => card.classList.add('line-ready'));
+        }
       }, delay);
     });
     animateCount(document.getElementById('statDPs'),    DELIVERY_PERSON_LIST.length, false, 900,  0);
@@ -3112,17 +3506,97 @@ function initFiltersAndInterface() {
     srSelect.appendChild(opt);
   });
   srSelect.addEventListener('change', handleSRChange);
+  rebuildCustomSROptions();
   handleSRChange();
   updateBulkDownloadStatus();
   showToast(`✅ File loaded — ${DELIVERY_PERSON_LIST.length} delivery persons`, 'success');
 }
+
+// ─── Custom SR Dropdown ──────────────────────────────────────────────────
+let _customSROpen = false;
+
+function toggleCustomSR() {
+  _customSROpen ? closeCustomSR() : openCustomSR();
+}
+
+function openCustomSR() {
+  _customSROpen = true;
+  document.getElementById('customSRTrigger').classList.add('open');
+  document.getElementById('customSRPanel').classList.add('open');
+  setTimeout(() => document.getElementById('customSRSearch').focus(), 80);
+}
+
+function closeCustomSR() {
+  _customSROpen = false;
+  document.getElementById('customSRTrigger').classList.remove('open');
+  document.getElementById('customSRPanel').classList.remove('open');
+  document.getElementById('customSRSearch').value = '';
+  filterCustomSR();
+}
+
+function filterCustomSR() {
+  const q = document.getElementById('customSRSearch').value.toLowerCase();
+  document.querySelectorAll('.cs-option').forEach(opt => {
+    opt.style.display = opt.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+function selectCustomSR(value, label) {
+  document.getElementById('srSelect').value = value;
+  document.getElementById('customSRLabel').textContent = label;
+  document.querySelectorAll('.cs-option').forEach(o => {
+    o.classList.toggle('selected', o.dataset.value === value);
+  });
+  closeCustomSR();
+  handleSRChange();
+}
+
+function rebuildCustomSROptions() {
+  const srSelect = document.getElementById('srSelect');
+  const container = document.getElementById('customSROptions');
+  container.innerHTML = '';
+  Array.from(srSelect.options).forEach(opt => {
+    if (!opt.value) return;
+    const div = document.createElement('div');
+    div.className = 'cs-option';
+    div.dataset.value = opt.value;
+    div.dataset.name = opt.value.toLowerCase();
+    div.onclick = () => selectCustomSR(opt.value, opt.value);
+    const lorry = LORRY_ASSIGNMENTS[opt.value];
+    div.innerHTML = `
+      <span style="flex:1;">${opt.value}</span>
+      ${lorry ? `<span class="cs-lorry-tag assigned"><i data-lucide="truck" style="width:10px;height:10px;vertical-align:middle;stroke-width:2;"></i> ${lorry}</span>` : ''}
+      <span class="cs-check"><i data-lucide="check" style="width:12px;height:12px;stroke-width:2.5;"></i></span>`;
+    container.appendChild(div);
+  });
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  // Mark currently selected
+  const cur = srSelect.value;
+  if (cur) {
+    document.querySelectorAll('.cs-option').forEach(o => o.classList.toggle('selected', o.dataset.value === cur));
+    document.getElementById('customSRLabel').textContent = cur;
+  }
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (_customSROpen && !document.getElementById('customSRWrap')?.contains(e.target)) {
+    closeCustomSR();
+  }
+});
 
 function handleSRChange() {
   const selectedDP = document.getElementById('srSelect').value;
   const checkboxGrid = document.getElementById('beatCheckboxGrid');
   checkboxGrid.innerHTML = '';
 
-  updateVehicleDropdownForDP(selectedDP);
+  // #18 — Lorry select slide animation
+  const lorryBox = document.getElementById('lorryFilterBox');
+  lorryBox.classList.add('updating');
+  setTimeout(() => {
+    updateVehicleDropdownForDP(selectedDP);
+    lorryBox.classList.remove('updating');
+  }, 200);
 
   const relatedBeats = Object.values(GLOBAL_MAP_DATA).filter(item => item.name === selectedDP);
   relatedBeats.forEach(item => {
@@ -3141,7 +3615,7 @@ function handleSRChange() {
     label.appendChild(badge);
     checkboxGrid.appendChild(label);
   });
-  // Mark beat container as having live data
+
   const beatContainer = document.querySelector('.beat-checkbox-container');
   if (beatContainer && relatedBeats.length > 0) beatContainer.classList.add('has-data');
   generateCombinedSheets();
@@ -3261,7 +3735,7 @@ function generateCombinedSheets() {
 
   let p2RowsHtml = '';
   
-  for (let i = 1; i <= 18; i++) {
+  for (let i = 1; i <= 16; i++) {
     p2RowsHtml += `
       <tr class="blank-row">
         <td style="font-weight:600; text-align:center;">${i}</td>
@@ -3323,7 +3797,12 @@ function generateCombinedSheets() {
         <div>* Highlighted rows indicate outlets approved under the Credit Policy. Outlets with a location icon marker indicates unregistered Geo-Tag.</div>
       </div>
 
-      <div class="cashier-calculation-space">
+      <div class="cashier-section-wrap">
+        <div class="cashier-summary-header">
+          <div class="csh-dot"></div>
+          <span>Cashier Summary</span>
+        </div>
+        <div class="cashier-calculation-space" style="border-top:none; padding-top:0; border:1px solid #000; border-top:none; margin:0 20px 0 20px; padding:6px 10px 10px 10px;">
         <table class="calc-table">
           <tr>
             <td class="label-col">Day Sale Cash</td>
@@ -3370,32 +3849,48 @@ function generateCombinedSheets() {
             <td class="rs-col"></td>
             <td class="val-col"></td>
           </tr>
-          <tr>
+          <tr class="total-row">
             <td class="label-col">Total Cash</td>
             <td class="rs-col">Rs.</td>
             <td class="val-col"></td>
-            <td class="split-col"></td>
+            <td class="split-col" style="border-top:2px solid #000 !important;"></td>
             <td class="label-col">Total Cheques</td>
             <td class="rs-col">Rs.</td>
             <td class="val-col"></td>
           </tr>
         </table>
       </div>
+      </div><!-- /cashier-section-wrap -->
 
       <div class="collection-row">
         <div class="coll-box"><div class="clabel">Received Cash</div><div class="cvalue">&nbsp;</div></div>
         <div class="coll-box"><div class="clabel">Cash Excess / Short</div><div class="cvalue">&nbsp;</div></div>
       </div>
       <div class="slip-footer">
-        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cash Collector</div></div>
-        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cashier</div></div>
-        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Operation Manager</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cash Collector</div><div class="sig-date">Date: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Cashier</div><div class="sig-date">Date: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
+        <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Operation Manager</div><div class="sig-date">Date: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
       </div>
     </div>
 
     <div class="page-block-blank">
-      <div class="van-no-right">VEHICLE NO : <span style="font-size:15px; text-decoration: underline; font-weight:700;">&nbsp;${activeVehicleNo}&nbsp;</span></div>
-      <div class="blank-header-grid"><div>DATE : ${delivDate}</div><div>ROUTE : ${combinedBeatString}</div><div>NAME : ${dmCode}</div></div>
+      <div class="p2-header">
+        <div class="p2-header-left">
+          <div class="p2-title-main">Collection Sheet</div>
+          <div class="p2-title-sub">Sarathchandra Agencies Pvt Ltd &nbsp;·&nbsp; Unilever Distributor, Balangoda</div>
+        </div>
+        <div class="p2-header-right">
+          <span class="p2-vehicle-label">Vehicle No.</span>
+          <span class="p2-vehicle-value">${activeVehicleNo || '—'}</span>
+        </div>
+      </div>
+
+      <div class="blank-header-grid">
+        <div class="blank-header-cell"><span class="bhc-label">Date</span><span class="bhc-value">${delivDate}</span></div>
+        <div class="blank-header-cell"><span class="bhc-label">Route / Beat</span><span class="bhc-value">${combinedBeatString}</span></div>
+        <div class="blank-header-cell"><span class="bhc-label">Delivery Person</span><span class="bhc-value">${dmCode}</span></div>
+      </div>
+
       <table class="slip-table" style="border: 1px solid #000;">
         <thead>
           <tr>
@@ -3528,7 +4023,7 @@ function downloadStyled12VanExcel() {
     const p2CellRight = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "right" }, border: borderBlackThin };
     const p2CellCenter = { font: { name: "Arial", size: 10 }, alignment: { horizontal: "center" }, border: borderBlackThin };
 
-    const BLANK_COLLECTION_ROWS = 18; // must match the HTML print preview row count
+    const BLANK_COLLECTION_ROWS = 16; // must match the HTML print preview row count
     for (let k = 1; k <= BLANK_COLLECTION_ROWS; k++) {
       wsRows.push([
         { v: k, s: p2CellCenter }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft }, { v: "", s: p2CellLeft },
