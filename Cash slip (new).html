@@ -2471,16 +2471,19 @@ async function syncFromGoogleSheets() {
     return;
   }
 
-  const gid    = extractGid(url);
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  const gid      = extractGid(url);
+  // /pub?output=csv works without any proxy (Google sets CORS headers on published sheets)
+  const pubUrl   = `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=csv&gid=${gid}`;
+  const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
 
-  // Source order: direct → allorigins proxy → corsproxy.io proxy
-  // (Direct often fails when this file is opened as file://, due to CORS.
-  //  The proxies wrap Google's response with Access-Control-Allow-Origin: *)
+  // Try published URL first (no proxy needed), then export URL via proxies
   const sources = [
-    csvUrl,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
-    'https://corsproxy.io/?url=' + encodeURIComponent(csvUrl)
+    pubUrl,
+    exportUrl,
+    'https://corsproxy.io/?url=' + encodeURIComponent(exportUrl),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(exportUrl),
+    'https://thingproxy.freeboard.io/fetch/' + exportUrl,
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(exportUrl)
   ];
 
   if (statusEl) { statusEl.textContent = '⏳ Syncing…'; statusEl.style.color = '#64748b'; }
@@ -2540,7 +2543,7 @@ async function syncFromGoogleSheets() {
     .catch(err => {
       let msg = err.message;
       if (msg === 'All sources failed') {
-        msg = 'Unable to connect — check your internet connection, verify the sheet is shared as "Anyone with the link → Viewer", and check that the URL is correct.';
+        msg = 'Sync failed (all proxies blocked). Make sure: 1) Sheet is shared → "Anyone with the link" → Viewer, 2) URL is correct, 3) Internet is connected. Try opening the URL directly in a new tab to confirm access.';
       }
       if (statusEl) { statusEl.textContent = `❌ ${msg}`; statusEl.style.color = '#ef4444'; }
       console.error('GSheet sync error:', err);
