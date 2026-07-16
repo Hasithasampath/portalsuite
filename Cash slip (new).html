@@ -2384,8 +2384,13 @@ function saveGSheetUrl() {
 }
 
 function extractSheetId(url) {
-  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m ? m[1] : null;
+  // Published URL: /spreadsheets/d/e/LONG_ID/pub...
+  const pubM = url.match(/\/spreadsheets\/d\/e\/([a-zA-Z0-9-_]+)/);
+  if (pubM) return { id: pubM[1], published: true };
+  // Regular URL: /spreadsheets/d/SHEET_ID/...
+  const regM = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (regM) return { id: regM[1], published: false };
+  return null;
 }
 
 function extractGid(url) {
@@ -2471,27 +2476,34 @@ async function syncFromGoogleSheets() {
     return;
   }
 
-  const sheetId = extractSheetId(url);
-  if (!sheetId) {
+  const sheetInfo = extractSheetId(url);
+  if (!sheetInfo) {
     if (statusEl) { statusEl.textContent = '❌ Invalid Google Sheets URL.'; statusEl.style.color = '#ef4444'; }
     return;
   }
 
-  const gid    = extractGid(url);
+  const { id, published } = sheetInfo;
+  const gid = extractGid(url);
 
-  // export?format=csv ignores any filters on the sheet — fetches ALL rows
-  const csvUrl  = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-  // gviz fallback (respects filters but wider support)
-  const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+  let csvUrl, gvizUrl;
+  if (published) {
+    // Published sheet (/d/e/...) — use /pub?output=csv directly
+    csvUrl  = `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=${gid}&single=true&output=csv`;
+    gvizUrl = csvUrl; // same URL, no separate gviz for published
+  } else {
+    // Regular sheet — export ignores filters, gviz is fallback
+    csvUrl  = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+    gvizUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`;
+  }
 
   const sources = [
-    'https://api.allorigins.win/raw?url='    + encodeURIComponent(csvUrl),
-    'https://corsproxy.io/?url='             + encodeURIComponent(csvUrl),
-    'https://api.allorigins.win/raw?url='    + encodeURIComponent(gvizUrl),
-    'https://corsproxy.io/?url='             + encodeURIComponent(gvizUrl),
-    csvUrl,   // direct (works if opened from a server, blocked on file://)
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
+    'https://corsproxy.io/?url='          + encodeURIComponent(csvUrl),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(gvizUrl),
+    'https://corsproxy.io/?url='          + encodeURIComponent(gvizUrl),
+    csvUrl,
     gvizUrl,
-  ];
+  ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate if csvUrl === gvizUrl
 
   if (statusEl) { statusEl.textContent = '⏳ Connecting to sheet…'; statusEl.style.color = '#64748b'; }
 
