@@ -1598,7 +1598,7 @@
   <h1 class="top-title">
     <span class="top-title-main">Sarathchandra Agencies</span>
   </h1>
-  <p class="top-subtitle">Collection Sheet Summary-Balangoda</p>
+  <p class="top-subtitle"><span class="top-title-loc">Balangoda</span> &nbsp;·&nbsp; Collection Sheet Summary</p>
   
   <div class="upload-row" style="flex-direction:column; gap:0;">
     <div class="upload-input-wrap">
@@ -2440,17 +2440,23 @@ const COL_DAYS_IDX  = colLetterToIndex(GSHEET_COL_DAYS);
 // public CORS proxies wrap the response with Access-Control-Allow-Origin: *
 function fetchWithFallback(urls, idx = 0) {
   if (idx >= urls.length) return Promise.reject(new Error('All sources failed'));
-  return fetch(urls[idx])
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000); // 8s timeout per attempt
+  return fetch(urls[idx], { signal: controller.signal })
     .then(r => {
+      clearTimeout(timer);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.text();
     })
     .then(text => {
-      // allorigins sometimes returns an HTML error page instead of CSV on failure
       if (text.trim().startsWith('<')) throw new Error('Non-CSV response');
       return text;
     })
-    .catch(() => fetchWithFallback(urls, idx + 1));
+    .catch(err => {
+      clearTimeout(timer);
+      console.warn(`GSheet source ${idx + 1}/${urls.length} failed:`, err.message);
+      return fetchWithFallback(urls, idx + 1);
+    });
 }
 
 async function syncFromGoogleSheets() {
@@ -2471,22 +2477,23 @@ async function syncFromGoogleSheets() {
     return;
   }
 
-  const gid      = extractGid(url);
-  // /pub?output=csv works without any proxy (Google sets CORS headers on published sheets)
-  const pubUrl   = `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=csv&gid=${gid}`;
-  const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  const gid    = extractGid(url);
 
-  // Try published URL first (no proxy needed), then export URL via proxies
+  // export?format=csv ignores any filters on the sheet — fetches ALL rows
+  const csvUrl  = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  // gviz fallback (respects filters but wider support)
+  const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
+
   const sources = [
-    pubUrl,
-    exportUrl,
-    'https://corsproxy.io/?url=' + encodeURIComponent(exportUrl),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(exportUrl),
-    'https://thingproxy.freeboard.io/fetch/' + exportUrl,
-    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(exportUrl)
+    'https://api.allorigins.win/raw?url='    + encodeURIComponent(csvUrl),
+    'https://corsproxy.io/?url='             + encodeURIComponent(csvUrl),
+    'https://api.allorigins.win/raw?url='    + encodeURIComponent(gvizUrl),
+    'https://corsproxy.io/?url='             + encodeURIComponent(gvizUrl),
+    csvUrl,   // direct (works if opened from a server, blocked on file://)
+    gvizUrl,
   ];
 
-  if (statusEl) { statusEl.textContent = '⏳ Syncing…'; statusEl.style.color = '#64748b'; }
+  if (statusEl) { statusEl.textContent = '⏳ Connecting to sheet…'; statusEl.style.color = '#64748b'; }
 
   fetchWithFallback(sources)
     .then(csv => {
@@ -2543,7 +2550,7 @@ async function syncFromGoogleSheets() {
     .catch(err => {
       let msg = err.message;
       if (msg === 'All sources failed') {
-        msg = 'Sync failed (all proxies blocked). Make sure: 1) Sheet is shared → "Anyone with the link" → Viewer, 2) URL is correct, 3) Internet is connected. Try opening the URL directly in a new tab to confirm access.';
+        msg = 'Unable to connect — check your internet connection, verify the sheet is shared as "Anyone with the link → Viewer", and check that the URL is correct.';
       }
       if (statusEl) { statusEl.textContent = `❌ ${msg}`; statusEl.style.color = '#ef4444'; }
       console.error('GSheet sync error:', err);
@@ -3027,9 +3034,13 @@ async function buildSlipPDF(isBulk = false) {
     document.querySelector('.sheet.active .page-block-blank')
   ].filter(Boolean);
 
+  // ── Capture page 1 + page 2 in PARALLEL (saves ~40% canvas time) ──
+  const [canvas1, canvas2] = await Promise.all(sections.map(s => elementToCanvas(s, canvasScale)));
+  const canvases = [canvas1, canvas2].filter(Boolean);
+
   let firstPage = true;
-  for (let i = 0; i < sections.length; i++) {
-    const canvas = await elementToCanvas(sections[i], canvasScale);
+  for (let i = 0; i < canvases.length; i++) {
+    const canvas = canvases[i];
     const imgW   = PDF_CONTENT_WIDTH_MM;
     const fullH  = canvas.height / canvas.width * imgW;
 
@@ -3246,9 +3257,51 @@ async function downloadAllPDFs() {
 
     if (statusEl) statusEl.textContent = 'Packaging ZIP…';
     progFill.style.width = '95%';
-    const zipBlob = await zip.generateAsync({ type: 'blob' }, meta => {
-      progFill.style.width = 95 + Math.round(meta.percent * 0.05) + '%';
+
+    // ── ZIP in background Worker so UI stays responsive ──────────
+    const fileEntries = await Promise.all(
+      Object.entries(zip.files).map(async ([name, file]) => {
+        const buf = await file.async('arraybuffer');
+        return { name, buf };
+      })
+    );
+
+    const workerSrc = `
+      self.onmessage = async function(e) {
+        const { files } = e.data;
+        importScripts('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+        const z = new JSZip();
+        files.forEach(({ name, buf }) => z.file(name, buf));
+        const blob = await z.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:6 } },
+          meta => self.postMessage({ type:'progress', pct: meta.percent }));
+        const ab = await blob.arrayBuffer();
+        self.postMessage({ type:'done', ab }, [ab]);
+      };
+    `;
+    const workerBlob = new Blob([workerSrc], { type: 'text/javascript' });
+    const workerUrl  = URL.createObjectURL(workerBlob);
+
+    const zipBuffer = await new Promise((resolve, reject) => {
+      const worker = new Worker(workerUrl);
+      worker.onmessage = e => {
+        if (e.data.type === 'progress') {
+          progFill.style.width = 95 + Math.round(e.data.pct * 0.05) + '%';
+        } else if (e.data.type === 'done') {
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          resolve(e.data.ab);
+        }
+      };
+      worker.onerror = err => {
+        worker.terminate();
+        URL.revokeObjectURL(workerUrl);
+        reject(err);
+      };
+      worker.postMessage({ files: fileEntries }, fileEntries.map(f => f.buf));
     });
+
+    progFill.style.width = '100%';
+    const zipBlob = new Blob([zipBuffer], { type: 'application/zip' });
     progFill.style.width = '100%';
 
     const a = document.createElement('a');
