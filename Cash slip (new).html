@@ -394,6 +394,12 @@
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
   }
+  /* ── Bulk running — disable transitions for faster DOM settle ── */
+  body.bulk-running *, body.bulk-running *::before, body.bulk-running *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
   #pdfSuccessOverlay {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
@@ -2508,7 +2514,7 @@ async function syncFromGoogleSheets() {
   if (statusEl) { statusEl.textContent = '⏳ Connecting to sheet…'; statusEl.style.color = '#64748b'; }
 
   fetchWithFallback(sources)
-    .then(csv => {
+    .then(async csv => {
       const rows = parseSimpleCSV(csv);
       if (rows.length <= 1) throw new Error('No data in sheet (check the rows below the header, and verify the gid/tab).');
 
@@ -2539,7 +2545,6 @@ async function syncFromGoogleSheets() {
 
       idbSet('sarathchandra_policy_db_matrix', POLICY_DATABASE);
       idbSet('sarathchandra_gsheet_url', url);
-      idbSet('sarathchandra_gsheet_last_sync', new Date().toISOString());
 
       const now = new Date().toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
       if (statusEl) {
@@ -2548,13 +2553,12 @@ async function syncFromGoogleSheets() {
       }
       const dotEl = document.getElementById('gsheetSyncDot');
       if (dotEl) dotEl.style.display = 'inline-block';
-      // Update external sync badge
-      const badge = document.getElementById('gsyncBadge');
-      const badgeTxt = document.getElementById('gsyncBadgeText');
-      if (badge && badgeTxt) {
-        badge.classList.remove('no-sync', 'stale');
-        badgeTxt.textContent = `Synced ${now}`;
-      }
+      // Update external sync badge with record count
+      const nowIso = new Date().toISOString();
+      await idbSet('sarathchandra_gsheet_last_sync', nowIso);
+      await idbSet('sarathchandra_gsheet_sync_count', count);
+      updateSyncBadge(nowIso, count);
+      startSyncBadgeRefresh();
 
       renderModalTable();
       if (Object.keys(GLOBAL_MAP_DATA).length > 0) { debouncedGenerateSheets(); }
@@ -2932,7 +2936,68 @@ function validateAndDownloadExcel() {
   }
 }
 
-// ─── Share / PDF Export ────────────────────────────────────────────────────
+// ─── Sync badge relative time ─────────────────────────────────────────────
+function timeAgo(date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (secs <  60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins <  60) return `${mins} min${mins > 1 ? 's' : ''} ago`;
+  const hrs  = Math.floor(mins / 60);
+  if (hrs  <  24) return `${hrs} hr${hrs  > 1 ? 's' : ''} ago`;
+  const days = Math.floor(hrs  / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function updateSyncBadge(lastSyncIso, count = null) {
+  const badge    = document.getElementById('gsyncBadge');
+  const badgeTxt = document.getElementById('gsyncBadgeText');
+  if (!badge || !badgeTxt || !lastSyncIso) return;
+
+  const d        = new Date(lastSyncIso);
+  const diffH    = (Date.now() - d.getTime()) / 3_600_000;
+  const timeStr  = d.toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
+  const ago      = timeAgo(d);
+  const countStr = count !== null ? ` · ${Number(count).toLocaleString()} recs` : '';
+
+  badge.classList.remove('no-sync', 'stale');
+  if (diffH > 2) {
+    badge.classList.add('stale');
+    badgeTxt.textContent = `Synced ${timeStr}${countStr} · ${ago} ⚠`;
+  } else {
+    badgeTxt.textContent = `Synced ${timeStr}${countStr} · ${ago}`;
+  }
+}
+
+// Auto-refresh relative time every 60 seconds
+let _syncBadgeTimer = null;
+async function startSyncBadgeRefresh() {
+  clearInterval(_syncBadgeTimer);
+  const lastSync = await idbGet('sarathchandra_gsheet_last_sync');
+  if (!lastSync) return;
+  const count = await idbGet('sarathchandra_gsheet_sync_count');
+  updateSyncBadge(lastSync, count);
+  _syncBadgeTimer = setInterval(async () => {
+    const ls = await idbGet('sarathchandra_gsheet_last_sync');
+    const ct = await idbGet('sarathchandra_gsheet_sync_count');
+    updateSyncBadge(ls, ct);
+  }, 60_000);
+}
+// toBlob is async unlike toDataURL which blocks the main thread for large canvases.
+function canvasToJpegBytes(canvas, quality = 0.92) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) { reject(new Error('toBlob failed')); return; }
+      blob.arrayBuffer()
+        .then(ab => resolve(new Uint8Array(ab)))
+        .catch(reject);
+    }, 'image/jpeg', quality);
+  });
+}
+
+// Yield to browser for one frame — lets UI repaint between heavy operations
+function yieldToUI() {
+  return new Promise(r => setTimeout(r, 0));
+}
 
 // A4 landscape (297mm) minus the 5mm left/right @page margins = printable content width
 const PDF_CONTENT_WIDTH_MM = 287;
@@ -3037,9 +3102,10 @@ async function buildSlipPDF(isBulk = false) {
   const marginY = 4; // top/bottom
   const availH  = doc.internal.pageSize.getHeight() - marginY * 2; // ~202mm
 
-  // Bulk: same quality as single — higher quality PDFs
-  const canvasScale = 2;
-  const jpegQuality = 0.92;
+  // Bulk: scale 1.5 (44% fewer pixels = significantly faster html2canvas)
+  // Single: scale 2 for full quality
+  const canvasScale = isBulk ? 1.5 : 2;
+  const jpegQuality = isBulk ? 0.88 : 0.92;
 
   const sections = [
     document.querySelector('.sheet.active .slip'),
@@ -3059,24 +3125,27 @@ async function buildSlipPDF(isBulk = false) {
     if (i === 1) {
       // ── Page 2 (Collection Sheet) — ALWAYS force one A4 page ──
       if (!firstPage) doc.addPage();
+      await yieldToUI();
       if (fullH <= availH + 0.5) {
-        // Fits naturally — place as-is
-        doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, fullH);
+        const bytes = await canvasToJpegBytes(canvas, jpegQuality);
+        doc.addImage(bytes, 'JPEG', marginX, marginY, imgW, fullH);
       } else {
-        // Too tall — scale down proportionally to fit availH
         const scale   = availH / fullH;
         const renderW = imgW * scale;
-        const xOff    = marginX + (imgW - renderW) / 2; // centre horizontally
-        doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', xOff, marginY, renderW, availH);
+        const xOff    = marginX + (imgW - renderW) / 2;
+        const bytes   = await canvasToJpegBytes(canvas, jpegQuality);
+        doc.addImage(bytes, 'JPEG', xOff, marginY, renderW, availH);
       }
       firstPage = false;
       continue;
     }
 
     // ── Page 1 (Slip) — existing slice logic ──────────────────
+    await yieldToUI();
     if (fullH <= availH + 0.5) {
       if (!firstPage) doc.addPage();
-      doc.addImage(canvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, fullH);
+      const bytes = await canvasToJpegBytes(canvas, jpegQuality);
+      doc.addImage(bytes, 'JPEG', marginX, marginY, imgW, fullH);
       firstPage = false;
     } else {
       // Content is taller than one page — slice it into page-sized chunks.
@@ -3110,7 +3179,9 @@ async function buildSlipPDF(isBulk = false) {
         ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
 
         if (!firstPage) doc.addPage();
-        doc.addImage(sliceCanvas.toDataURL('image/jpeg', jpegQuality), 'JPEG', marginX, marginY, imgW, sliceH / pxPerMm);
+        await yieldToUI();
+        const sliceBytes = await canvasToJpegBytes(sliceCanvas, jpegQuality);
+        doc.addImage(sliceBytes, 'JPEG', marginX, marginY, imgW, sliceH / pxPerMm);
         firstPage = false;
         yOffset += sliceH;
       }
@@ -3238,6 +3309,9 @@ async function downloadAllPDFs() {
 
   let doneCount = 0;
   try {
+    // ── Disable CSS transitions during bulk for faster DOM settle ──
+    document.body.classList.add('bulk-running');
+
     for (let i = 0; i < total; i++) {
       const dp = DELIVERY_PERSON_LIST[i];
       const vehicle = LORRY_ASSIGNMENTS[dp] || 'NoVehicle';
@@ -3248,14 +3322,15 @@ async function downloadAllPDFs() {
       row.classList.add('active');
       icon.innerHTML = svgActive;
       row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      if (statusEl) statusEl.textContent = `Generating ${i + 1} / ${total}: ${dp}…`;
-      progFill.style.width = Math.round((i / total) * 88) + '%';
+      if (statusEl) statusEl.textContent = `Rendering ${i + 1} / ${total}: ${dp}…`;
+      progFill.style.width = Math.round((i / total) * 85) + '%';
 
       srSelect.value = dp;
       handleSRChange();
-      await new Promise(r => setTimeout(r, 60));
+      await new Promise(r => setTimeout(r, 20)); // 60→20ms: transitions disabled so DOM settles faster
 
-      const doc = await buildSlipPDF(true);
+      const doc = await buildSlipPDF(true);  // uses scale:1.5 inside
+      await yieldToUI(); // let browser repaint truck + progress bar
       const blob = doc.output('blob');
       const filename = buildSlipFilename(dp, vehicle);
       zip.file(filename, blob);
@@ -3266,6 +3341,9 @@ async function downloadAllPDFs() {
       row.classList.add('done');
       icon.innerHTML = svgDone;
     }
+
+    // Re-enable transitions
+    document.body.classList.remove('bulk-running');
 
     if (statusEl) statusEl.textContent = 'Packaging ZIP…';
     progFill.style.width = '95%';
@@ -3337,6 +3415,7 @@ async function downloadAllPDFs() {
 
   } catch (err) {
     console.error('Bulk PDF error:', err);
+    document.body.classList.remove('bulk-running');
     if (statusEl) statusEl.textContent = '❌ Failed to generate ZIP. Please try again.';
     progTrack.style.display = 'none';
     document.getElementById('truckRoadWrap').classList.remove('running');
@@ -3499,15 +3578,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // ── Restore sync badge from IDB ───────────────────────────
   const lastSync = await idbGet('sarathchandra_gsheet_last_sync');
-  const badge = document.getElementById('gsyncBadge');
-  const badgeTxt = document.getElementById('gsyncBadgeText');
-  if (badge && badgeTxt && lastSync) {
-    const d = new Date(lastSync);
-    const diffH = (Date.now() - d.getTime()) / 3600000;
-    const timeStr = d.toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' });
-    badge.classList.remove('no-sync');
-    if (diffH > 2) { badge.classList.add('stale'); badgeTxt.textContent = `Synced ${timeStr} ⚠️`; }
-    else { badgeTxt.textContent = `Synced ${timeStr}`; }
+  if (lastSync) {
+    updateSyncBadge(lastSync);
+    startSyncBadgeRefresh();
   }
 
   // ── Drag-drop on upload zone ───────────────────────────────
