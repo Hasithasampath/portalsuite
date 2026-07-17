@@ -3897,13 +3897,18 @@ function handleSRChange() {
   const checkboxGrid = document.getElementById('beatCheckboxGrid');
   checkboxGrid.innerHTML = '';
 
-  // #18 — Lorry select slide animation
+  // #18 — Lorry select slide animation (skip delay during bulk for correct PDF capture)
   const lorryBox = document.getElementById('lorryFilterBox');
-  lorryBox.classList.add('updating');
-  setTimeout(() => {
+  if (document.body.classList.contains('bulk-running')) {
+    // Bulk mode: update immediately so vehicle is correct when PDF is captured
     updateVehicleDropdownForDP(selectedDP);
-    lorryBox.classList.remove('updating');
-  }, 200);
+  } else {
+    lorryBox.classList.add('updating');
+    setTimeout(() => {
+      updateVehicleDropdownForDP(selectedDP);
+      lorryBox.classList.remove('updating');
+    }, 200);
+  }
 
   const relatedBeats = Object.values(GLOBAL_MAP_DATA).filter(item => item.name === selectedDP);
   relatedBeats.forEach(item => {
