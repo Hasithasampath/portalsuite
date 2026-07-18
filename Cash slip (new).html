@@ -23,13 +23,19 @@
   })();
 </script>
 
+<!-- Preload critical CDN scripts — tells browser to fetch immediately -->
+<link rel="preload" as="script" crossorigin href="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js">
+<link rel="preload" as="script" crossorigin href="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js">
+<link rel="preload" as="script" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+<link rel="preload" as="script" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+<link rel="preload" as="script" crossorigin href="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+
 <!-- Scripts deferred  -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web@0.33.0/dist/dotlottie-player.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" defer crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js" defer crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer crossorigin></script>
 
 <!-- Firebase -->
 <script type="module">
@@ -976,6 +982,10 @@
   .pdf-export .slip-table tr.highlight-row td { background-color: #f5f5f5 !important; font-weight: 700 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .pdf-export .slip-table tbody tr.table-total-row td { border-top: 2px solid #000 !important; border-bottom: 4px double #000 !important; padding: 5px 4px; }
   .pdf-export .cashier-calculation-space { border-top: 1px dashed #000 !important; }
+  /* Hide fixed UI overlays so they never appear in PDF canvas */
+  .pdf-export ~ #toastContainer,
+  .pdf-export ~ #pdfSuccessOverlay,
+  .pdf-export ~ #loadingOverlay { display: none !important; }
   .pdf-export .cashier-summary-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #1e293b !important; }
   .pdf-export .cashier-summary-header span { color: #fff !important; }
   .pdf-export .cashier-summary-header .csh-dot { background: #10b981 !important; }
@@ -1542,8 +1552,10 @@
 
   @media print {
     @page { size: A4 landscape; margin: 4mm 5mm; }
-    body { background: #fff; padding-bottom: 0; }
+    body { background: #fff; padding-bottom: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { image-rendering: high-quality; }
     .top-container, .control-panel, .modal-overlay, .summary-stats-bar { display: none !important; }
+    #toastContainer, #pdfSuccessOverlay, #loadingOverlay, .toast { display: none !important; }
     .sheet { display: none !important; }
     .sheet.active { display: block !important; max-width: 100% !important; margin: 0; padding: 0; }
     
@@ -3007,6 +3019,12 @@ const PDF_CONTENT_WIDTH_MM = 287;
 // This makes the PDF match the printed page regardless of the device's
 // actual screen/viewport width (important on mobile).
 async function elementToCanvas(el, scale = 2) {
+  // Hide toast so it never gets captured in the PDF canvas
+  const fixedEls = [
+    document.getElementById('toastContainer'),
+  ].filter(Boolean);
+  const prevVisibility = fixedEls.map(e => e.style.visibility);
+  fixedEls.forEach(e => { e.style.visibility = 'hidden'; });
   // Create an isolated off-screen container so html2canvas never
   // captures the body's dark gradient — we pass the wrapper itself
   // (not the clone) to html2canvas so its backgroundColor: '#ffffff'
@@ -3086,6 +3104,8 @@ async function elementToCanvas(el, scale = 2) {
     return canvas;
   } finally {
     wrapper.remove();
+    // Restore fixed overlays visibility
+    fixedEls.forEach((e, i) => { e.style.visibility = prevVisibility[i]; });
   }
 }
 
@@ -3102,10 +3122,9 @@ async function buildSlipPDF(isBulk = false) {
   const marginY = 4; // top/bottom
   const availH  = doc.internal.pageSize.getHeight() - marginY * 2; // ~202mm
 
-  // Bulk: scale 1.5 (44% fewer pixels = significantly faster html2canvas)
-  // Single: scale 2 for full quality
-  const canvasScale = isBulk ? 1.5 : 2;
-  const jpegQuality = isBulk ? 0.88 : 0.92;
+  // Quality settings — balanced: high quality + reasonable speed
+  const canvasScale = isBulk ? 2 : 2.5;
+  const jpegQuality = isBulk ? 0.92 : 0.93;
 
   const sections = [
     document.querySelector('.sheet.active .slip'),
